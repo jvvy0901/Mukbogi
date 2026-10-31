@@ -11,14 +11,14 @@ from html import escape
 
 import streamlit as st
 
-from core import community, fridge, gift, meal, social
+from core import community, fridge, gift, meal, mypage, social
 from core.data import FOODS, FOODS_BY_ID
 from core.images import food_bitten, food_thumb
 from core.korean import eul_reul, i_ga
 from core.style import html, toast
 
 TABS = (("home", "홈"), ("fridge", "냉장고"), ("community", "커뮤니티"), ("my", "내정보"))
-TABS_WITHOUT_PAGE = {"my"}  # 메뉴만 있고 화면은 아직 없는 탭
+TABS_WITHOUT_PAGE: set[str] = set()  # 메뉴만 있고 화면은 아직 없는 탭
 DISTANCES = (0.5, 1.0, 3.0)
 
 
@@ -424,7 +424,7 @@ def render() -> None:
     elif screen == "user":
         community.render_user(_state())
     else:
-        {"home": _home, "fridge": _fridge, "community": _community}[screen]()
+        {"home": _home, "fridge": _fridge, "community": _community, "my": lambda: mypage.render(_state())}[screen]()
         _tab_bar(screen)
 
     gift.timer()

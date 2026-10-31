@@ -1,7 +1,7 @@
 """커뮤니티 화면. PRD.md Epic 5를 구현한다.
 
 탭 3개 (iOS 세그먼트 컨트롤)
-- 친구 (Story 5.1): 내 아이디, 아이디로 친구 찾기, 받은 요청 수락·거절, 보낸 요청 취소, 친구 목록(냉장고 보기 · 배달 보내기)
+- 친구 (Story 5.1): 내 아이디, 아이디로 친구 찾기, 친구 요청 수락·거절, 보낸 요청 취소, 친구 목록(냉장고 보기 · 배달 보내기)
 - 랭킹 (Story 5.2): 이번 주 소화 완료 칼로리 순위, 전체 / 친구 범위, 하단에 내 순위 고정
 - 배달 (Story 5.4 관리): 이번 주 보낸·받은 배달 요약, 받은 배달(상태 + 답례 보내기), 보낸 배달(또 보내기)
 다른 유저 화면 (Story 5.3): 프로필 · 관계에 맞는 버튼 · 공개 범위에 따른 냉장고 · 친구 삭제(확인 후)
@@ -65,7 +65,7 @@ def _request(uid: str) -> None:
         "ok": f"{name}에게 친구 요청을 보냈어요",
         "friend": f"이미 {wa_gwa(name)} 친구예요",
         "sent": f"{name}에게 이미 요청을 보냈어요",
-        "received": f"{i_ga(name)} 먼저 요청했어요. 받은 요청에서 수락해 주세요",
+        "received": f"{i_ga(name)} 먼저 요청했어요. 친구 요청에서 수락해 주세요",
     }.get(result, "요청을 보내지 못했어요"))
 
 
@@ -120,8 +120,11 @@ def _me_avatar(cls: str = "mk-avatar") -> str:
 
 def _user_info(user: User, sub: str, extra: str = "", avatar_cls: str = "mk-avatar mk-avatar-md",
                sub_html: str | None = None) -> str:
-    """sub_html이 있으면 상태 줄을 그 조각으로 그린다 (예: 소화 중 + 진행률)."""
-    sub_part = sub_html if sub_html is not None else f'<div class="mk-u-sub">{escape(sub)}</div>'
+    """sub_html이 있으면 상태 줄을 그 조각으로 그린다 (예: 소화 중 + 진행률). 둘 다 비면 이름 줄만 그린다."""
+    if sub_html is not None:
+        sub_part = sub_html
+    else:
+        sub_part = f'<div class="mk-u-sub">{escape(sub)}</div>' if sub else ""
     return (
         '<div class="mk-u">'
         f"{gift.avatar(user, avatar_cls)}"
@@ -197,11 +200,11 @@ def _friends_tab() -> None:
     _search_result()
 
     if soc.received:
-        _section("받은 요청", len(soc.received))
+        _section("친구 요청", len(soc.received))
         with st.container(key="list_received"):
             for uid in soc.received:
                 u = USERS_BY_ID[uid]
-                _user_row(f"rq_{uid}", u, "나에게 친구 요청을 보냈어요", [
+                _user_row(f"rq_{uid}", u, "", [
                     ("수락", f"acc_{uid}", "primary", _accept, (uid,)),
                     ("거절", f"dec_{uid}", "secondary", _decline, (uid,)),
                 ])

@@ -41,7 +41,8 @@ def test_friends_tab_shows_my_id_requests_and_friends():
     at = _start()
     text = _text(at)
     assert "@mukbo_me" in text
-    assert "받은 요청" in text and "도윤" in text
+    assert "친구 요청" in text and "도윤" in text
+    assert "받은 요청" not in text
     for name in ("하늘", "준", "수아", "민"):
         assert name in text
     assert at.button(key="gift_to_haneul").label == "배달하기"

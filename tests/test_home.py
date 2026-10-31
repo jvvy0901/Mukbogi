@@ -167,11 +167,3 @@ def test_bite_mark_animation_plays_once_and_food_keeps_size():
     _click(at, "act_walk")  # 다른 동작으로 다시 그리면 애니메이션은 없다
     md = " ".join(m.value for m in at.markdown)
     assert 'class="mk-bite-prev"' not in md and 'class="mk-plate"' in md and "10입 중 1입 먹음" in md
-
-
-def test_my_tab_has_menu_only():
-    at = _start()
-    assert at.button(key="tab_my").label == "내정보"
-    _click(at, "tab_my")
-    assert at.session_state["screen"] == "home"  # 화면은 바뀌지 않는다
-    assert "내정보는 준비 중이에요" in _text(at)

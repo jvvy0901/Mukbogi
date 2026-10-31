@@ -6,7 +6,7 @@ MUKBOGI 프로젝트에서 작업할 때 따르는 안내서입니다.
 
 MUKBOGI는 먹고 싶은 음식을 앱에서 "주문"하고, 걷거나 뛰어서 그 음식을 한 입씩 "소화"시키는 **iOS 운동 동기부여 앱**입니다. 다 소화한 음식은 "냉장고"에 날짜별로 쌓이고, 친구 소화 현황·먹보 랭킹으로 가볍게 경쟁합니다.
 
-- 현재 단계: **Streamlit 프로토타입 개발 중**. MVP PRD v0.9 작성 완료. 온보딩(Story 1.1~1.3)·홈(Story 3.1~3.7, 6.1 광고 자리)·냉장고(Story 4.1~4.2)·커뮤니티(Story 5.1~5.5: 친구·랭킹·다른 유저 냉장고·배달 보내기·배달 관리) 구현됨. 주문하기는 임시 화면, 내정보는 하단 탭 메뉴만 있음(화면 없음).
+- 현재 단계: **Streamlit 프로토타입 개발 중**. MVP PRD v0.11 작성 완료. 온보딩(Story 1.1~1.3)·홈(Story 3.1~3.7, 6.1 광고 자리)·냉장고(Story 4.1~4.2)·커뮤니티(Story 5.1~5.5: 친구·랭킹·다른 유저 냉장고·배달 보내기·배달 관리)·내정보(Story 7.1) 구현됨. 주문하기는 임시 화면.
 - 플랫폼: iOS (iPhone) 전용. Android는 MVP 범위 밖.
 - 배포: 프로토타입을 **Streamlit**으로 만들어 배포한다. 자세한 내용은 아래 "기술 스택" 참조.
 - 그 밖의 기술 스택은 아직 정하지 않음. 스택을 고르는 작업이 필요하면 임의로 정하지 말고 사용자에게 먼저 묻는다. 정해지면 이 파일의 "기술 스택" 항목에 기록한다.
@@ -129,6 +129,7 @@ MUKBOGI는 먹고 싶은 음식을 앱에서 "주문"하고, 걷거나 뛰어서
 | `core/home.py` | 홈 화면(PRD Epic 3) + 하단 탭 + 소화 완료 연출 + 임시 주문 화면 + 커뮤니티 자리. 화면 전환(`render`)도 여기서 한다 |
 | `core/fridge.py` | 냉장고 화면(PRD Epic 4). 날짜별 묶음 로직 `group_by_day`는 화면과 분리 (`tests/test_fridge.py`) |
 | `core/community.py` | 커뮤니티 화면(친구 / 랭킹 / 배달 탭) + 다른 유저 화면(`render_user`) (`tests/test_community.py`) |
+| `core/mypage.py` | 내정보 화면 (Story 7.1): 프로필 요약, 식사량 유형·체중·냉장고 공개 범위·MUKBOGI 플러스 설정, 온보딩 다시 하기 (`tests/test_mypage.py`) |
 | `core/social.py` | 친구·친구 요청·먹보 랭킹·냉장고 공개 범위 규칙. 상태는 `session_state.social` (`SocialState`) (`tests/test_social.py`) |
 | `core/gift.py` | 친구에게 음식 배달 보내기 화면 + 보낸 기록 + 친구 답례 도착(프로토타입 흉내, `st.fragment` 1초 타이머) (`tests/test_gift.py`) |
 | `core/korean.py` | 조사 붙이기 (`eul_reul` 을/를, `i_ga` 이/가). 이름·음식 이름 뒤 조사는 직접 쓰지 말고 이걸 쓴다 |
@@ -141,7 +142,8 @@ MUKBOGI는 먹고 싶은 음식을 앱에서 "주문"하고, 걷거나 뛰어서
 - 화면은 **iOS 앱처럼** 만든다 (기준: iPhone 13·14, 390 × 844pt). `st.columns`는 좁은 폭에서 세로로 쌓이므로 쓰지 않고, 그리드는 key를 준 컨테이너에 CSS grid를 건다. 선택 카드는 key가 `tap_`으로 시작하는 컨테이너에 HTML 카드 + `st.button`을 넣으면 카드 전체가 버튼이 된다 (`core/style.py` 참고). 하단 주요 버튼은 key `bar_footer` 컨테이너에, 하단 탭은 key `bar_tabs` 컨테이너에 넣는다. 가로 스크롤 목록은 key `row_` 컨테이너 또는 `.mk-row-scroll`을 쓴다. 세그먼트 탭은 key `seg_` 가로 컨테이너, 목록 카드는 key `list_` 컨테이너, [정보 | 버튼] 한 줄은 key `urow_` 가로 컨테이너를 쓴다.
 - 짧은 알림은 `st.toast`(닫기 버튼 달린 큰 팝업)를 쓰지 않고 `core.style.toast("문구")`를 콜백에서 호출한다. `app.py` 끝의 `style.render_toast()`가 화면 맨 위에 한 번 띄우고 2.5초 뒤 사라진다.
 - `st.markdown` HTML 안에서 글자 크기를 정하는 문단은 `<p>` 대신 `<div>`를 쓴다. Streamlit이 `<p>`의 글자 크기를 덮어쓴다.
-- 화면 상태는 `session_state.screen`(home / order / fridge / community / gift / user)으로 바꾸고, 주문·소화 상태는 `session_state.meal`(`core.meal.MealState`)에 둔다.
+- 화면 상태는 `session_state.screen`(home / order / fridge / community / my / gift / user)으로 바꾸고, 주문·소화 상태는 `session_state.meal`(`core.meal.MealState`)에 둔다.
+- Streamlit 숫자 입력칸은 한 번 값이 들어가면 화면에서 비울 수 없다. 비워야 하면 별도 "지우기" 버튼을 두고, 입력칸 key에 번호를 붙여 새 칸으로 바꿔 끼운다 (`core/mypage.py`의 체중 칸 참고).
 - `core/` 파일을 고친 뒤에는 실행 중인 Streamlit 서버를 재시작해야 바뀐 내용이 반영된다.
 
 ### 명령
