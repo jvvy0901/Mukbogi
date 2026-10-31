@@ -78,8 +78,8 @@ def _jpeg_uri(im: Image.Image) -> str:
     return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
 
 
-@st.cache_data(show_spinner=False)
-def _food_uri(path: str, px: int) -> str:
+def _food_canvas(path: str, px: int) -> Image.Image:
+    """음식을 같은 크기로 보이게 정사각형 투명 캔버스 가운데에 놓는다."""
     obj = _cutout(path)
     inner = px * (1 - 2 * FOOD_PAD)
     visible = int((np.asarray(obj.getchannel("A")) > 127).sum())
@@ -87,7 +87,112 @@ def _food_uri(path: str, px: int) -> str:
     obj = obj.resize((max(1, round(obj.width * scale)), max(1, round(obj.height * scale))), Image.LANCZOS)
     canvas = Image.new("RGBA", (px, px), (0, 0, 0, 0))
     canvas.paste(obj, ((px - obj.width) // 2, (px - obj.height) // 2), obj)
-    return _png_uri(canvas)
+    return canvas
+
+
+@st.cache_data(show_spinner=False)
+def _food_uri(path: str, px: int) -> str:
+    return _png_uri(_food_canvas(path, px))
+
+
+# 한 입 자국 ---------------------------------------------------------------------
+# 한 입마다 음식 가장자리를 "이빨 자국" 모양(큰 원 + 안쪽으로 볼록한 작은 원 5개)으로 베어 낸다.
+# 한 입이 지우는 넓이 = 원래 음식 넓이 ÷ 입 수 (이분 탐색으로 자국 크기를 맞춘다).
+# 자국 위치는 음식 중심에서 황금각(137.5°)씩 돌아가며 정해 골고루 베어 먹은 것처럼 보이게 한다.
+BITE_START_DEG = -40.0  # 첫 입: 오른쪽 위
+BITE_STEP_DEG = 137.5
+BITE_TEETH = 5
+BITE_TOOTH_RATIO = 0.22  # 이빨 자국 원 반지름 ÷ 한 입 반지름
+
+
+def _bite_region(xx, yy, bx: float, by: float, r: float, cx: float, cy: float) -> np.ndarray:
+    region = np.hypot(xx - bx, yy - by) <= r
+    toward_center = np.arctan2(cy - by, cx - bx)
+    for a in np.linspace(-0.95, 0.95, BITE_TEETH):
+        tx = bx + r * np.cos(toward_center + a)
+        ty = by + r * np.sin(toward_center + a)
+        region |= np.hypot(xx - tx, yy - ty) <= r * BITE_TOOTH_RATIO
+    return region
+
+
+def _largest_piece(mask: np.ndarray, grid: int = 120) -> np.ndarray:
+    """가장 큰 덩어리만 남긴다 (떨어져 나간 부스러기는 먹은 것으로 친다). 속도를 위해 축소해서 찾는다."""
+    h, w = mask.shape
+    small = np.asarray(Image.fromarray((mask * 255).astype(np.uint8)).resize((grid, grid), Image.NEAREST)) > 127
+    labels = np.zeros((grid, grid), dtype=np.int32)
+    best, best_size, n = 0, 0, 0
+    for y0, x0 in zip(*np.nonzero(small)):
+        if labels[y0, x0]:
+            continue
+        n += 1
+        labels[y0, x0] = n
+        queue, size = deque([(y0, x0)]), 0
+        while queue:
+            y, x = queue.popleft()
+            size += 1
+            for ny, nx in ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)):
+                if 0 <= ny < grid and 0 <= nx < grid and small[ny, nx] and not labels[ny, nx]:
+                    labels[ny, nx] = n
+                    queue.append((ny, nx))
+        if size > best_size:
+            best, best_size = n, size
+    keep_small = (labels == best).astype(np.uint8) * 255
+    # 경계에서 잘리지 않도록 한 칸 넓혀서 원래 크기로 되돌린다
+    keep = Image.fromarray(keep_small).filter(ImageFilter.MaxFilter(3)).resize((w, h), Image.NEAREST)
+    return mask & (np.asarray(keep) > 127)
+
+
+@st.cache_data(show_spinner=False)
+def _bitten_uris(path: str, px: int, bites: int) -> tuple[list[str], list[tuple[float, float] | None]]:
+    """0입 ~ (입 수 - 1)입 먹은 모습. 마지막 입을 먹으면 음식이 다 사라지므로 그림이 필요 없다.
+
+    돌려주는 값: (각 단계 이미지 data URI 목록, 각 단계에서 방금 베어 문 자리(0~1 비율) 목록)
+    """
+    canvas = _food_canvas(path, px)
+    alpha = np.asarray(canvas.getchannel("A")).astype(np.float32)
+    solid = alpha > 127
+    total = int(solid.sum())
+    yy, xx = np.mgrid[0:px, 0:px]
+    cy, cx = float(yy[solid].mean()), float(xx[solid].mean())
+
+    uris, centers = [_png_uri(canvas)], [None]
+    removed = np.zeros((px, px), dtype=bool)
+    for k in range(1, bites):
+        remaining = solid & ~removed
+        theta = np.radians(BITE_START_DEG + BITE_STEP_DEG * (k - 1))
+        ts = np.arange(px * 2) * 0.5
+        rx = np.clip((cx + np.cos(theta) * ts).astype(int), 0, px - 1)
+        ry = np.clip((cy + np.sin(theta) * ts).astype(int), 0, px - 1)
+        hits = np.nonzero(remaining[ry, rx])[0]
+        if hits.size:
+            bx, by = float(rx[hits[-1]]), float(ry[hits[-1]])
+        else:  # 그 방향에 남은 음식이 없으면, 남은 부분 중 중심에서 가장 먼 곳을 문다
+            ys, xs = np.nonzero(remaining)
+            i = int(np.argmax(np.hypot(xs - cx, ys - cy)))
+            bx, by = float(xs[i]), float(ys[i])
+
+        target = total * k / bites
+        lo, hi = 1.0, float(px)
+        for _ in range(18):
+            mid = (lo + hi) / 2
+            if ((removed | _bite_region(xx, yy, bx, by, mid, cx, cy)) & solid).sum() >= target:
+                hi = mid
+            else:
+                lo = mid
+        removed |= _bite_region(xx, yy, bx, by, hi, cx, cy)
+        removed |= solid & ~_largest_piece(solid & ~removed)
+
+        soft = Image.fromarray((removed * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.9))
+        keep = 1.0 - np.asarray(soft).astype(np.float32) / 255.0
+        # 남은 음식 바로 주변만 보이게 해서, 지운 자리에 반투명 윤곽선이 남지 않게 한다
+        near = Image.fromarray(((solid & ~removed) * 255).astype(np.uint8))
+        near = near.filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.GaussianBlur(0.9))
+        keep *= np.asarray(near).astype(np.float32) / 255.0
+        bitten = canvas.copy()
+        bitten.putalpha(Image.fromarray((alpha * keep).astype(np.uint8)))
+        uris.append(_png_uri(bitten))
+        centers.append((bx / px, by / px))
+    return uris, centers
 
 
 @st.cache_data(show_spinner=False)
@@ -104,6 +209,13 @@ def _profile_uri(path: str, px: int) -> str:
 def food_thumb(food: Food, px: int = 192) -> str:
     """배경 없는 음식 이미지(투명 PNG, 정사각형). px: 화면 크기(pt) × 2~3배."""
     return _food_uri(str(food.image_path), px)
+
+
+def food_bitten(food: Food, bites_eaten: int, px: int = 480) -> tuple[str, tuple[float, float] | None]:
+    """bites_eaten입 먹은 모습(투명 PNG)과 마지막으로 베어 문 자리(0~1 비율, 없으면 None)."""
+    uris, centers = _bitten_uris(str(food.image_path), px, food.bites)
+    k = max(0, min(bites_eaten, food.bites - 1))
+    return uris[k], centers[k]
 
 
 def profile_thumb(path: Path, px: int = 128) -> str:

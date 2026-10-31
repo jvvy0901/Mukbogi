@@ -193,7 +193,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .st-key-bar_tabs {
   position: fixed; left: 50%; bottom: 0; transform: translateX(-50%);
   width: min(100%, 430px); z-index: 110;
-  display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 0 !important;
+  display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 0 !important;
   padding: 4px 8px calc(4px + env(safe-area-inset-bottom));
   background: #FFFFFF; border-top: 1px solid var(--line);
 }
@@ -211,12 +211,17 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .st-key-tab_home { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z'/></svg>"); }
 .st-key-tab_fridge { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='5' y='2' width='14' height='20' rx='2'/><path d='M5 9h14M9 5v2M9 12v4'/></svg>"); }
 .st-key-tab_community { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='9' cy='8' r='3.5'/><path d='M2.5 20c.6-3.5 3.3-5.5 6.5-5.5s5.9 2 6.5 5.5'/><circle cx='17' cy='9' r='2.5'/><path d='M17.5 14.5c2.2.3 3.6 2 4 4.5'/></svg>"); }
+.st-key-tab_my { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='8' r='4'/><path d='M4 21c.8-4 4-6.5 8-6.5s7.2 2.5 8 6.5'/></svg>"); }
 /* 탭이 있는 화면: 주요 버튼은 탭 바로 위에 붙인다 */
 .stApp:has(.st-key-bar_tabs) .st-key-bar_footer { bottom: calc(61px + env(safe-area-inset-bottom)); border-top: 0; padding-bottom: 10px; }
 .stApp:has(.st-key-bar_tabs) [data-testid="stMainBlockContainer"] { padding-bottom: 220px !important; }
 
 /* ---------- 홈: 상단 줄 ---------- */
 .mk-topbar { display: flex; justify-content: space-between; align-items: center; min-height: 44px; }
+/* 스크롤해도 상단 줄이 화면 맨 위에 붙어 있게 한다 */
+[data-testid="stElementContainer"]:has(.mk-topbar) {
+  position: sticky; top: 0; z-index: 90; background: #FFFFFF;
+}
 .mk-today { font-size: 13px; font-weight: 600; color: var(--sub); background: var(--soft); border-radius: 999px; padding: 6px 12px; }
 .mk-today b { color: var(--ink); }
 
@@ -235,19 +240,44 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-chip.on i { background: var(--cyan); animation: mk-pulse 1.6s ease-in-out infinite; }
 @keyframes mk-pulse { 50% { transform: scale(1.5); opacity: .5; } }
 .mk-bites-label { font-size: 13px; font-weight: 600; color: var(--sub); }
-/* 소화 중인 음식: 틀 없이 음식만 떠 있고, 아래에 바닥 그림자. 측정 중엔 살짝 위아래로 떠다닌다 */
+/* 소화 중인 음식: 틀 없이 음식만 떠 있고 크기는 그대로. 먹은 입만큼 이빨 자국으로 베어져 있다.
+   바닥 그림자는 남은 양(--r)만큼 작아진다. 측정 중엔 위아래로 살짝 떠다닌다 */
 .mk-hero { position: relative; height: 216px; display: grid; place-items: center; margin-top: 4px; }
 .mk-hero::after {
-  content: ""; position: absolute; bottom: 10px; left: 50%; width: 132px; height: 16px; transform: translateX(-50%) scale(var(--s));
-  border-radius: 50%; background: rgba(30, 37, 48, .12); filter: blur(6px);
+  content: ""; position: absolute; bottom: 10px; left: 50%; width: 132px; height: 16px;
+  transform: translateX(-50%) scale(calc(.35 + .65 * var(--r)));
+  border-radius: 50%; background: rgba(30, 37, 48, .12); filter: blur(6px); transition: transform .4s ease;
 }
-.mk-hero img {
-  position: relative; z-index: 1; width: 200px; height: 200px; object-fit: contain;
-  transform: scale(var(--s)); transition: transform .4s ease;
+.mk-float { position: relative; z-index: 1; }
+.mk-hero.on .mk-float { animation: mk-float 2.8s ease-in-out infinite; }
+@keyframes mk-float { 50% { transform: translateY(-6px); } }
+.mk-plate { position: relative; width: 200px; height: 200px; }
+.mk-plate img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;
   filter: drop-shadow(0 10px 12px rgba(30, 37, 48, .16));
 }
-.mk-hero.on img { animation: mk-float 2.8s ease-in-out infinite; }
-@keyframes mk-float { 50% { transform: scale(var(--s)) translateY(-6px); } }
+/* 한 입 먹는 순간: 직전 모습이 흐려지며 새 자국이 드러나고, 음식이 "앙" 눌렸다 돌아오고, 부스러기가 튄다 */
+.mk-bite-prev { animation: mk-bite-reveal .45s ease-out forwards; }
+@keyframes mk-bite-reveal { 0%, 25% { opacity: 1; } 100% { opacity: 0; } }
+.mk-plate.chomp { animation: mk-chomp .38s ease-out; }
+@keyframes mk-chomp { 0% { transform: scale(1); } 35% { transform: scale(.94) rotate(-2deg); } 70% { transform: scale(1.02); } 100% { transform: scale(1); } }
+.mk-crumb {
+  position: absolute; z-index: 2; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%;
+  background: #E2B37A; opacity: 0; animation: mk-crumb .6s ease-out forwards;
+}
+.mk-crumb-0 { --dx: -26px; --dy: -18px; }
+.mk-crumb-1 { --dx: 22px; --dy: -24px; width: 5px; height: 5px; }
+.mk-crumb-2 { --dx: 30px; --dy: 6px; }
+.mk-crumb-3 { --dx: -20px; --dy: 16px; width: 5px; height: 5px; }
+.mk-crumb-4 { --dx: 4px; --dy: -32px; width: 4px; height: 4px; }
+@keyframes mk-crumb {
+  0% { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx), calc(var(--dy) + 14px)) scale(.6); }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* 움직임 없이 새 자국만 바로 보여 준다 */
+  .mk-bite-prev, .mk-crumb { display: none; }
+}
 .mk-meal-name { text-align: center; font-size: 20px; font-weight: 700; margin-top: 12px; }
 .mk-meal-kcal { text-align: center; font-size: 14px; color: var(--sub); }
 .mk-dots { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }

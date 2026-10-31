@@ -37,7 +37,7 @@ def test_empty_home_shows_order_prompt_and_tabs():
     assert "주문하러 가요" in text
     assert "오늘 0 / 365kcal" in text
     assert "광고 자리" in text
-    for key in ("tab_home", "tab_fridge", "tab_community"):
+    for key in ("tab_home", "tab_fridge", "tab_community", "tab_my"):
         at.button(key=key)
     _click(at, "home_order")
     assert at.session_state["screen"] == "order"
@@ -151,3 +151,27 @@ def test_bite_toast():
     _click(at, "act_run")
     _click(at, "move_1_0")
     assert "냠! 파스타 한 입 먹었어요 (1/10)" in _text(at)
+
+
+def test_bite_mark_animation_plays_once_and_food_keeps_size():
+    at = _start()
+    _click(at, "home_order")
+    _order(at, "pasta")
+    _click(at, "home_start")
+    _click(at, "act_run")
+    _click(at, "move_1_0")  # 1입
+    md = " ".join(m.value for m in at.markdown)
+    assert 'class="mk-bite-prev"' in md and 'class="mk-plate chomp"' in md  # 방금 먹은 순간에만
+    assert "10입 중 1입 먹음" in md
+    assert "--s:" not in md  # 음식을 작게 줄이지 않는다
+    _click(at, "act_walk")  # 다른 동작으로 다시 그리면 애니메이션은 없다
+    md = " ".join(m.value for m in at.markdown)
+    assert 'class="mk-bite-prev"' not in md and 'class="mk-plate"' in md and "10입 중 1입 먹음" in md
+
+
+def test_my_tab_has_menu_only():
+    at = _start()
+    assert at.button(key="tab_my").label == "내정보"
+    _click(at, "tab_my")
+    assert at.session_state["screen"] == "home"  # 화면은 바뀌지 않는다
+    assert "내정보는 준비 중이에요" in _text(at)

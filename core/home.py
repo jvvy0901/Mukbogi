@@ -14,10 +14,11 @@ import streamlit as st
 from core import meal
 from core.data import FOODS, FOODS_BY_ID
 from core.demo import FRIENDS
-from core.images import food_thumb, profile_thumb
+from core.images import food_bitten, food_thumb, profile_thumb
 from core.style import html, toast
 
-TABS = (("home", "홈"), ("fridge", "냉장고"), ("community", "커뮤니티"))
+TABS = (("home", "홈"), ("fridge", "냉장고"), ("community", "커뮤니티"), ("my", "내정보"))
+TABS_WITHOUT_PAGE = {"my"}  # 메뉴만 있고 화면은 아직 없는 탭
 DISTANCES = (0.5, 1.0, 3.0)
 
 
@@ -74,6 +75,8 @@ def _move(distance_km: float) -> None:
         st.session_state.celebrate = done
     elif state.current and state.current.food_id == current_id and state.current.bites_eaten > before:
         cur = state.current
+        # 다음 화면 그리기에서 "한 입 먹는" 애니메이션을 한 번 보여 준다
+        st.session_state.just_bit = (cur.food_id, before, cur.bites_eaten)
         toast(f"냠! {cur.food.name} 한 입 먹었어요 ({cur.bites_eaten}/{cur.food.bites})")
 
 
@@ -107,11 +110,20 @@ def _place_order() -> None:
 # 공통 조각 -------------------------------------------------------------------
 
 
+def _tab(key: str) -> None:
+    if key in TABS_WITHOUT_PAGE:
+        # 화면이 아직 없으므로 이동하지 않고 알려만 준다
+        label = dict(TABS)[key]
+        toast(f"{label}는 준비 중이에요")
+        return
+    _go(key)
+
+
 def _tab_bar(active: str) -> None:
     html(f"<style>.st-key-tab_{active} button {{ color: var(--ink) !important; }}</style>")
     with st.container(key="bar_tabs"):
         for key, label in TABS:
-            st.button(label, key=f"tab_{key}", type="tertiary", on_click=_go, args=(key,))
+            st.button(label, key=f"tab_{key}", type="tertiary", on_click=_tab, args=(key,))
 
 
 def _top_bar() -> None:
@@ -134,10 +146,37 @@ def _avatar(friend) -> str:
 # 홈 ---------------------------------------------------------------------------
 
 
+def _hero(order: meal.Order, measuring: bool) -> str:
+    """틀 없이 떠 있는 음식. 크기는 그대로이고, 먹은 입만큼 이빨 자국으로 베어져 있다.
+
+    방금 한 입 먹었다면 직전 모습을 위에 겹쳐 흐려지게 해서 새 자국이 드러나게 하고,
+    음식이 살짝 눌렸다 돌아오며 베어 문 자리에서 부스러기가 튄다.
+    """
+    food = order.food
+    now_uri, spot = food_bitten(food, order.bites_eaten)
+    just = st.session_state.pop("just_bit", None)
+    animate = just is not None and just[0] == food.id and just[2] == order.bites_eaten
+    layers = f'<img class="mk-bite-now" src="{now_uri}" alt="{escape(food.name)}, {food.bites}입 중 {order.bites_eaten}입 먹음">'
+    if animate:
+        prev_uri, _ = food_bitten(food, just[1])
+        layers += f'<img class="mk-bite-prev" src="{prev_uri}" alt="" aria-hidden="true">'
+        if spot is not None:
+            x, y = spot[0] * 100, spot[1] * 100
+            layers += "".join(
+                f'<i class="mk-crumb mk-crumb-{i}" style="left:{x:.1f}%;top:{y:.1f}%" aria-hidden="true"></i>'
+                for i in range(5)
+            )
+    remaining = 1 - order.bites_eaten / food.bites
+    return (
+        f'<div class="mk-hero{" on" if measuring else ""}" style="--r:{remaining:.3f}">'
+        f'<div class="mk-float"><div class="mk-plate{" chomp" if animate else ""}">{layers}</div></div>'
+        "</div>"
+    )
+
+
 def _meal_card(order: meal.Order, measuring: bool) -> None:
     food = order.food
     pct = round(order.progress * 100)
-    scale = 1 - 0.35 * order.bites_eaten / food.bites  # 한 입 먹을 때마다 조금씩 작아진다 (최대 35%)
     dots = "".join(
         f'<span class="{"on" if i < order.bites_eaten else ""}"></span>' for i in range(food.bites)
     )
@@ -149,10 +188,8 @@ def _meal_card(order: meal.Order, measuring: bool) -> None:
     html(
         '<div class="mk-meal">'
         f'<div class="mk-meal-top">{chip}<span class="mk-bites-label">한 입 {order.bites_eaten}/{food.bites}</span></div>'
-        f'<div class="mk-hero{" on" if measuring else ""}" style="--s:{scale:.3f}">'
-        f'<img src="{food_thumb(food, 480)}" alt="{escape(food.name)}">'
-        "</div>"
-        f'<div class="mk-meal-name">{escape(food.name)}</div>'
+        + _hero(order, measuring)
+        + f'<div class="mk-meal-name">{escape(food.name)}</div>'
         f'<div class="mk-meal-kcal">{food.kcal}kcal</div>'
         f'<div class="mk-dots" aria-hidden="true">{dots}</div>'
         f'<div class="mk-meal-prog"><span><b>{pct}%</b> 소화했어요</span>'
