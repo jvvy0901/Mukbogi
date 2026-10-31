@@ -143,7 +143,7 @@ MUKBOGI는 먹고 싶은 음식을 앱에서 "주문"하고, 걷거나 뛰어서
 - 짧은 알림은 `st.toast`(닫기 버튼 달린 큰 팝업)를 쓰지 않고 `core.style.toast("문구")`를 콜백에서 호출한다. `app.py` 끝의 `style.render_toast()`가 화면 맨 위에 한 번 띄우고 2.5초 뒤 사라진다.
 - `st.markdown` HTML 안에서 글자 크기를 정하는 문단은 `<p>` 대신 `<div>`를 쓴다. Streamlit이 `<p>`의 글자 크기를 덮어쓴다.
 - 화면 상태는 `session_state.screen`(home / order / fridge / community / my / gift / user)으로 바꾸고, 주문·소화 상태는 `session_state.meal`(`core.meal.MealState`)에 둔다.
-- Streamlit 숫자 입력칸은 한 번 값이 들어가면 화면에서 비울 수 없다. 비워야 하면 별도 "지우기" 버튼을 두고, 입력칸 key에 번호를 붙여 새 칸으로 바꿔 끼운다 (`core/mypage.py`의 체중 칸 참고).
+- Streamlit 숫자 입력칸은 한 번 값이 들어가면 화면에서 비울 수 없다. 비워야 하면 별도 "지우기" 버튼을 두고, 입력칸 key에 번호를 붙여 새 칸으로 바꿔 끼운다. (내정보 체중 칸은 지우기 없이 수정만 된다)
 - `core/` 파일을 고친 뒤에는 실행 중인 Streamlit 서버를 재시작해야 바뀐 내용이 반영된다.
 
 ### 명령

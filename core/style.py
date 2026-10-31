@@ -482,25 +482,24 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-my-note b { color: var(--ink); }
 .mk-plus-pill { font-size: 11px; font-weight: 700; color: var(--ink); background: var(--cyan); border-radius: 999px; padding: 3px 9px; }
 /* 체중 입력칸은 온보딩 체중칸과 같은 모양 */
-[class*="st-key-my_weight_v"] [data-testid="stNumberInputContainer"] {
+.st-key-my_weight [data-testid="stNumberInputContainer"] {
   position: relative; border-radius: 14px; background: var(--soft); border: 2px solid transparent; min-height: 56px;
 }
-[class*="st-key-my_weight_v"] [data-testid="stNumberInputContainer"]:focus-within { border-color: var(--ink); background: #FFFFFF; }
-[class*="st-key-my_weight_v"] [data-testid="stNumberInputContainer"]::after {
+.st-key-my_weight [data-testid="stNumberInputContainer"]:focus-within { border-color: var(--ink); background: #FFFFFF; }
+.st-key-my_weight [data-testid="stNumberInputContainer"]::after {
   content: "kg"; position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
   font-size: 17px; font-weight: 600; color: var(--sub); pointer-events: none;
 }
-[class*="st-key-my_weight_v"] input { font-size: 20px; font-weight: 700; color: var(--ink); background: transparent; padding-right: 48px; }
-[class*="st-key-my_weight_v"] input:focus-visible { outline: none !important; }
-[class*="st-key-my_weight_v"] [data-testid="stNumberInputStepDown"], [class*="st-key-my_weight_v"] [data-testid="stNumberInputStepUp"],
-[class*="st-key-my_weight_v"] [data-testid="InputInstructions"] { display: none; }
+.st-key-my_weight input { font-size: 20px; font-weight: 700; color: var(--ink); background: transparent; padding-right: 48px; }
+.st-key-my_weight input:focus-visible { outline: none !important; }
+.st-key-my_weight [data-testid="stNumberInputStepDown"], .st-key-my_weight [data-testid="stNumberInputStepUp"],
+.st-key-my_weight [data-testid="InputInstructions"] { display: none; }
 /* 플러스 카드 */
 .st-key-plus_box { background: var(--soft); border-radius: 16px; padding: 16px; gap: 12px !important; }
 .mk-plus-state { font-size: 13px; font-weight: 700; color: var(--ink); }
 .mk-plus-list { margin: 0; padding-left: 18px; font-size: 15px; color: var(--ink); line-height: 1.7; }
 .mk-soon { font-size: 11px; font-weight: 700; color: var(--sub); background: #FFFFFF; border-radius: 999px; padding: 2px 7px; margin-left: 4px; }
 .st-key-reset_ask [data-testid="stBaseButton-secondary"] { min-height: 48px; border-radius: 14px; }
-.st-key-clear_weight [data-testid="stBaseButton-tertiary"] { color: var(--sub); font-size: 14px; padding: 0; }
 
 /* ---------- 광고 자리 ---------- */
 .mk-ad {

@@ -24,10 +24,6 @@ def _click(at, key):
     assert not at.exception
 
 
-def _weight(at):
-    return next(n for n in at.number_input if (n.key or "").startswith("my_weight_v"))
-
-
 def _has_ad(at):
     return any('aria-label="광고 자리"' in m.value for m in at.markdown)
 
@@ -54,16 +50,12 @@ def test_change_eater_type_updates_daily_target():
     assert "하루 목표 600kcal" in _text(at)
 
 
-def test_weight_save_and_clear():
+def test_weight_save_without_clear_button():
     at = _start()
-    assert not any(b.key == "clear_weight" for b in at.button)  # 체중이 없으면 지우기 버튼도 없다
-    _weight(at).set_value(55.0).run()
+    at.number_input(key="my_weight").set_value(55.0).run()
     assert at.session_state["profile"]["weight_kg"] == 55.0
     assert "체중을 저장했어요" in _text(at)
-    _click(at, "clear_weight")
-    assert at.session_state["profile"]["weight_kg"] is None
-    assert _weight(at).value is None
-    assert "60kg 기준으로 계산해요" in _text(at)
+    assert not any("지우기" in (b.label or "") for b in at.button)  # 체중 지우기 버튼은 없다
 
 
 def test_fridge_visibility_default_and_change():

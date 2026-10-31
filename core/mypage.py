@@ -2,7 +2,7 @@
 
 - 프로필 요약: 내 아이디, 이번 주 소화 칼로리, 지금까지 소화한 음식 수, 친구 수
 - 식사량 유형 (Story 1.1 "이후 설정에서 바꿀 수 있다") — 바꾸면 하루 목표 칼로리가 바로 바뀐다
-- 체중 (Story 1.3 "설정에서 수정할 수 있다") — 비우면 60kg 기준, 나만 볼 수 있다
+- 체중 (Story 1.3 "설정에서 수정할 수 있다") — 입력 전에는 60kg 기준, 나만 볼 수 있다
 - 내 냉장고 공개 범위 (Story 5.3) — 전체 / 친구만(기본) / 비공개
 - MUKBOGI 플러스 (Story 6.2, 프로토타입: 결제 없이 켜고 끄기) — 켜면 광고가 사라진다
 - 온보딩 다시 하기 (프로토타입 전용, 확인 후 모든 기록을 지운다)
@@ -44,24 +44,12 @@ def _set_type(eater_type: str) -> None:
     toast(f"{eater_type}로 바꿨어요 · 하루 목표 {p['daily_target_kcal']}kcal")
 
 
-def _weight_key() -> str:
-    # 숫자 칸은 한 번 값이 들어가면 화면 쪽에서 비울 수 없다. 지울 때 번호를 올려 새 칸으로 바꿔 끼운다.
-    return f"my_weight_v{st.session_state.get('weight_ver', 0)}"
-
-
 def _save_weight() -> None:
-    w = st.session_state.get(_weight_key())
+    w = st.session_state.get("my_weight")
     if w is None:
         return
     _profile()["weight_kg"] = w
     toast("체중을 저장했어요")
-
-
-def _clear_weight() -> None:
-    _profile()["weight_kg"] = None
-    st.session_state.pop(_weight_key(), None)
-    st.session_state.weight_ver = st.session_state.get("weight_ver", 0) + 1
-    toast(f"체중을 지웠어요 · {DEFAULT_WEIGHT_KG}kg 기준으로 계산해요")
 
 
 def _set_visibility(label: str) -> None:
@@ -146,14 +134,12 @@ def render(state: meal.MealState) -> None:
     st.number_input(
         "체중", min_value=20.0, max_value=250.0, step=0.5, format="%.1f",
         value=p.get("weight_kg"), placeholder=f"예: {DEFAULT_WEIGHT_KG}",
-        key=_weight_key(), on_change=_save_weight, label_visibility="collapsed",
+        key="my_weight", on_change=_save_weight, label_visibility="collapsed",
     )
     html(
         f'<div class="mk-my-note">소모 칼로리를 계산할 때만 써요. 입력하지 않으면 {DEFAULT_WEIGHT_KG}kg 기준으로 계산하고, '
         "나만 볼 수 있어요.</div>"
     )
-    if p.get("weight_kg") is not None:
-        st.button("체중 지우기", key="clear_weight", type="tertiary", on_click=_clear_weight)
 
     # 내 냉장고 공개 범위
     _section("내 냉장고 공개 범위")
