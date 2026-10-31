@@ -140,6 +140,7 @@ MUKBOGI는 먹고 싶은 음식을 앱에서 "주문"하고, 걷거나 뛰어서
 - 화면을 추가할 때는 `core/<화면>.py`로 나누고 `app.py`에서 호출한다.
 - 단계를 오가는 화면에서는 고른 값을 위젯 키와 별도의 `session_state` 키에 저장한다. Streamlit은 화면에서 사라진 위젯의 값을 지운다.
 - 화면은 **iOS 앱처럼** 만든다 (기준: iPhone 13·14, 390 × 844pt). `st.columns`는 좁은 폭에서 세로로 쌓이므로 쓰지 않고, 그리드는 key를 준 컨테이너에 CSS grid를 건다. 선택 카드는 key가 `tap_`으로 시작하는 컨테이너에 HTML 카드 + `st.button`을 넣으면 카드 전체가 버튼이 된다 (`core/style.py` 참고). 하단 주요 버튼은 key `bar_footer` 컨테이너에, 하단 탭은 key `bar_tabs` 컨테이너에 넣는다. 가로 스크롤 목록은 key `row_` 컨테이너 또는 `.mk-row-scroll`을 쓴다. 세그먼트 탭은 key `seg_` 가로 컨테이너, 목록 카드는 key `list_` 컨테이너, [정보 | 버튼] 한 줄은 key `urow_` 가로 컨테이너를 쓴다.
+- 하단에 붙는 요소(하단 탭, `bar_footer`, 전체 화면 시트)의 아래 여백은 `env(safe-area-inset-bottom)` 대신 CSS 변수 `var(--safe-bottom)`을 쓴다. 미리보기(`preview/iphone14.html`)가 `?safe_bottom=34`로 홈 인디케이터 영역을 알려 주면 그만큼 비워진다.
 - 짧은 알림은 `st.toast`(닫기 버튼 달린 큰 팝업)를 쓰지 않고 `core.style.toast("문구")`를 콜백에서 호출한다. `app.py` 끝의 `style.render_toast()`가 화면 맨 위에 한 번 띄우고 2.5초 뒤 사라진다.
 - `st.markdown` HTML 안에서 글자 크기를 정하는 문단은 `<p>` 대신 `<div>`를 쓴다. Streamlit이 `<p>`의 글자 크기를 덮어쓴다.
 - 화면 상태는 `session_state.screen`(home / order / fridge / community / my / gift / user)으로 바꾸고, 주문·소화 상태는 `session_state.meal`(`core.meal.MealState`)에 둔다.

@@ -38,6 +38,7 @@ _CSS = """
   --sub: #515160;        /* colors.neutral-600 */
   --gap-in: 10px;        /* 같은 묶음 안 */
   --gap-out: 28px;       /* 묶음과 묶음 사이 */
+  --safe-bottom: max(env(safe-area-inset-bottom), var(--sim-safe-bottom, 0px));  /* 홈 인디케이터 영역 */
 }
 
 html, body, .stApp, .stApp *:not([data-testid="stIconMaterial"]) {
@@ -162,7 +163,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .st-key-bar_footer {
   position: fixed; left: 50%; bottom: 0; transform: translateX(-50%);
   width: min(100%, 430px); z-index: 100; gap: 6px !important;
-  padding: 10px 16px calc(16px + env(safe-area-inset-bottom));
+  padding: 10px 16px calc(16px + var(--safe-bottom));
   background: #FFFFFF; border-top: 1px solid var(--soft);
 }
 .mk-hint { font-size: 13px; color: var(--sub); text-align: center; }
@@ -194,7 +195,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
   position: fixed; left: 50%; bottom: 0; transform: translateX(-50%);
   width: min(100%, 430px); z-index: 110;
   display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 0 !important;
-  padding: 4px 8px calc(4px + env(safe-area-inset-bottom));
+  padding: 4px 8px calc(4px + var(--safe-bottom));
   background: #FFFFFF; border-top: 1px solid var(--line);
 }
 .st-key-bar_tabs > [data-testid="stElementContainer"] { width: 100% !important; }
@@ -214,8 +215,8 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .st-key-tab_community { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' cx='9' cy='8.25' r='3.25'/><path fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M3.25 19.5c.45-3.3 2.9-5.4 5.75-5.4s5.3 2.1 5.75 5.4'/><circle fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' cx='16.75' cy='9' r='2.5'/><path fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M16.9 14.1c2.3.2 3.9 2 4.3 4.6'/></svg>"); --icon-on: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle fill='black' stroke='black' stroke-width='1.2' stroke-linejoin='round' fill-rule='evenodd' cx='9' cy='8.25' r='3.6'/><path fill='black' stroke='black' stroke-width='1.2' stroke-linejoin='round' fill-rule='evenodd' d='M2.6 19.6c.4-3.7 3.1-6.2 6.4-6.2s6 2.5 6.4 6.2a.9.9 0 0 1-.9 1H3.5a.9.9 0 0 1-.9-1z'/><circle fill='black' stroke='black' stroke-width='1.2' stroke-linejoin='round' fill-rule='evenodd' cx='16.75' cy='9' r='2.85'/><path fill='black' stroke='black' stroke-width='1.2' stroke-linejoin='round' fill-rule='evenodd' d='M16.4 13.5c3 .1 5.2 2.3 5.4 5.3a.9.9 0 0 1-.9.95h-3.4c0-2.45-.4-4.5-1.1-6.25z'/></svg>"); }
 .st-key-tab_my { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' cx='12' cy='8' r='3.75'/><path fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M4.75 20c.7-3.7 3.6-6.1 7.25-6.1s6.55 2.4 7.25 6.1'/></svg>"); --icon-on: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle fill='black' stroke='black' stroke-width='1.2' stroke-linejoin='round' fill-rule='evenodd' cx='12' cy='8' r='4.1'/><path fill='black' stroke='black' stroke-width='1.2' stroke-linejoin='round' fill-rule='evenodd' d='M4.2 19.8c.7-4 3.9-6.5 7.8-6.5s7.1 2.5 7.8 6.5a1 1 0 0 1-1 1.2H5.2a1 1 0 0 1-1-1.2z'/></svg>"); }
 /* 탭이 있는 화면: 주요 버튼은 탭 바로 위에 붙인다 */
-.stApp:has(.st-key-bar_tabs) .st-key-bar_footer { bottom: calc(61px + env(safe-area-inset-bottom)); border-top: 0; padding-bottom: 10px; }
-.stApp:has(.st-key-bar_tabs) [data-testid="stMainBlockContainer"] { padding-bottom: 220px !important; }
+.stApp:has(.st-key-bar_tabs) .st-key-bar_footer { bottom: calc(61px + var(--safe-bottom)); border-top: 0; padding-bottom: 10px; }
+.stApp:has(.st-key-bar_tabs) [data-testid="stMainBlockContainer"] { padding-bottom: calc(220px + var(--safe-bottom)) !important; }
 
 /* ---------- 홈: 상단 줄 ---------- */
 .mk-topbar { display: flex; justify-content: space-between; align-items: center; min-height: 44px; }
@@ -513,7 +514,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
   position: fixed; top: 0; bottom: 0; left: 50%; transform: translateX(-50%);
   width: min(100%, 430px); z-index: 300; background: #FFFFFF;
   justify-content: center; gap: 10px !important;
-  padding: 24px 16px calc(24px + env(safe-area-inset-bottom));
+  padding: 24px 16px calc(24px + var(--safe-bottom));
 }
 .mk-done { text-align: center; padding-bottom: calc(var(--gap-out) - var(--gap-in)); }
 .mk-done img { width: 200px; height: 200px; object-fit: contain; filter: drop-shadow(0 14px 14px rgba(30, 37, 48, .18)); animation: mk-pop .5s ease-out; }
@@ -553,6 +554,11 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 
 def inject() -> None:
     st.markdown(_CSS, unsafe_allow_html=True)
+    # 아이폰 미리보기(preview/iphone14.html)는 iframe이라 기기의 안전 영역 값을 받지 못한다.
+    # 미리보기가 ?safe_bottom=34 처럼 알려 주면 그만큼 하단 탭·버튼 아래를 비운다 (홈 인디케이터 자리).
+    sb = st.query_params.get("safe_bottom", "")
+    if sb.isdigit():
+        st.markdown(f"<style>:root {{ --sim-safe-bottom: {min(int(sb), 60)}px; }}</style>", unsafe_allow_html=True)
 
 
 def html(markup: str) -> None:

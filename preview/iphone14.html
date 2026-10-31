@@ -127,7 +127,8 @@
   const params = new URLSearchParams(location.search);
   const base = params.get("url") || "http://localhost:8501";
   // embed=true: Streamlit 상단 메뉴·툴바를 숨겨 앱 화면만 보이게 한다.
-  const appUrl = base + (base.includes("?") ? "&" : "?") + "embed=true";
+  // safe_bottom=34: 아이폰 13·14의 홈 인디케이터 영역(34pt)을 앱에 알려 하단 탭이 겹치지 않게 한다.
+  const appUrl = base + (base.includes("?") ? "&" : "?") + "embed=true&safe_bottom=34";
 
   const iframe = document.getElementById("app");
   const offline = document.getElementById("offline");
