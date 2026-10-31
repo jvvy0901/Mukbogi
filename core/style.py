@@ -367,6 +367,99 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-gift-doing { font-size: 13px; color: var(--sub); margin-top: 2px; }
 .mk-gift-to .mk-fr-gift { margin-left: auto; }
 
+/* ---------- 세그먼트 컨트롤 (커뮤니티 탭 · 랭킹 범위) ---------- */
+[class*="st-key-seg_"] {
+  background: var(--soft); border-radius: 12px; padding: 3px; gap: 2px !important; flex-wrap: nowrap !important;
+}
+[class*="st-key-seg_"] > [data-testid="stElementContainer"] { flex: 1 1 0 !important; width: auto !important; min-width: 0; }
+[class*="st-key-seg_"] .stButton, [class*="st-key-seg_"] .stButton button { width: 100%; }
+[class*="st-key-seg_"] .stButton button {
+  position: relative; min-height: 44px; border-radius: 10px; padding: 0 8px;
+  color: var(--sub); font-size: 15px; font-weight: 600;
+}
+[class*="st-key-seg_"] .stButton button:hover { text-decoration: none; color: var(--ink); }
+[class*="st-key-seg_"] .stButton button::after {  /* 받은 요청 수 배지 (내용은 화면에서 넣는다) */
+  position: absolute; top: 7px; right: calc(50% - 34px); min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px;
+  background: var(--ink); color: #FFFFFF; font-size: 10px; font-weight: 700; line-height: 16px; text-align: center;
+}
+
+/* ---------- 목록 카드 + 유저 한 줄 [정보 | 버튼] ---------- */
+[class*="st-key-list_"] { background: var(--soft); border-radius: 16px; padding: 2px 14px; gap: 0 !important; }
+[class*="st-key-list_"] > * + * { border-top: 1px solid var(--line); }
+[class*="st-key-urow_"] { flex-wrap: nowrap !important; gap: 8px !important; min-height: 64px; padding: 8px 0; }
+[class*="st-key-urow_"] > * { flex: none !important; width: auto !important; }
+[class*="st-key-urow_"] > :first-child { flex: 1 1 auto !important; min-width: 0; }
+[class*="st-key-urow_"] .stButton button { min-height: 44px; border-radius: 999px; padding: 0 14px; font-size: 14px; white-space: nowrap; }
+[class*="st-key-urow_"] [data-testid="stBaseButton-primary"] { font-size: 14px; }
+[class*="st-key-urow_"] [class*="st-key-tap_"] .stButton button { border-radius: 0; padding: 0; }
+.mk-u { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.mk-u-text { min-width: 0; flex: 1; }
+.mk-u-name { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; color: var(--ink); white-space: nowrap; }
+.mk-u-id { font-size: 12px; font-weight: 500; color: var(--sub); overflow: hidden; text-overflow: ellipsis; }
+.mk-u-sub { font-size: 13px; color: var(--sub); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mk-u-sub b { color: var(--ink); font-weight: 700; }
+.mk-u-food { width: 44px; height: 44px; flex: none; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(30, 37, 48, .14)); }
+.mk-avatar-md { width: 40px; height: 40px; font-size: 14px; }
+.mk-avatar-xl { width: 64px; height: 64px; font-size: 22px; }
+.mk-section-n { margin-left: 6px; color: var(--sub); font-weight: 600; }
+.mk-empty-line { font-size: 14px; color: var(--sub); background: var(--soft); border-radius: 16px; padding: 16px; }
+.mk-note-box { font-size: 14px; color: var(--ink); background: var(--soft); border-radius: 12px; padding: 12px 14px; }
+
+/* ---------- 친구 탭: 내 아이디 · 찾기 ---------- */
+.mk-idcard { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: var(--soft); border-radius: 16px; padding: 14px 16px; }
+.mk-idcard-label { font-size: 12px; color: var(--sub); }
+.mk-idcard-id { font-size: 18px; font-weight: 700; color: var(--ink); }
+.mk-idcard-hint { font-size: 12px; color: var(--sub); text-align: right; line-height: 1.45; }
+.st-key-cm_search_row { flex-wrap: nowrap !important; gap: 8px !important; }
+.st-key-cm_search_row > :first-child { flex: 1 1 auto !important; width: auto !important; min-width: 0; }
+.st-key-cm_search_row > :last-child { flex: none !important; width: auto !important; }
+/* 검색창과 찾기 버튼: 높이 48px · 모서리 12px로 맞춘다 (보이는 틀은 stTextInputRootElement) */
+.st-key-cm_search_row { align-items: stretch !important; }
+.st-key-cm_search_row [data-testid="stBaseButton-primary"] { height: 48px; min-height: 48px; padding: 0 18px; border-radius: 12px; font-size: 15px; }
+.st-key-cm_query [data-testid="stTextInputRootElement"] {
+  height: 48px; min-height: 48px; border-radius: 12px; background: var(--soft); border: 2px solid transparent; box-sizing: border-box;
+}
+.st-key-cm_query [data-testid="stTextInputRootElement"]:focus-within { border-color: var(--ink); background: #FFFFFF; }
+.st-key-cm_query input { height: 100%; min-height: 0; padding: 0 12px; font-size: 16px; background: transparent; }
+.st-key-cm_query input:focus-visible { outline: none !important; }  /* 포커스는 틀 테두리로 표시 */
+.st-key-cm_query [data-testid="InputInstructions"] { display: none; }
+
+/* ---------- 랭킹 ---------- */
+[class*="st-key-tap_rk_"] + [class*="st-key-tap_rk_"] { border-top: 1px solid var(--line); }
+.mk-rk { display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px 0; }
+.mk-rk-n { width: 26px; flex: none; text-align: center; font-size: 15px; font-weight: 700; color: var(--sub); font-variant-numeric: tabular-nums; }
+.mk-rk-n.top { color: var(--ink); font-size: 18px; }
+.mk-rk-name { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; color: var(--ink); }
+.mk-rk-kcal { margin-left: auto; font-size: 15px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.mk-rk-kcal small { font-size: 12px; font-weight: 500; color: var(--sub); margin-left: 2px; }
+.mk-me-pill { font-size: 11px; font-weight: 700; color: #FFFFFF; background: var(--ink); border-radius: 999px; padding: 2px 7px; }
+.mk-rk.me .mk-rk-name { font-weight: 700; }
+.mk-myrank {
+  display: flex; align-items: baseline; gap: 8px; background: var(--ink); color: #FFFFFF;
+  border-radius: 14px; padding: 14px 16px; min-height: 52px;
+}
+.mk-myrank-label { font-size: 13px; opacity: .8; }
+.mk-myrank-n { font-size: 20px; font-weight: 700; }
+.mk-myrank-of { font-size: 13px; opacity: .8; }
+.mk-myrank-kcal { margin-left: auto; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ---------- 배달 탭 ---------- */
+.mk-gift-stats { margin: 0; }
+.mk-gift-stats .mk-stat { background: var(--soft); }
+
+/* ---------- 다른 유저 화면 ---------- */
+.mk-prof { display: flex; align-items: center; gap: 14px; padding: 8px 0 4px; }
+.mk-prof-name { display: flex; align-items: center; gap: 8px; font-size: 22px; font-weight: 700; color: var(--ink); }
+.mk-rel { font-size: 12px; font-weight: 700; color: var(--ink); background: var(--soft); border-radius: 999px; padding: 3px 9px; }
+.st-key-user_actions, .st-key-confirm_btns { gap: 8px !important; flex-wrap: nowrap !important; }
+.st-key-user_actions > *, .st-key-confirm_btns > * { flex: 1 1 0 !important; width: auto !important; }
+.st-key-user_actions .stButton button, .st-key-confirm_btns .stButton button { width: 100%; min-height: 48px; border-radius: 14px; font-size: 15px; }
+.st-key-confirm_box { background: var(--soft); border-radius: 16px; padding: 16px; gap: 10px !important; }
+.mk-confirm-title { font-size: 16px; font-weight: 700; color: var(--ink); }
+.mk-confirm-sub { font-size: 13px; color: var(--sub); line-height: 1.5; margin-top: 4px; }
+.mk-lock { background: var(--soft); border-radius: 16px; padding: 28px 16px; text-align: center; }
+.mk-lock-title { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+
 /* ---------- 광고 자리 ---------- */
 .mk-ad {
   height: 56px; border-radius: 12px; border: 1px solid var(--line); background: #FFFFFF;

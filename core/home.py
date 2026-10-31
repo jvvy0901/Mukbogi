@@ -11,10 +11,9 @@ from html import escape
 
 import streamlit as st
 
-from core import fridge, gift, meal
+from core import community, fridge, gift, meal, social
 from core.data import FOODS, FOODS_BY_ID
-from core.demo import FRIENDS
-from core.images import food_bitten, food_thumb, profile_thumb
+from core.images import food_bitten, food_thumb
 from core.korean import eul_reul, i_ga
 from core.style import html, toast
 
@@ -33,6 +32,7 @@ def _init_state() -> None:
     ss.setdefault("activity", "걷기")
     ss.setdefault("celebrate", [])
     ss.setdefault("order_pick", None)
+    ss.setdefault("social", social.SocialState())
 
 
 def _state() -> meal.MealState:
@@ -133,10 +133,6 @@ def _top_bar() -> None:
     )
 
 
-def _avatar(friend) -> str:
-    if friend.photo is not None and friend.photo.exists():
-        return f'<img class="mk-avatar" src="{profile_thumb(friend.photo)}" alt="">'
-    return f'<span class="mk-avatar mk-avatar-initial" aria-hidden="true">{escape(friend.name[0])}</span>'
 
 
 # 홈 ---------------------------------------------------------------------------
@@ -240,23 +236,24 @@ def _queue_section(state: meal.MealState) -> None:
 
 def _friends_section() -> None:
     html('<div class="mk-section">친구들이 소화 중이에요</div>')
-    if not FRIENDS:
+    friends = social.friend_users(st.session_state.social)
+    if not friends:
         with st.container(key="friends_empty"):
             html('<div class="mk-sub">친구를 추가해 보세요</div>')
             st.button("커뮤니티 가기", key="home_community", on_click=_go, args=("community",))
         return
     html('<div class="mk-count">소화 중인 친구 카드를 누르면 음식을 배달할 수 있어요</div>')
     with st.container(key="row_friends"):
-        for idx, f in enumerate(FRIENDS):
-            sent = gift.sent_count(f)
+        for f in friends:
+            sent = gift.sent_count(f.id)
             badge = f'<span class="mk-fr-gift">배달 {sent}</span>' if sent else ""
-            head = f'<div class="mk-fr-head">{_avatar(f)}<span>{escape(f.name)}</span>{badge}</div>'
+            head = f'<div class="mk-fr-head">{gift.avatar(f)}<span>{escape(f.name)}</span>{badge}</div>'
             if f.food_id is None:
                 html(f'<div class="mk-fr">{head}<div class="mk-fr-rest">쉬는 중이에요</div></div>')
                 continue
             food = FOODS_BY_ID[f.food_id]
             pct = round(f.progress * 100)
-            with st.container(key=f"tap_friend_{idx}"):
+            with st.container(key=f"tap_friend_{f.id}"):
                 html(
                     '<div class="mk-card mk-fr">'
                     f"{head}"
@@ -266,7 +263,7 @@ def _friends_section() -> None:
                     f'<div class="mk-fr-pct">{pct}%</div>'
                     "</div>"
                 )
-                st.button(f"{f.name}에게 음식 배달 보내기", key=f"friend_{idx}", on_click=gift.open_for, args=(idx,))
+                st.button(f"{f.name}에게 음식 배달 보내기", key=f"friend_{f.id}", on_click=gift.open_for, args=(f.id, "home"))
 
 
 def _ad_slot() -> None:
@@ -394,22 +391,12 @@ def _order() -> None:
 # 아직 만들지 않은 탭 ----------------------------------------------------------
 
 
-def _placeholder(title: str, sub: str) -> None:
-    html('<div class="mk-topbar"><span class="mk-wordmark">MUKBOGI</span></div>')
-    html(
-        '<div class="mk-header">'
-        f'<div class="mk-title" role="heading" aria-level="1">{title}</div>'
-        f'<div class="mk-sub">{sub}</div>'
-        "</div>"
-    )
-
-
 def _fridge() -> None:
     fridge.render(_state().fridge, datetime.now().date(), _today_target(), _go)
 
 
 def _community() -> None:
-    _placeholder("커뮤니티", "친구 등록·먹보 랭킹 화면은 다음 단계에서 만들어요.")
+    community.render(_state())
 
 
 # 진입 -------------------------------------------------------------------------
@@ -427,6 +414,8 @@ def render() -> None:
         _order()
     elif screen == "gift":
         gift.render_send()
+    elif screen == "user":
+        community.render_user(_state())
     else:
         {"home": _home, "fridge": _fridge, "community": _community}[screen]()
         _tab_bar(screen)

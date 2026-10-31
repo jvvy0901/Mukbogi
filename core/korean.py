@@ -18,3 +18,9 @@ def i_ga(word: str) -> str:
     """하늘이 / 수아가 / 마라탕이 / 파스타가"""
     b = _has_batchim(word)
     return word + ("이(가)" if b is None else "이" if b else "가")
+
+
+def wa_gwa(word: str) -> str:
+    """도윤과 / 하늘과 / 수아와"""
+    b = _has_batchim(word)
+    return word + ("와(과)" if b is None else "과" if b else "와")

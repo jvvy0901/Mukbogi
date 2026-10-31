@@ -1,21 +1,23 @@
-"""음식 배달 보내기 (친구에게 음식 선물).
+"""음식 배달 보내기·받기 (PRD Story 5.4).
 
 흐름
-1) 홈에서 소화 중인 친구 카드를 누르면 "배달 보내기" 화면으로 간다.
+1) 홈의 소화 중인 친구 카드, 또는 커뮤니티(친구 목록·배달 기록·친구 냉장고)에서 배달 보내기 화면으로 간다.
 2) 음식을 하나 골라 보내면, 그 음식은 친구의 조리 중인 음식에 들어간다.
-   (프로토타입은 친구 화면이 없으므로, 내 홈의 친구 카드에 "배달 N" 표시만 붙는다.)
+   (프로토타입은 친구 화면이 없으므로, 내 화면에 "배달 N" 표시와 보낸 기록만 남는다.)
 3) 프로토타입 전용: 잠시 뒤 친구가 답례로 보낸 음식이 내 조리 중인 음식에 들어오고
-   "OO이 보낸 OO이 도착했어요" 토스트가 뜬다. 답례 음식 = 그 친구가 지금 소화 중인 음식.
+   "OO이 보낸 OO이 도착했어요" 토스트가 뜬다. 답례 음식 = 그 친구가 지금 소화 중인 음식(쉬는 중이면 내가 보낸 음식).
+4) 보낸·받은 배달은 기록(gift_log)에 남아 커뮤니티 "배달" 탭에서 상태와 함께 볼 수 있다.
 """
 
 import time
+from datetime import datetime
 from html import escape
 
 import streamlit as st
 
 from core import meal
 from core.data import FOODS, FOODS_BY_ID
-from core.demo import FRIENDS, Friend
+from core.demo import USERS_BY_ID, User
 from core.images import food_thumb, profile_thumb
 from core.korean import eul_reul, i_ga
 from core.style import html, toast
@@ -28,24 +30,36 @@ REPLY_DELAY_S = 3.0  # 답례 배달이 도착하기까지 (프로토타입 흉�
 
 def init_state() -> None:
     ss = st.session_state
-    ss.setdefault("gifts_sent", {})  # 친구 이름 → 보낸 음식 id 목록 (친구의 조리 중 목록)
-    ss.setdefault("gift_replies", [])  # 도착 예정인 답례: {"friend", "food_id", "due"}
-    ss.setdefault("gift_to", None)  # 배달 보내기 화면에서 받는 친구 (FRIENDS 순번)
+    ss.setdefault("gifts_sent", {})  # 친구 아이디 → 보낸 음식 id 목록 (친구의 조리 중 목록)
+    ss.setdefault("gift_replies", [])  # 도착 예정인 답례: {"user_id", "food_id", "due"}
+    ss.setdefault("gift_log", [])  # 배달 기록: {"id", "dir": sent|received, "user_id", "food_id", "at", "missed"}
+    ss.setdefault("gift_to", None)  # 배달 보내기 화면에서 받는 친구 아이디
+    ss.setdefault("gift_from", "home")  # 배달 보내기 화면을 닫으면 돌아갈 화면
     ss.setdefault("gift_pick", None)
 
 
-def sent_count(friend: Friend) -> int:
-    return len(st.session_state.gifts_sent.get(friend.name, []))
+def sent_count(user_id: str) -> int:
+    return len(st.session_state.get("gifts_sent", {}).get(user_id, []))
 
 
-def friend_can_receive(friend: Friend) -> bool:
-    return sent_count(friend) < meal.MAX_WAITING
+def friend_can_receive(user_id: str) -> bool:
+    return sent_count(user_id) < meal.MAX_WAITING
 
 
-def open_for(friend_idx: int) -> None:
-    st.session_state.gift_to = friend_idx
-    st.session_state.gift_pick = None
-    st.session_state.screen = "gift"
+def open_for(user_id: str, back_to: str = "home") -> None:
+    ss = st.session_state
+    ss.gift_to = user_id
+    ss.gift_from = back_to
+    ss.gift_pick = None
+    ss.screen = "gift"
+
+
+def _log(direction: str, user_id: str, food_id: str, missed: bool = False) -> int:
+    log = st.session_state.gift_log
+    gift_id = len(log) + 1
+    log.append({"id": gift_id, "dir": direction, "user_id": user_id, "food_id": food_id,
+                "at": datetime.now(), "missed": missed})
+    return gift_id
 
 
 def _pick(food_id: str) -> None:
@@ -53,20 +67,22 @@ def _pick(food_id: str) -> None:
 
 
 def _back() -> None:
-    st.session_state.screen = "home"
-    st.session_state.gift_pick = None
+    ss = st.session_state
+    ss.screen = ss.get("gift_from", "home")
+    ss.gift_pick = None
 
 
 def _send() -> None:
     ss = st.session_state
-    friend = FRIENDS[ss.gift_to]
+    user = USERS_BY_ID[ss.gift_to]
     food_id = ss.gift_pick
-    if food_id is None or not friend_can_receive(friend):
+    if food_id is None or not friend_can_receive(user.id):
         return
-    ss.gifts_sent.setdefault(friend.name, []).append(food_id)
-    reply = friend.food_id or food_id
-    ss.gift_replies.append({"friend": friend.name, "food_id": reply, "due": time.time() + REPLY_DELAY_S})
-    toast(f"{friend.name}에게 {eul_reul(FOODS_BY_ID[food_id].name)} 보냈어요")
+    ss.gifts_sent.setdefault(user.id, []).append(food_id)
+    _log("sent", user.id, food_id)
+    reply = user.food_id or food_id
+    ss.gift_replies.append({"user_id": user.id, "food_id": reply, "due": time.time() + REPLY_DELAY_S})
+    toast(f"{user.name}에게 {eul_reul(FOODS_BY_ID[food_id].name)} 보냈어요")
     _back()
 
 
@@ -79,11 +95,29 @@ def deliver_due(state: meal.MealState, now: float | None = None) -> None:
         return
     st.session_state.gift_replies = [g for g in pending if g["due"] > now]
     for g in due:
+        user = USERS_BY_ID[g["user_id"]]
         food = FOODS_BY_ID[g["food_id"]]
-        if meal.order(state, g["food_id"], sender=g["friend"]):
-            toast(f"{i_ga(g['friend'])} 보낸 {i_ga(food.name)} 도착했어요")
+        if meal.can_order(state):
+            gift_id = _log("received", user.id, food.id)
+            meal.order(state, food.id, sender=user.name, gift_id=gift_id)
+            toast(f"{i_ga(user.name)} 보낸 {i_ga(food.name)} 도착했어요")
         else:
-            toast(f"조리 중인 음식이 가득 차서 {i_ga(g['friend'])} 보낸 {eul_reul(food.name)} 받지 못했어요")
+            _log("received", user.id, food.id, missed=True)
+            toast(f"조리 중인 음식이 가득 차서 {i_ga(user.name)} 보낸 {eul_reul(food.name)} 받지 못했어요")
+
+
+def received_status(state: meal.MealState, entry: dict) -> str:
+    """받은 배달이 지금 어디에 있는지."""
+    if entry["missed"]:
+        return "가득 차서 못 받았어요"
+    gid = entry["id"]
+    if state.current is not None and state.current.gift_id == gid:
+        return "소화 중이에요"
+    if any(o.gift_id == gid for o in state.waiting):
+        return "조리 중이에요"
+    if any(e.gift_id == gid for e in state.fridge):
+        return "다 먹었어요 · 냉장고"
+    return ""
 
 
 def timer() -> None:
@@ -99,18 +133,27 @@ def timer() -> None:
     _tick()
 
 
+# 공통 조각 -------------------------------------------------------------------
+
+
+def avatar(user: User, cls: str = "mk-avatar") -> str:
+    if user.photo is not None and user.photo.exists():
+        return f'<img class="{cls}" src="{profile_thumb(user.photo)}" alt="">'
+    return f'<span class="{cls} mk-avatar-initial" aria-hidden="true">{escape(user.name[0])}</span>'
+
+
+def doing_text(user: User) -> str:
+    if user.food_id:
+        return f"{eul_reul(FOODS_BY_ID[user.food_id].name)} 소화 중이에요 · {round(user.progress * 100)}%"
+    return "쉬는 중이에요"
+
+
 # 배달 보내기 화면 -------------------------------------------------------------
-
-
-def _avatar(friend: Friend, cls: str = "mk-avatar") -> str:
-    if friend.photo is not None and friend.photo.exists():
-        return f'<img class="{cls}" src="{profile_thumb(friend.photo)}" alt="">'
-    return f'<span class="{cls} mk-avatar-initial" aria-hidden="true">{escape(friend.name[0])}</span>'
 
 
 def render_send() -> None:
     ss = st.session_state
-    friend = FRIENDS[ss.gift_to]
+    user = USERS_BY_ID[ss.gift_to]
     pick = ss.gift_pick
 
     with st.container(key="nav_row", horizontal=True, vertical_alignment="center"):
@@ -120,21 +163,16 @@ def render_send() -> None:
 
     html(
         '<div class="mk-header">'
-        f'<div class="mk-title" role="heading" aria-level="1">{escape(friend.name)}에게<br>무엇을 보낼까요?</div>'
-        f'<div class="mk-sub">보낸 음식은 {escape(friend.name)}의 조리 중인 음식에 들어가요.</div>'
+        f'<div class="mk-title" role="heading" aria-level="1">{escape(user.name)}에게<br>무엇을 보낼까요?</div>'
+        f'<div class="mk-sub">보낸 음식은 {escape(user.name)}의 조리 중인 음식에 들어가요.</div>'
         "</div>"
     )
-
-    if friend.food_id:
-        now_food = FOODS_BY_ID[friend.food_id]
-        doing = f"지금 {eul_reul(now_food.name)} 소화 중이에요 · {round(friend.progress * 100)}%"
-    else:
-        doing = "지금은 쉬는 중이에요"
-    count = sent_count(friend)
+    count = sent_count(user.id)
     html(
         '<div class="mk-gift-to">'
-        f"{_avatar(friend, 'mk-avatar mk-avatar-lg')}"
-        f'<div><div class="mk-gift-name">{escape(friend.name)}</div><div class="mk-gift-doing">{escape(doing)}</div></div>'
+        f"{avatar(user, 'mk-avatar mk-avatar-lg')}"
+        f'<div><div class="mk-gift-name">{escape(user.name)}</div>'
+        f'<div class="mk-gift-doing">지금 {escape(doing_text(user))}</div></div>'
         + (f'<span class="mk-fr-gift">배달 {count}</span>' if count else "")
         + "</div>"
     )
@@ -153,10 +191,10 @@ def render_send() -> None:
                 )
                 st.button(f"{food.name} 고르기", key=f"gift_{food.id}", on_click=_pick, args=(food.id,))
 
-    can = friend_can_receive(friend)
+    can = friend_can_receive(user.id)
     with st.container(key="bar_footer"):
         if not can:
-            html(f'<div class="mk-hint">{escape(friend.name)}의 조리 중인 음식이 가득 찼어요 ({meal.MAX_WAITING}개)</div>')
+            html(f'<div class="mk-hint">{escape(user.name)}의 조리 중인 음식이 가득 찼어요 ({meal.MAX_WAITING}개)</div>')
         elif pick is None:
             html('<div class="mk-hint">보낼 음식을 하나 골라 주세요</div>')
         label = f"{FOODS_BY_ID[pick].name} 보내기" if pick else "보내기"

@@ -19,6 +19,7 @@ class Order:
     eaten_kcal: float = 0.0
     distance_km: float = 0.0
     sender: str | None = None  # 친구가 배달로 보낸 음식이면 보낸 친구 이름
+    gift_id: int | None = None  # 받은 배달 기록 번호 (배달 상태 추적용)
 
     @property
     def food(self) -> Food:
@@ -48,6 +49,8 @@ class FridgeEntry:
     kcal: int
     distance_km: float
     completed_at: datetime
+    sender: str | None = None
+    gift_id: int | None = None
 
 
 @dataclass
@@ -73,11 +76,11 @@ def can_order(state: MealState) -> bool:
     return state.current is None or len(state.waiting) < MAX_WAITING
 
 
-def order(state: MealState, food_id: str, sender: str | None = None) -> bool:
+def order(state: MealState, food_id: str, sender: str | None = None, gift_id: int | None = None) -> bool:
     """음식을 주문한다(친구가 보낸 배달도 같은 길로 들어온다). 소화 중인 음식이 있으면 대기열 끝에 들어간다."""
     if food_id not in FOODS_BY_ID or not can_order(state):
         return False
-    state.orders.append(Order(food_id, sender=sender))
+    state.orders.append(Order(food_id, sender=sender, gift_id=gift_id))
     return True
 
 
@@ -119,7 +122,9 @@ def move(
         state.digested_by_day[now.date()] = state.digested_on(now.date()) + take
 
         if current.remaining_kcal <= _EPS:
-            entry = FridgeEntry(current.food_id, current.food.kcal, current.distance_km, now)
+            entry = FridgeEntry(
+                current.food_id, current.food.kcal, current.distance_km, now, current.sender, current.gift_id
+            )
             state.fridge.append(entry)
             state.orders.pop(0)
             completed.append(entry)

@@ -44,14 +44,14 @@ def _arrive_now(at):
 def test_only_digesting_friends_are_tappable():
     at = _start()
     keys = {b.key for b in at.button}
-    assert {"friend_0", "friend_1", "friend_2"} <= keys  # 하늘·준·수아는 소화 중
-    assert "friend_3" not in keys  # 민은 쉬는 중
-    assert at.button(key="friend_0").label == "하늘에게 음식 배달 보내기"
+    assert {"friend_haneul", "friend_jun", "friend_sua"} <= keys  # 하늘·준·수아는 소화 중
+    assert "friend_min" not in keys  # 민은 쉬는 중
+    assert at.button(key="friend_haneul").label == "하늘에게 음식 배달 보내기"
 
 
 def test_send_food_to_friend():
     at = _start()
-    _click(at, "friend_0")
+    _click(at, "friend_haneul")
     assert at.session_state["screen"] == "gift"
     text = _text(at)
     assert "하늘에게" in text and "무엇을 보낼까요?" in text and "마라탕을 소화 중이에요" in text
@@ -60,7 +60,7 @@ def test_send_food_to_friend():
     assert at.button(key="gift_send").label == "떡볶이 보내기"
     _click(at, "gift_send")
     assert at.session_state["screen"] == "home"
-    assert at.session_state["gifts_sent"] == {"하늘": ["ttuckbokki"]}
+    assert at.session_state["gifts_sent"] == {"haneul": ["ttuckbokki"]}
     text = _text(at)
     assert "하늘에게 떡볶이를 보냈어요" in text
     assert "배달 1" in text
@@ -72,7 +72,7 @@ def test_friend_reply_arrives_in_my_cooking_list():
     _click(at, "home_order")
     _click(at, "ord_pasta")
     _click(at, "order_submit")
-    _click(at, "friend_0")
+    _click(at, "friend_haneul")
     _click(at, "gift_tanghuru")
     _click(at, "gift_send")
     assert len(at.session_state["meal"].waiting) == 0  # 아직 도착 전
@@ -88,7 +88,7 @@ def test_friend_reply_arrives_in_my_cooking_list():
 
 def test_back_from_gift_screen_returns_home_without_sending():
     at = _start()
-    _click(at, "friend_1")
+    _click(at, "friend_jun")
     _click(at, "gift_pasta")
     _click(at, "gift_back")
     assert at.session_state["screen"] == "home"
@@ -97,9 +97,9 @@ def test_back_from_gift_screen_returns_home_without_sending():
 
 def test_friend_list_full():
     at = _start()
-    at.session_state["gifts_sent"] = {"준": ["pasta"] * MAX_WAITING}
+    at.session_state["gifts_sent"] = {"jun": ["pasta"] * MAX_WAITING}
     at.run()
-    _click(at, "friend_1")
+    _click(at, "friend_jun")
     _click(at, "gift_pasta")
     assert at.button(key="gift_send").disabled
     assert "준의 조리 중인 음식이 가득 찼어요" in _text(at)

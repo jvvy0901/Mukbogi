@@ -54,18 +54,41 @@ def group_by_day(entries: Sequence[FridgeEntry], today: date, daily_target_kcal:
     return groups
 
 
-def _row(entry: FridgeEntry) -> str:
+def _row(entry: FridgeEntry, show_distance: bool = True) -> str:
+    """show_distance=False: 다른 유저의 냉장고에서는 거리를 숨긴다 (개인정보)."""
     food = FOODS_BY_ID[entry.food_id]
+    meta = f"{entry.completed_at:%H:%M}" + (f" · {entry.distance_km:.2f}km" if show_distance else "")
+    if entry.sender:
+        meta += f" · {escape(entry.sender)}의 배달"
     return (
         '<div class="mk-fz-row" role="listitem">'
         f'<img src="{food_thumb(food)}" alt="">'
         '<div class="mk-fz-text">'
         f'<div class="mk-fz-name">{escape(food.name)}</div>'
-        f'<div class="mk-fz-meta">{entry.completed_at:%H:%M} · {entry.distance_km:.2f}km</div>'
+        f'<div class="mk-fz-meta">{meta}</div>'
         "</div>"
         f'<div class="mk-fz-kcal">{entry.kcal}kcal</div>'
         "</div>"
     )
+
+
+def render_days(
+    entries: Sequence[FridgeEntry], today: date, daily_target_kcal: int | None, show_distance: bool = True
+) -> None:
+    """날짜별 묶음 목록. daily_target_kcal이 None이면(다른 유저) 목표 달성 표시를 하지 않는다."""
+    target = daily_target_kcal if daily_target_kcal is not None else 10**9
+    for idx, g in enumerate(group_by_day(entries, today, target)):
+        badge = '<span class="mk-fz-goal">목표 달성</span>' if g.goal_met else ""
+        rows = "".join(_row(e, show_distance) for e in g.entries)
+        html(
+            f'<section class="mk-fz-day{" first" if idx == 0 else ""}" aria-label="{escape(g.label)}, {g.total_kcal}킬로칼로리">'
+            '<div class="mk-fz-head">'
+            f'<div class="mk-fz-date" role="heading" aria-level="2">{escape(g.label)}</div>'
+            f'<div class="mk-fz-total">{badge}<span class="mk-fz-sum"><b>{g.total_kcal}</b>kcal</span></div>'
+            "</div>"
+            f'<div class="mk-fz-list" role="list">{rows}</div>'
+            "</section>"
+        )
 
 
 def render(entries: Sequence[FridgeEntry], today: date, daily_target_kcal: int, go: Callable[[str], None]) -> None:
@@ -94,17 +117,7 @@ def render(entries: Sequence[FridgeEntry], today: date, daily_target_kcal: int, 
         "</div>"
     )
 
-    for idx, g in enumerate(group_by_day(entries, today, daily_target_kcal)):
-        badge = '<span class="mk-fz-goal">목표 달성</span>' if g.goal_met else ""
-        html(
-            f'<section class="mk-fz-day{" first" if idx == 0 else ""}" aria-label="{escape(g.label)}, {g.total_kcal}킬로칼로리">'
-            '<div class="mk-fz-head">'
-            f'<div class="mk-fz-date" role="heading" aria-level="2">{escape(g.label)}</div>'
-            f'<div class="mk-fz-total">{badge}<span class="mk-fz-sum"><b>{g.total_kcal}</b>kcal</span></div>'
-            "</div>"
-            f'<div class="mk-fz-list" role="list">{"".join(_row(e) for e in g.entries)}</div>'
-            "</section>"
-        )
+    render_days(entries, today, daily_target_kcal)
 
     # 하단 고정: 냉장고를 보다가 바로 다음 음식을 주문하러 간다
     with st.container(key="bar_footer"):
