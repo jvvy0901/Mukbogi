@@ -137,7 +137,7 @@ def _avatar(friend) -> str:
 def _meal_card(order: meal.Order, measuring: bool) -> None:
     food = order.food
     pct = round(order.progress * 100)
-    scale = 1 - 0.35 * order.bites_eaten / food.bites  # 한 입 먹을 때마다 조금씩 작아진다
+    scale = 1 - 0.35 * order.bites_eaten / food.bites  # 한 입 먹을 때마다 조금씩 작아진다 (최대 35%)
     dots = "".join(
         f'<span class="{"on" if i < order.bites_eaten else ""}"></span>' for i in range(food.bites)
     )
@@ -149,9 +149,9 @@ def _meal_card(order: meal.Order, measuring: bool) -> None:
     html(
         '<div class="mk-meal">'
         f'<div class="mk-meal-top">{chip}<span class="mk-bites-label">한 입 {order.bites_eaten}/{food.bites}</span></div>'
-        f'<div class="mk-ring" style="--p:{pct}"><div class="mk-ring-in">'
-        f'<img src="{food_thumb(food, 400)}" alt="{escape(food.name)}" style="--s:{scale:.3f}">'
-        "</div></div>"
+        f'<div class="mk-hero{" on" if measuring else ""}" style="--s:{scale:.3f}">'
+        f'<img src="{food_thumb(food, 480)}" alt="{escape(food.name)}">'
+        "</div>"
         f'<div class="mk-meal-name">{escape(food.name)}</div>'
         f'<div class="mk-meal-kcal">{food.kcal}kcal</div>'
         f'<div class="mk-dots" aria-hidden="true">{dots}</div>'
@@ -251,7 +251,7 @@ def _celebration() -> None:
     with st.container(key="sheet_done"):
         html(
             '<div class="mk-done" role="alert">'
-            f'<img src="{food_thumb(food, 400)}" alt="{escape(food.name)}">'
+            f'<img src="{food_thumb(food, 480)}" alt="{escape(food.name)}">'
             '<div class="mk-done-title">다 소화시켰다!<br>내 냉장고에 등록됐다</div>'
             f'<div class="mk-done-meta">{escape(food.name)} · {entry.kcal}kcal · {entry.distance_km:.2f}km · '
             f'{entry.completed_at:%H:%M}</div>'

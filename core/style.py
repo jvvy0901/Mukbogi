@@ -121,9 +121,8 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 /* ---------- 1단계: 유형 카드 (한 줄 = 사진 · 정보 · 선택 표시) ---------- */
 .mk-type { display: flex; align-items: center; gap: 14px; padding: 16px; }
 .mk-thumbs { display: flex; flex: none; }
-.mk-thumbs img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--soft); background: #FFFFFF; }
-.mk-card.sel .mk-thumbs img { border-color: #FFFFFF; }
-.mk-thumbs img + img { margin-left: -14px; }
+.mk-thumbs img { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(30, 37, 48, .14)); }
+.mk-thumbs img + img { margin-left: -8px; }
 .mk-type-text { flex: 1; min-width: 0; }
 .mk-type-name { font-size: 17px; font-weight: 700; line-height: 1.3; }
 .mk-type-goal { font-size: 14px; color: var(--sub); line-height: 1.4; margin-top: 4px; }
@@ -136,7 +135,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 }
 .mk-food { display: flex; flex-direction: column; align-items: center; padding: 16px 6px 12px; text-align: center; }
 .mk-food .mk-pick { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; }
-.mk-food img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; background: #FFFFFF; }
+.mk-food img { width: 64px; height: 64px; object-fit: contain; filter: drop-shadow(0 3px 4px rgba(30, 37, 48, .14)); }
 .mk-food-name { font-size: 15px; font-weight: 600; margin-top: 10px; line-height: 1.3; }
 .mk-food-kcal { font-size: 13px; color: var(--sub); line-height: 1.4; }
 
@@ -236,13 +235,19 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-chip.on i { background: var(--cyan); animation: mk-pulse 1.6s ease-in-out infinite; }
 @keyframes mk-pulse { 50% { transform: scale(1.5); opacity: .5; } }
 .mk-bites-label { font-size: 13px; font-weight: 600; color: var(--sub); }
-.mk-ring {
-  width: 176px; height: 176px; margin: 12px auto 0; border-radius: 50%;
-  background: conic-gradient(var(--ink) calc(var(--p) * 1%), var(--line) 0);
-  display: grid; place-items: center;
+/* 소화 중인 음식: 틀 없이 음식만 떠 있고, 아래에 바닥 그림자. 측정 중엔 살짝 위아래로 떠다닌다 */
+.mk-hero { position: relative; height: 216px; display: grid; place-items: center; margin-top: 4px; }
+.mk-hero::after {
+  content: ""; position: absolute; bottom: 10px; left: 50%; width: 132px; height: 16px; transform: translateX(-50%) scale(var(--s));
+  border-radius: 50%; background: rgba(30, 37, 48, .12); filter: blur(6px);
 }
-.mk-ring-in { width: 164px; height: 164px; border-radius: 50%; background: #FFFFFF; display: grid; place-items: center; overflow: hidden; }
-.mk-ring-in img { width: 152px; height: 152px; border-radius: 50%; object-fit: cover; transform: scale(var(--s)); transition: transform .4s ease; }
+.mk-hero img {
+  position: relative; z-index: 1; width: 200px; height: 200px; object-fit: contain;
+  transform: scale(var(--s)); transition: transform .4s ease;
+  filter: drop-shadow(0 10px 12px rgba(30, 37, 48, .16));
+}
+.mk-hero.on img { animation: mk-float 2.8s ease-in-out infinite; }
+@keyframes mk-float { 50% { transform: scale(var(--s)) translateY(-6px); } }
 .mk-meal-name { text-align: center; font-size: 20px; font-weight: 700; margin-top: 12px; }
 .mk-meal-kcal { text-align: center; font-size: 14px; color: var(--sub); }
 .mk-dots { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
@@ -275,7 +280,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   min-height: 124px; padding: 12px 6px; border-radius: 14px; background: var(--soft); text-align: center;
 }
-.mk-q img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; background: #FFFFFF; }
+.mk-q img { width: 56px; height: 56px; object-fit: contain; filter: drop-shadow(0 3px 4px rgba(30, 37, 48, .14)); }
 .mk-q-name { font-size: 13px; font-weight: 600; margin-top: 8px; }
 .mk-q-kcal { font-size: 12px; color: var(--sub); }
 .mk-q-add { background: #FFFFFF; border: 1.5px dashed var(--line-2); font-size: 13px; font-weight: 600; gap: 4px; }
@@ -288,7 +293,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex: none; }
 .mk-avatar-initial { display: grid; place-items: center; background: var(--ink); color: #FFFFFF; font-size: 13px; font-weight: 700; }
 .mk-fr-food { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-top: 12px; }
-.mk-fr-food img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: #FFFFFF; }
+.mk-fr-food img { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(30, 37, 48, .14)); }
 .mk-bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin-top: 10px; }
 .mk-bar i { display: block; height: 100%; background: var(--ink); border-radius: inherit; }
 .mk-fr-pct { font-size: 12px; font-weight: 600; color: var(--sub); margin-top: 4px; }
@@ -309,7 +314,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
   padding: 24px 16px calc(24px + env(safe-area-inset-bottom));
 }
 .mk-done { text-align: center; padding-bottom: calc(var(--gap-out) - var(--gap-in)); }
-.mk-done img { width: 168px; height: 168px; border-radius: 50%; object-fit: cover; animation: mk-pop .5s ease-out; }
+.mk-done img { width: 200px; height: 200px; object-fit: contain; filter: drop-shadow(0 14px 14px rgba(30, 37, 48, .18)); animation: mk-pop .5s ease-out; }
 @keyframes mk-pop { from { transform: scale(.6); opacity: 0; } }
 .mk-done-title { font-size: 26px; font-weight: 700; line-height: 1.35; margin-top: 20px; }
 .mk-done-meta { font-size: 14px; color: var(--sub); margin-top: 8px; }

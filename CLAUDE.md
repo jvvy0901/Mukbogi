@@ -123,7 +123,7 @@ MUKBOGI는 먹고 싶은 음식을 앱에서 "주문"하고, 걷거나 뛰어서
 | `core/data.py` | 음식 데이터 (PRD 음식 표와 같은 값) |
 | `core/rules.py` | 계산 규칙 (유형별 하루 목표 등). 화면 코드에 계산식을 직접 쓰지 않고 여기에 둔다 |
 | `core/style.py` | 공통 CSS (`DESIGN.md` "MUKBOGI 적용값"). Streamlit 기본 헤더를 숨기고 iOS 앱처럼 보이게 한다 |
-| `core/images.py` | 음식 원형 썸네일 생성 (체크무늬 배경 제거 + 가운데 자르기). 화면에는 원본 대신 항상 이걸 쓴다 |
+| `core/images.py` | 음식 이미지 생성 (체크무늬 배경을 투명하게 빼고 음식 크기를 고르게 맞춤) + 프로필 원형 사진. 화면에는 원본 대신 항상 이걸 쓴다 |
 | `core/onboarding.py` | 온보딩 화면 (PRD Epic 1) |
 | `core/meal.py` | 주문·대기열·소화·냉장고 상태와 규칙 (Streamlit과 분리, `tests/test_meal.py`) |
 | `core/home.py` | 홈 화면(PRD Epic 3) + 하단 탭 + 소화 완료 연출 + 임시 주문 화면 + 냉장고·커뮤니티 자리 |
