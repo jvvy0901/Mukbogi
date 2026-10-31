@@ -304,3 +304,31 @@ fonts:
 24. http://web.archive.org/cdx/search/cdx?url=apps.apple.com/kr/app/id426644449&output=json — Wayback CDX API. 이 쿼리가 돌려주는 캡처는 2023-08-09 과 2024-12-20 두 건뿐이고 2026 년 캡처는 없다. Play 쪽은 `url=play.google.com/store/apps/details?id=com.gsr.gs25` 로 같은 API 를 쓴다. 아카이브된 HTML 은 gzip 이라 `curl --compressed` 가 필요하고, 아이콘 URL 은 `og:image` 메타로 추출한다
 25. https://ex-hubpage.grm.gsretail.com/images/btn-logo-woodongs.png — 앱 내부 웹뷰가 참조하는 가로형 워드마크 277×84. 흰색·투명이라 밝은 배경에서는 보이지 않는다
 26. https://woodongs.com/landing/asset/apple-touch-icon-180.6b5c8b16.png — 공식 앱 랜딩 도메인의 apple-touch-icon 180×180. 배경 실측이 시그니처 청록과 같다. 관례 경로 `/apple-touch-icon.png` 는 SPA catch-all 이라 HTML 을 돌려주므로 해시 경로를 써야 한다
+
+## MUKBOGI 적용값 (Streamlit 프로토타입)
+
+> 위 문서는 참고 디자인 시스템이고, 이 절은 MUKBOGI 화면에 실제로 쓰는 값이다. 위 문서에 없던 값은 여기서 정했다. 로고·마스코트·서비스명 등 참고 브랜드의 고유 자산은 쓰지 않는다.
+
+**기준 화면:** iPhone 13 / 14 (390 × 844pt). 콘텐츠 최대 폭 430px, 좌우 여백 `{spacing.screen-horizontal}` 16px.
+
+| 항목 | 값 |
+| --- | --- |
+| 1차 버튼 | 높이 52px, 모서리 14px, `{colors.primary-dark}` 채움 + 흰 글자 17px/700. 비활성: `{colors.neutral-200}` 채움 + `{colors.neutral-600}` 글자 |
+| 텍스트 버튼 (이전·건너뛰기) | 높이 44px, 16px/600, `{colors.primary-dark}` |
+| 하단 고정 버튼 영역 | 화면 하단 고정, 흰 배경, 위아래 여백 10px / 16px + 기기 안전 영역 |
+| 페이지 제목 | 26px/700, 줄간격 1.3 |
+| 제목 아래 설명 | 15px/400, 줄간격 1.5, `{colors.neutral-600}` |
+| 섹션 제목 | `{typography.section-header}` 18px/700 |
+| 카드 | 모서리 16px, 기본 `{colors.neutral-50}` 채움. 선택 시 흰 채움 + 2px `{colors.primary-dark}` 테두리 |
+| 선택 표시 | 어디서나 같은 모양: 빈 원(2px `{colors.neutral-300}` 테두리) → 선택 시 `{colors.primary-dark}` 채움 + 흰 체크. 목록형 카드는 오른쪽 24px, 그리드형 카드는 카드 오른쪽 위 22px. `{colors.signature-cyan}`은 선택 표시에 쓰지 않는다 |
+| 상단 내비게이션 줄 | 높이 44px, 모든 단계에서 같은 위치: [이전 44×44 아이콘] [진행 막대] [현재/전체 13px]. 첫 단계는 이전 자리를 비워 둔다 |
+| 진행 표시 | 단계 수만큼 4px 막대, 완료 `{colors.primary-dark}`, 남은 단계 `{colors.neutral-200}` |
+| 음식 썸네일 | 원형. 유형 카드 44px(겹쳐 배치), 음식 그리드 60px(3열, 간격 10px), 요약 48px |
+| 간격 | 같은 묶음 안 10px, 묶음과 묶음 사이 28px (제목·설명 → 내용, 섹션 → 섹션) |
+| 입력칸 | 높이 56px, 모서리 14px, `{colors.neutral-50}` 채움. 포커스 시 흰 채움 + 2px `{colors.primary-dark}` 테두리. 단위(kg)는 칸 안 오른쪽 |
+| 포커스 표시 | 3px `{colors.signature-cyan}` 외곽선 (입력칸은 테두리로 대신) |
+| 오류 문구 | 13px/600, #B42318 |
+
+**배치 원리 (게슈탈트):** 근접 — 관련 요소는 10px, 다른 묶음은 28px로 띄운다. 유사 — 같은 의미(선택됨)는 같은 모양·색으로 표시한다. 공통 영역 — 선택 표시와 관련 정보는 한 카드 안에 둔다. 연속성 — 상단 내비게이션 줄의 위치·높이를 단계마다 같게 둔다. 전경/배경 — 고르지 않은 카드는 연회색, 고른 카드는 흰색 + 테두리로 띄운다.
+
+**음식 사진 처리:** `assets/img/food/` 원본은 투명 배경 대신 체크무늬가 그림으로 들어 있다. 화면에는 가장자리 체크무늬를 흰색으로 채우고 가운데를 정사각형으로 잘라 원형 썸네일로 쓴다 (`core/images.py`). 원본 파일은 바꾸지 않는다.

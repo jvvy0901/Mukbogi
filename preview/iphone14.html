@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MUKBOGI iPhone 미리보기</title>
+<!--
+  개발용 미리보기 도구. 실행 중인 Streamlit 앱(기본 http://localhost:8501)을
+  iPhone 14 화면 크기(390 × 844pt) 프레임 안에 띄운다.
+  사용: 앱을 먼저 실행(.venv/bin/streamlit run app.py)한 뒤 이 파일을 브라우저로 연다.
+  다른 주소를 보려면 ?url=http://localhost:8502 처럼 붙인다.
+-->
+<style>
+  :root {
+    --screen-w: 390px;
+    --screen-h: 844px;
+    --bezel: 12px;
+    --status-h: 47px;
+    --radius: 55px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: #E9EBF2;
+    font-family: -apple-system, "Apple SD Gothic Neo", system-ui, sans-serif;
+    color: #1E2530;
+    display: flex; flex-direction: column; align-items: center;
+    overflow: hidden;
+  }
+
+  .toolbar {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center;
+    padding: 12px 16px; font-size: 13px;
+  }
+  .toolbar button {
+    min-height: 36px; padding: 0 14px; border-radius: 999px; cursor: pointer;
+    border: 1px solid #C0C4CD; background: #FFFFFF; color: #1E2530; font: 600 13px inherit;
+  }
+  .toolbar button:focus-visible { outline: 3px solid #00D4EA; outline-offset: 2px; }
+  .toolbar .info { color: #515160; }
+
+  .stage { flex: 1; width: 100%; display: flex; justify-content: center; align-items: flex-start; }
+  .scaler { transform-origin: top center; }
+
+  .phone {
+    width: calc(var(--screen-w) + var(--bezel) * 2);
+    height: calc(var(--screen-h) + var(--bezel) * 2);
+    padding: var(--bezel);
+    border-radius: calc(var(--radius) + var(--bezel));
+    background: #1B1B1F;
+    box-shadow: 0 0 0 2px #3A3A40, 0 20px 50px rgba(0,0,0,.25);
+    position: relative;
+  }
+  .screen {
+    width: var(--screen-w); height: var(--screen-h);
+    border-radius: var(--radius);
+    overflow: hidden; background: #FFFFFF; position: relative;
+  }
+
+  /* 상태 표시줄 + 노치 (iPhone 14) */
+  .status {
+    height: var(--status-h); position: relative;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 30px 0 44px; font-size: 16px; font-weight: 600; background: #FFFFFF;
+  }
+  .notch {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 162px; height: 34px; background: #1B1B1F;
+    border-radius: 0 0 20px 20px;
+  }
+  .status-icons { display: flex; gap: 6px; align-items: center; }
+  .status-icons svg { height: 12px; }
+
+  iframe {
+    display: block; width: 100%; height: calc(var(--screen-h) - var(--status-h));
+    border: 0; background: #FFFFFF;
+  }
+
+  .home-indicator {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    width: 134px; height: 5px; border-radius: 999px; background: #1E2530; opacity: .85;
+    pointer-events: none;
+  }
+
+  .offline {
+    position: absolute; inset: var(--status-h) 0 0 0; display: none;
+    flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    padding: 24px; text-align: center; background: #F4F5FB; font-size: 14px; color: #515160;
+  }
+  .offline code { background: #FFFFFF; padding: 6px 10px; border-radius: 8px; color: #1E2530; font-size: 12px; }
+  .offline.show { display: flex; }
+</style>
+</head>
+<body>
+  <div class="toolbar">
+    <span class="info">iPhone 13 · 14 · 390 × 844pt</span>
+    <button type="button" id="reload">앱 새로고침</button>
+    <button type="button" id="fit">화면에 맞추기: 켜짐</button>
+    <span class="info" id="src"></span>
+  </div>
+
+  <div class="stage">
+    <div class="scaler" id="scaler">
+      <div class="phone">
+        <div class="screen">
+          <div class="status" aria-hidden="true">
+            <span>9:41</span>
+            <div class="notch"></div>
+            <span class="status-icons">
+              <svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="#1E2530"/><rect x="5" y="5" width="3" height="7" rx="1" fill="#1E2530"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="#1E2530"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#1E2530"/></svg>
+              <svg viewBox="0 0 26 12"><rect x="0.5" y="0.5" width="22" height="11" rx="3" fill="none" stroke="#1E2530"/><rect x="2" y="2" width="17" height="8" rx="1.5" fill="#1E2530"/><rect x="24" y="4" width="2" height="4" rx="1" fill="#1E2530"/></svg>
+            </span>
+          </div>
+          <iframe id="app" title="MUKBOGI 앱 화면"></iframe>
+          <div class="offline" id="offline">
+            <strong>앱이 실행 중이 아니에요</strong>
+            <span>터미널에서 앱을 먼저 실행한 뒤 "앱 새로고침"을 눌러 주세요.</span>
+            <code>.venv/bin/streamlit run app.py</code>
+          </div>
+          <div class="home-indicator"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const base = params.get("url") || "http://localhost:8501";
+  // embed=true: Streamlit 상단 메뉴·툴바를 숨겨 앱 화면만 보이게 한다.
+  const appUrl = base + (base.includes("?") ? "&" : "?") + "embed=true";
+
+  const iframe = document.getElementById("app");
+  const offline = document.getElementById("offline");
+  document.getElementById("src").textContent = base;
+
+  async function load() {
+    try {
+      await fetch(base + "/_stcore/health", { mode: "no-cors", cache: "no-store" });
+      offline.classList.remove("show");
+      iframe.src = appUrl + "&t=" + Date.now();
+    } catch {
+      offline.classList.add("show");
+      iframe.removeAttribute("src");
+    }
+  }
+
+  // 브라우저 창이 프레임보다 작으면 비율을 유지한 채 줄인다.
+  let fitOn = true;
+  const scaler = document.getElementById("scaler");
+  const fitBtn = document.getElementById("fit");
+  function fit() {
+    const toolbarH = document.querySelector(".toolbar").offsetHeight;
+    const phoneH = 844 + 24 + 16;
+    const phoneW = 390 + 24 + 16;
+    const scale = fitOn
+      ? Math.min(1, (innerHeight - toolbarH - 8) / phoneH, (innerWidth - 16) / phoneW)
+      : 1;
+    scaler.style.transform = `scale(${scale})`;
+    document.body.style.overflow = fitOn ? "hidden" : "auto";
+  }
+  fitBtn.addEventListener("click", () => {
+    fitOn = !fitOn;
+    fitBtn.textContent = "화면에 맞추기: " + (fitOn ? "켜짐" : "꺼짐");
+    fit();
+  });
+  document.getElementById("reload").addEventListener("click", load);
+  addEventListener("resize", fit);
+
+  fit();
+  load();
+</script>
+</body>
+</html>

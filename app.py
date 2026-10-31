@@ -9,7 +9,6 @@ from core import onboarding, style
 
 st.set_page_config(page_title="MUKBOGI", layout="centered")
 style.inject()
-style.wordmark()
 
 if "profile" not in st.session_state:
     onboarding.render()
