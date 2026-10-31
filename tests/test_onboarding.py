@@ -77,7 +77,7 @@ def test_skip_weight_uses_default():
         "favorite_food_ids": ["mocci"],
         "weight_kg": None,
     }
-    assert "준비 끝났어요" in _markdown(at)
+    assert "주문하러 가요" in _markdown(at)  # 온보딩이 끝나면 홈으로 간다
 
 
 def test_start_without_weight_shows_error():
@@ -110,12 +110,3 @@ def test_weight_kept_after_going_back():
     _click(at, "ob_back_2")
     _click(at, "ob_next_1")
     assert at.number_input(key="ob_weight").value == 70.0
-
-
-def test_reset_returns_to_step1():
-    at = _start()
-    _to_step3(at)
-    _click(at, "ob_skip")
-    _click(at, "ob_reset")
-    assert "profile" not in at.session_state
-    assert at.button(key="ob_next_0").disabled

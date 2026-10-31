@@ -12,6 +12,14 @@ EATER_TYPES: tuple[str, ...] = ("대식가", "중식가", "소식가")
 
 DEFAULT_WEIGHT_KG = 60
 
+# 소모 칼로리(초안) = 체중(kg) × 거리(km) × 활동 계수. 계수는 PRD Q9에서 확정 예정.
+ACTIVITY_FACTORS: dict[str, float] = {"걷기": 0.5, "달리기": 1.0}
+
+
+def burned_kcal(distance_km: float, activity: str, weight_kg: float | None = None) -> float:
+    weight = DEFAULT_WEIGHT_KG if weight_kg is None else weight_kg
+    return weight * distance_km * ACTIVITY_FACTORS[activity]
+
 
 def food_groups(foods: Sequence[Food]) -> dict[str, list[Food]]:
     """음식을 칼로리 오름차순으로 정렬해 낮은/적당한/높은 3그룹으로 똑같이 나눈다.

@@ -11,7 +11,7 @@ from html import escape
 
 import streamlit as st
 
-from core.data import FOODS, FOODS_BY_ID
+from core.data import FOODS
 from core.images import food_thumb
 from core.rules import DEFAULT_WEIGHT_KG, EATER_TYPES, daily_targets, food_groups
 from core.style import html
@@ -90,11 +90,11 @@ def _top(step: int, title: str, sub: str) -> None:
         else:
             st.button("이전", key=f"ob_back_{step}", type="tertiary", on_click=_go, args=(step - 1,))
         html(f'<div class="mk-progress" aria-hidden="true">{bars}</div>')
-        html(f'<p class="mk-step" aria-label="{TOTAL_STEPS}단계 중 {step + 1}단계">{step + 1}/{TOTAL_STEPS}</p>')
+        html(f'<div class="mk-step" aria-label="{TOTAL_STEPS}단계 중 {step + 1}단계">{step + 1}/{TOTAL_STEPS}</div>')
     html(
         '<div class="mk-header">'
         f'<div class="mk-title" role="heading" aria-level="1">{title}</div>'
-        f'<p class="mk-sub">{sub}</p>'
+        f'<div class="mk-sub">{sub}</div>'
         "</div>"
     )
 
@@ -135,7 +135,7 @@ def _step_type() -> None:
 
     with st.container(key="bar_footer"):
         if chosen is None:
-            html('<p class="mk-hint">유형을 하나 골라 주세요</p>')
+            html('<div class="mk-hint">유형을 하나 골라 주세요</div>')
         st.button(
             "다음",
             key="ob_next_0",
@@ -154,7 +154,7 @@ def _step_foods() -> None:
     _top(1, "어떤 음식을<br>소화하고 싶어요?", "여러 개 골라도 돼요. 고른 음식은 주문할 때 먼저 추천해 드려요.")
 
     selected = st.session_state.ob_foods
-    html(f'<p class="mk-count" aria-live="polite">{len(selected)}개 골랐어요</p>')
+    html(f'<div class="mk-count" aria-live="polite">{len(selected)}개 골랐어요</div>')
 
     with st.container(key="grid_food"):
         for food in FOODS:
@@ -177,7 +177,7 @@ def _step_foods() -> None:
 
     with st.container(key="bar_footer"):
         if not selected:
-            html('<p class="mk-hint">음식을 1개 이상 골라 주세요</p>')
+            html('<div class="mk-hint">음식을 1개 이상 골라 주세요</div>')
         st.button(
             "다음",
             key="ob_next_1",
@@ -211,10 +211,10 @@ def _step_weight() -> None:
         on_change=_save_weight,
     )
     if st.session_state.ob_weight_error:
-        html('<p class="mk-error" role="alert">체중을 입력하거나 건너뛰기를 눌러 주세요.</p>')
+        html('<div class="mk-error" role="alert">체중을 입력하거나 건너뛰기를 눌러 주세요.</div>')
     html(
-        f'<p class="mk-note">체중은 나만 볼 수 있어요. '
-        f"건너뛰면 {DEFAULT_WEIGHT_KG}kg 기준으로 계산하고, 나중에 설정에서 바꿀 수 있어요.</p>"
+        f'<div class="mk-note">체중은 나만 볼 수 있어요. '
+        f"건너뛰면 {DEFAULT_WEIGHT_KG}kg 기준으로 계산하고, 나중에 설정에서 바꿀 수 있어요.</div>"
     )
 
     with st.container(key="bar_footer"):
@@ -236,44 +236,8 @@ def render() -> None:
     _STEPS[st.session_state.ob_step]()
 
 
-# 완료 -------------------------------------------------------------------------
-
-
-def render_done() -> None:
-    """온보딩 결과 확인 화면. 홈 화면을 만들기 전까지 임시로 쓴다."""
-    profile = st.session_state.profile
-    weight = profile["weight_kg"]
-    weight_text = f"{weight:g}kg" if weight is not None else f"입력 안 함 ({DEFAULT_WEIGHT_KG}kg 기준)"
-    favs = "".join(
-        f'<div class="mk-fav"><img src="{food_thumb(FOODS_BY_ID[i])}" alt="">{escape(FOODS_BY_ID[i].name)}</div>'
-        for i in profile["favorite_food_ids"]
-    )
-
-    # 상단 줄은 온보딩 단계와 같은 높이(44px)에 둔다 (연속성)
-    html('<p class="mk-wordmark">MUKBOGI</p>')
-    html(
-        '<div class="mk-header">'
-        '<div class="mk-title" role="heading" aria-level="1">준비 끝났어요!</div>'
-        '<p class="mk-sub">이제 먹고 싶은 음식을 주문하고 움직여서 소화해 봐요.</p>'
-        "</div>"
-    )
-    html(
-        '<div class="mk-summary">'
-        f'<div class="mk-row"><span>식사량 유형</span><span>{profile["eater_type"]}</span></div>'
-        f'<div class="mk-row"><span>하루 목표</span><span>{profile["daily_target_kcal"]}kcal</span></div>'
-        f'<div class="mk-row"><span>체중</span><span>{weight_text}</span></div>'
-        "</div>"
-    )
-    # 섹션 제목과 음식 목록을 한 영역으로 묶는다 (공통 영역)
-    html('<p class="mk-section">소화하고 싶은 음식</p>')
-    html(f'<div class="mk-favs">{favs}</div>')
-
-    with st.container(key="bar_footer"):
-        html('<p class="mk-hint">홈 화면은 다음 단계에서 만들어요</p>')
-        st.button("온보딩 다시 하기", key="ob_reset", type="tertiary", width="stretch", on_click=reset)
-
-
 def reset() -> None:
+    """온보딩을 처음부터 다시 한다 (프로토타입 테스트용)."""
     for key in list(st.session_state.keys()):
         if key.startswith("ob_") or key == "profile":
             del st.session_state[key]

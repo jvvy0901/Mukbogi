@@ -15,6 +15,8 @@ DESIGN.md에 없던 값은 DESIGN.md "MUKBOGI 적용값" 절에 기록해 두었
 덮어서, 카드 어디를 눌러도 버튼이 눌리게 한다 (버튼 라벨은 스크린리더가 읽는다).
 """
 
+from html import escape
+
 import streamlit as st
 
 _CHECK_WHITE = (
@@ -61,7 +63,9 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 /* ---------- 상단 내비게이션 줄: [이전] [진행 표시] [1/3] ---------- */
 .st-key-nav_row { min-height: 44px; flex-wrap: nowrap !important; gap: 8px !important; }
 .st-key-nav_row > [data-testid="stElementContainer"] { width: auto !important; flex: none; }
-.st-key-nav_row > [data-testid="stElementContainer"]:has(.mk-progress) { flex: 1 1 auto; min-width: 0; }
+.st-key-nav_row > [data-testid="stElementContainer"]:has(.mk-progress),
+.st-key-nav_row > [data-testid="stElementContainer"]:has(.mk-nav-title) { flex: 1 1 auto; min-width: 0; }
+.mk-nav-title { text-align: center; font-size: 17px; font-weight: 700; color: var(--ink); }
 .mk-nav-slot { width: 44px; height: 44px; }
 .mk-progress { display: flex; gap: 6px; }
 .mk-progress span { flex: 1; height: 4px; border-radius: 2px; background: var(--line); }
@@ -127,7 +131,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-type-ex { font-size: 13px; color: var(--sub); line-height: 1.4; }
 
 /* ---------- 2단계: 음식 3열 그리드 ---------- */
-.st-key-grid_food {
+[class*="st-key-grid_"] {
   display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap-in) !important;
 }
 .mk-food { display: flex; flex-direction: column; align-items: center; padding: 16px 6px 12px; text-align: center; }
@@ -174,9 +178,167 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-fav { width: 56px; text-align: center; font-size: 12px; color: var(--sub); }
 .mk-fav img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 6px; background: #FFFFFF; }
 
+
+/* ---------- 보조 버튼 (멈추기, 냉장고 보기, 움직임 흉내 버튼) ---------- */
+[data-testid="stBaseButton-secondary"] {
+  min-height: 44px; border-radius: 12px; border: 1.5px solid var(--line);
+  background: #FFFFFF; color: var(--ink); font-size: 15px; font-weight: 600;
+}
+[data-testid="stBaseButton-secondary"]:hover { border-color: var(--ink); color: var(--ink); background: #FFFFFF; }
+.st-key-bar_footer [data-testid="stBaseButton-secondary"],
+.st-key-sheet_done [data-testid="stBaseButton-secondary"] {
+  min-height: 52px; border-radius: 14px; border: 2px solid var(--ink); font-size: 17px; font-weight: 700;
+}
+
+/* ---------- 하단 탭 ---------- */
+.st-key-bar_tabs {
+  position: fixed; left: 50%; bottom: 0; transform: translateX(-50%);
+  width: min(100%, 430px); z-index: 110;
+  display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 0 !important;
+  padding: 4px 8px calc(4px + env(safe-area-inset-bottom));
+  background: #FFFFFF; border-top: 1px solid var(--line);
+}
+.st-key-bar_tabs > [data-testid="stElementContainer"] { width: 100% !important; }
+.st-key-bar_tabs .stButton, .st-key-bar_tabs .stButton button { width: 100%; }
+.st-key-bar_tabs .stButton button {
+  min-height: 52px; padding: 4px 0; flex-direction: column; gap: 2px; color: var(--sub);
+}
+.st-key-bar_tabs .stButton button p { font-size: 11px !important; font-weight: 600; }
+.st-key-bar_tabs .stButton button::before {
+  content: ""; width: 24px; height: 24px; background: currentColor;
+  -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat;
+}
+.st-key-bar_tabs .stButton button:hover { text-decoration: none; }
+.st-key-tab_home { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z'/></svg>"); }
+.st-key-tab_fridge { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='5' y='2' width='14' height='20' rx='2'/><path d='M5 9h14M9 5v2M9 12v4'/></svg>"); }
+.st-key-tab_community { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='9' cy='8' r='3.5'/><path d='M2.5 20c.6-3.5 3.3-5.5 6.5-5.5s5.9 2 6.5 5.5'/><circle cx='17' cy='9' r='2.5'/><path d='M17.5 14.5c2.2.3 3.6 2 4 4.5'/></svg>"); }
+/* 탭이 있는 화면: 주요 버튼은 탭 바로 위에 붙인다 */
+.stApp:has(.st-key-bar_tabs) .st-key-bar_footer { bottom: calc(61px + env(safe-area-inset-bottom)); border-top: 0; padding-bottom: 10px; }
+.stApp:has(.st-key-bar_tabs) [data-testid="stMainBlockContainer"] { padding-bottom: 220px !important; }
+
+/* ---------- 홈: 상단 줄 ---------- */
+.mk-topbar { display: flex; justify-content: space-between; align-items: center; min-height: 44px; }
+.mk-today { font-size: 13px; font-weight: 600; color: var(--sub); background: var(--soft); border-radius: 999px; padding: 6px 12px; }
+.mk-today b { color: var(--ink); }
+
+/* ---------- 홈: 빈 상태 (문구 + 버튼을 한 카드로) ---------- */
+.st-key-empty_box {
+  background: var(--soft); border-radius: 16px; padding: 32px 16px 16px; gap: 20px !important; text-align: center;
+  margin-top: calc(var(--gap-out) - var(--gap-in));
+}
+.mk-empty-title { font-size: 22px; font-weight: 700; color: var(--ink); }
+
+/* ---------- 홈: 소화 중인 음식 카드 ---------- */
+.mk-meal { background: var(--soft); border-radius: 16px; padding: 16px; margin-top: calc(var(--gap-out) - var(--gap-in) - 8px); }
+.mk-meal-top { display: flex; justify-content: space-between; align-items: center; }
+.mk-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; background: #FFFFFF; border-radius: 999px; padding: 5px 10px; }
+.mk-chip i { width: 8px; height: 8px; border-radius: 50%; background: var(--line-2); }
+.mk-chip.on i { background: var(--cyan); animation: mk-pulse 1.6s ease-in-out infinite; }
+@keyframes mk-pulse { 50% { transform: scale(1.5); opacity: .5; } }
+.mk-bites-label { font-size: 13px; font-weight: 600; color: var(--sub); }
+.mk-ring {
+  width: 176px; height: 176px; margin: 12px auto 0; border-radius: 50%;
+  background: conic-gradient(var(--ink) calc(var(--p) * 1%), var(--line) 0);
+  display: grid; place-items: center;
+}
+.mk-ring-in { width: 164px; height: 164px; border-radius: 50%; background: #FFFFFF; display: grid; place-items: center; overflow: hidden; }
+.mk-ring-in img { width: 152px; height: 152px; border-radius: 50%; object-fit: cover; transform: scale(var(--s)); transition: transform .4s ease; }
+.mk-meal-name { text-align: center; font-size: 20px; font-weight: 700; margin-top: 12px; }
+.mk-meal-kcal { text-align: center; font-size: 14px; color: var(--sub); }
+.mk-dots { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+.mk-dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+.mk-dots span.on { background: var(--ink); }
+.mk-meal-prog { display: flex; justify-content: space-between; font-size: 14px; color: var(--sub); margin-top: 16px; }
+.mk-meal-prog b { color: var(--ink); }
+.mk-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 0; }
+.mk-stat { background: #FFFFFF; border-radius: 12px; padding: 10px 12px; }
+.mk-stat dt { font-size: 12px; color: var(--sub); }
+.mk-stat dd { font-size: 22px; font-weight: 700; margin: 2px 0 0; font-variant-numeric: tabular-nums; }
+.mk-stat dd small { font-size: 13px; font-weight: 600; margin-left: 2px; }
+.mk-hint-inline { font-size: 13px; color: var(--sub); text-align: center; }
+
+/* ---------- 홈: 움직임 흉내 내기 (프로토타입 전용 — 점선 테두리로 실제 UI와 구분) ---------- */
+.st-key-sim_box { border: 1.5px dashed var(--line-2); border-radius: 16px; padding: 12px; gap: 8px !important; }
+.mk-sim-title { font-size: 13px; font-weight: 700; color: var(--sub); }
+.st-key-sim_activity, .st-key-sim_dist { gap: 8px !important; flex-wrap: nowrap !important; }
+.st-key-sim_activity > [data-testid="stElementContainer"],
+.st-key-sim_dist > [data-testid="stElementContainer"] { flex: 1 1 0 !important; width: auto !important; min-width: 0; }
+.st-key-sim_activity [data-testid="stBaseButton-primary"] { min-height: 44px; border-radius: 12px; font-size: 15px; }
+
+/* ---------- 홈: 가로 스크롤 목록 (조리 중 · 친구) ---------- */
+.st-key-row_queue {
+  display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important;
+  overflow-x: auto; gap: var(--gap-in) !important; margin: 0 -16px; padding: 0 16px 4px; scrollbar-width: none;
+}
+.st-key-row_queue > * { flex: 0 0 88px !important; width: 88px !important; }
+.mk-q {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 124px; padding: 12px 6px; border-radius: 14px; background: var(--soft); text-align: center;
+}
+.mk-q img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; background: #FFFFFF; }
+.mk-q-name { font-size: 13px; font-weight: 600; margin-top: 8px; }
+.mk-q-kcal { font-size: 12px; color: var(--sub); }
+.mk-q-add { background: #FFFFFF; border: 1.5px dashed var(--line-2); font-size: 13px; font-weight: 600; gap: 4px; }
+.mk-q-add span { font-size: 26px; font-weight: 400; line-height: 1; }
+
+.mk-row-scroll { display: flex; gap: var(--gap-in); overflow-x: auto; margin: 0 -16px; padding: 0 16px 4px; scrollbar-width: none; }
+.mk-row-scroll::-webkit-scrollbar, .st-key-row_queue::-webkit-scrollbar { display: none; }
+.mk-fr { flex: 0 0 148px; background: var(--soft); border-radius: 14px; padding: 12px; }
+.mk-fr-head { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.mk-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex: none; }
+.mk-avatar-initial { display: grid; place-items: center; background: var(--ink); color: #FFFFFF; font-size: 13px; font-weight: 700; }
+.mk-fr-food { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-top: 12px; }
+.mk-fr-food img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: #FFFFFF; }
+.mk-bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin-top: 10px; }
+.mk-bar i { display: block; height: 100%; background: var(--ink); border-radius: inherit; }
+.mk-fr-pct { font-size: 12px; font-weight: 600; color: var(--sub); margin-top: 4px; }
+.mk-fr-rest { font-size: 13px; color: var(--sub); margin-top: 12px; }
+
+/* ---------- 광고 자리 ---------- */
+.mk-ad {
+  height: 56px; border-radius: 12px; border: 1px solid var(--line); background: #FFFFFF;
+  display: grid; place-items: center; font-size: 12px; color: var(--sub);
+  margin-top: calc(var(--gap-out) - var(--gap-in));
+}
+
+/* ---------- 소화 완료 연출 (전체 화면) ---------- */
+.st-key-sheet_done {
+  position: fixed; top: 0; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: min(100%, 430px); z-index: 300; background: #FFFFFF;
+  justify-content: center; gap: 10px !important;
+  padding: 24px 16px calc(24px + env(safe-area-inset-bottom));
+}
+.mk-done { text-align: center; padding-bottom: calc(var(--gap-out) - var(--gap-in)); }
+.mk-done img { width: 168px; height: 168px; border-radius: 50%; object-fit: cover; animation: mk-pop .5s ease-out; }
+@keyframes mk-pop { from { transform: scale(.6); opacity: 0; } }
+.mk-done-title { font-size: 26px; font-weight: 700; line-height: 1.35; margin-top: 20px; }
+.mk-done-meta { font-size: 14px; color: var(--sub); margin-top: 8px; }
+
+/* ---------- 토스트 (iOS식: 화면 맨 위 로고 줄에 작은 알약, 2.5초 뒤 저절로 사라짐, 터치를 막지 않음)
+   누를 버튼이 없는 상단에 띄워, 연달아 누르는 버튼(움직임·주문)을 가리지 않는다. ---------- */
+.mk-toast {
+  position: fixed; left: 50%; top: calc(6px + env(safe-area-inset-top)); z-index: 250;
+  max-width: min(358px, calc(100% - 32px)); width: max-content;
+  padding: 10px 18px; border-radius: 999px;
+  background: var(--ink); color: #FFFFFF; font-size: 14px; font-weight: 600; line-height: 1.4; text-align: center;
+  box-shadow: 0 6px 20px rgba(30, 37, 48, .18); pointer-events: none;
+  transform: translateX(-50%); opacity: 0;
+  animation: mk-toast 2.6s ease forwards;
+}
+@keyframes mk-toast {
+  0% { opacity: 0; transform: translate(-50%, -8px); }
+  10%, 80% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, 0); visibility: hidden; }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* 움직임 없이 나타났다 사라지기만 한다 */
+  .mk-toast { animation: mk-toast-still 2.6s steps(1, end) forwards !important; opacity: 1; }
+  @keyframes mk-toast-still { to { opacity: 0; visibility: hidden; } }
+}
+
 :focus-visible { outline: 3px solid var(--cyan) !important; outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition: none !important; }
+  *:not(.mk-toast) { animation: none !important; transition: none !important; }
 }
 </style>
 """.replace("CHECK_WHITE", _CHECK_WHITE)
@@ -189,3 +351,15 @@ def inject() -> None:
 def html(markup: str) -> None:
     """한 줄 HTML 조각을 그린다. (들여쓰기가 있으면 마크다운 코드 블록이 되므로 줄을 합친다)"""
     st.markdown("".join(line.strip() for line in markup.splitlines()), unsafe_allow_html=True)
+
+
+def toast(message: str) -> None:
+    """다음 화면 그리기에서 한 번 보여 줄 토스트를 예약한다 (콜백 안에서 호출)."""
+    st.session_state["_toast"] = message
+
+
+def render_toast() -> None:
+    """예약된 토스트를 한 번 그리고 지운다. 화면 맨 끝에서 호출한다."""
+    message = st.session_state.pop("_toast", None)
+    if message:
+        html(f'<div class="mk-toast" role="status" aria-live="polite">{escape(message)}</div>')
