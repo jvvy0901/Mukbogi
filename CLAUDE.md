@@ -6,7 +6,7 @@ MUKBOGI 프로젝트에서 작업할 때 따르는 안내서입니다.
 
 MUKBOGI는 먹고 싶은 음식을 앱에서 "주문"하고, 걷거나 뛰어서 그 음식을 한 입씩 "소화"시키는 **iOS 운동 동기부여 앱**입니다. 다 소화한 음식은 "냉장고"에 날짜별로 쌓이고, 친구 소화 현황·먹보 랭킹으로 가볍게 경쟁합니다.
 
-- 현재 단계: **기획 (코드 없음)**. MVP PRD v0.5 작성 완료.
+- 현재 단계: **Streamlit 프로토타입 개발 중**. MVP PRD v0.5 작성 완료. 온보딩(Story 1.1~1.3) 구현됨.
 - 플랫폼: iOS (iPhone) 전용. Android는 MVP 범위 밖.
 - 배포: 프로토타입을 **Streamlit**으로 만들어 배포한다. 자세한 내용은 아래 "기술 스택" 참조.
 - 그 밖의 기술 스택은 아직 정하지 않음. 스택을 고르는 작업이 필요하면 임의로 정하지 말고 사용자에게 먼저 묻는다. 정해지면 이 파일의 "기술 스택" 항목에 기록한다.
@@ -96,9 +96,33 @@ MUKBOGI는 먹고 싶은 음식을 앱에서 "주문"하고, 걷거나 뛰어서
 ### 배포
 
 - **Streamlit**으로 만들고 배포한다. 따라서 앱 코드는 Python + Streamlit으로 작성한다.
-- 로컬 실행: `streamlit run <진입 파일>.py`. 의존성은 `requirements.txt`에 적는다.
 - 이미지는 저장소 안의 `assets/img/` 경로를 그대로 읽어 쓴다 (`st.image` 등).
-- 진입 파일 이름, 폴더 구조, 배포 대상(Streamlit Community Cloud 등)은 아직 정하지 않았다. 정해지면 여기에 적는다.
+- 배포 대상(Streamlit Community Cloud 등)은 아직 정하지 않았다 (PRD Q14).
+
+### 구조
+
+| 경로 | 역할 |
+|---|---|
+| `app.py` | 진입 파일. 화면 전환만 담당 |
+| `core/data.py` | 음식 데이터 (PRD 음식 표와 같은 값) |
+| `core/rules.py` | 계산 규칙 (유형별 하루 목표 등). 화면 코드에 계산식을 직접 쓰지 않고 여기에 둔다 |
+| `core/style.py` | 공통 CSS (`DESIGN.md` 값) |
+| `core/onboarding.py` | 온보딩 화면 (PRD Epic 1) |
+| `.streamlit/config.toml` | 테마 색 (`DESIGN.md` 값) |
+| `tests/` | pytest. 규칙 테스트 + `streamlit.testing.v1.AppTest` 화면 흐름 테스트 |
+
+- 화면을 추가할 때는 `core/<화면>.py`로 나누고 `app.py`에서 호출한다.
+- 단계를 오가는 화면에서는 고른 값을 위젯 키와 별도의 `session_state` 키에 저장한다. Streamlit은 화면에서 사라진 위젯의 값을 지운다.
+
+### 명령
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt   # 처음 한 번
+.venv/bin/streamlit run app.py                                           # 실행 (http://localhost:8501)
+.venv/bin/python -m pytest                                               # 테스트
+```
+
+- 기능을 바꾸면 테스트를 함께 고치고, 커밋 전에 `pytest`가 통과하는지 확인한다.
 
 ### 프로토타입 범위
 
