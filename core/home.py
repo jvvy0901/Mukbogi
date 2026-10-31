@@ -116,7 +116,14 @@ def _tab(key: str) -> None:
 
 
 def _tab_bar(active: str) -> None:
-    html(f"<style>.st-key-tab_{active} button {{ color: var(--ink) !important; }}</style>")
+    # 현재 탭: 남색 + 채움 아이콘 + 굵은 라벨 / 다른 탭: 회색 + 선 아이콘 + 보통 라벨
+    html(
+        "<style>"
+        f".st-key-tab_{active} button {{ color: var(--ink) !important; }}"
+        f".st-key-tab_{active} button::before {{ -webkit-mask-image: var(--icon-on) !important; mask-image: var(--icon-on) !important; }}"
+        f".st-key-tab_{active} button p {{ font-weight: 700 !important; }}"
+        "</style>"
+    )
     with st.container(key="bar_tabs"):
         for key, label in TABS:
             st.button(label, key=f"tab_{key}", type="tertiary", on_click=_tab, args=(key,))
