@@ -18,6 +18,7 @@ class Order:
     food_id: str
     eaten_kcal: float = 0.0
     distance_km: float = 0.0
+    sender: str | None = None  # 친구가 배달로 보낸 음식이면 보낸 친구 이름
 
     @property
     def food(self) -> Food:
@@ -72,11 +73,11 @@ def can_order(state: MealState) -> bool:
     return state.current is None or len(state.waiting) < MAX_WAITING
 
 
-def order(state: MealState, food_id: str) -> bool:
-    """음식을 주문한다. 소화 중인 음식이 있으면 대기열 끝에 들어간다."""
+def order(state: MealState, food_id: str, sender: str | None = None) -> bool:
+    """음식을 주문한다(친구가 보낸 배달도 같은 길로 들어온다). 소화 중인 음식이 있으면 대기열 끝에 들어간다."""
     if food_id not in FOODS_BY_ID or not can_order(state):
         return False
-    state.orders.append(Order(food_id))
+    state.orders.append(Order(food_id, sender=sender))
     return True
 
 

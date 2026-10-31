@@ -326,6 +326,47 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-fr-pct { font-size: 12px; font-weight: 600; color: var(--sub); margin-top: 4px; }
 .mk-fr-rest { font-size: 13px; color: var(--sub); margin-top: 12px; }
 
+/* ---------- 냉장고: 날짜 묶음 (날짜 머리줄 + 그날 음식 카드를 한 덩어리로) ---------- */
+.mk-fz-day { margin-top: calc(var(--gap-out) - var(--gap-in)); }
+.mk-fz-day.first { margin-top: 0; }
+.mk-fz-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 0 2px 8px; }
+.mk-fz-date { font-size: 15px; font-weight: 700; color: var(--ink); }
+.mk-fz-total { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--sub); white-space: nowrap; }
+.mk-fz-sum { font-size: 13px; color: var(--sub); }
+.mk-fz-sum b { font-size: 17px; font-weight: 700; color: var(--ink); margin-right: 2px; }
+.mk-fz-goal { font-size: 12px; font-weight: 700; color: #FFFFFF; background: var(--ink); border-radius: 999px; padding: 3px 8px; }
+.mk-fz-list { background: var(--soft); border-radius: 16px; padding: 4px 16px; }
+.mk-fz-row { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 8px 0; }
+.mk-fz-row + .mk-fz-row { border-top: 1px solid var(--line); }
+.mk-fz-row img { width: 48px; height: 48px; flex: none; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(30, 37, 48, .14)); }
+.mk-fz-text { flex: 1; min-width: 0; }
+.mk-fz-name { font-size: 16px; font-weight: 600; color: var(--ink); }
+.mk-fz-meta { font-size: 13px; color: var(--sub); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.mk-fz-kcal { font-size: 15px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+
+/* ---------- 친구 카드 (누르면 배달 보내기) · 배달 표시 ---------- */
+.st-key-row_friends {
+  display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important;
+  overflow-x: auto; gap: var(--gap-in) !important; margin: 0 -16px; padding: 0 16px 4px; scrollbar-width: none;
+}
+.st-key-row_friends::-webkit-scrollbar { display: none; }
+.st-key-row_friends > * { flex: 0 0 148px !important; width: 148px !important; }
+.st-key-row_friends .mk-fr { height: 100%; }
+.mk-fr.mk-card { border-width: 2px; }
+.mk-fr-head { position: relative; }
+.mk-fr-gift {
+  margin-left: auto; font-size: 11px; font-weight: 700; color: #FFFFFF; background: var(--ink);
+  border-radius: 999px; padding: 2px 7px; white-space: nowrap;
+}
+.mk-q-from { font-size: 11px; font-weight: 700; color: var(--ink); background: #FFFFFF; border-radius: 999px; padding: 2px 7px; margin-top: 6px; }
+
+/* ---------- 배달 보내기: 받는 친구 ---------- */
+.mk-gift-to { display: flex; align-items: center; gap: 12px; background: var(--soft); border-radius: 16px; padding: 12px 14px; }
+.mk-avatar-lg { width: 44px; height: 44px; font-size: 16px; }
+.mk-gift-name { font-size: 16px; font-weight: 700; color: var(--ink); }
+.mk-gift-doing { font-size: 13px; color: var(--sub); margin-top: 2px; }
+.mk-gift-to .mk-fr-gift { margin-left: auto; }
+
 /* ---------- 광고 자리 ---------- */
 .mk-ad {
   height: 56px; border-radius: 12px; border: 1px solid var(--line); background: #FFFFFF;

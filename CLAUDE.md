@@ -6,7 +6,7 @@ MUKBOGI 프로젝트에서 작업할 때 따르는 안내서입니다.
 
 MUKBOGI는 먹고 싶은 음식을 앱에서 "주문"하고, 걷거나 뛰어서 그 음식을 한 입씩 "소화"시키는 **iOS 운동 동기부여 앱**입니다. 다 소화한 음식은 "냉장고"에 날짜별로 쌓이고, 친구 소화 현황·먹보 랭킹으로 가볍게 경쟁합니다.
 
-- 현재 단계: **Streamlit 프로토타입 개발 중**. MVP PRD v0.6 작성 완료. 온보딩(Story 1.1~1.3)·홈(Story 3.1~3.7, 6.1 광고 자리) 구현됨. 주문하기는 임시 화면, 냉장고·커뮤니티는 자리만 있음, 내정보는 하단 탭 메뉴만 있음(화면 없음).
+- 현재 단계: **Streamlit 프로토타입 개발 중**. MVP PRD v0.8 작성 완료. 온보딩(Story 1.1~1.3)·홈(Story 3.1~3.7, 6.1 광고 자리)·냉장고(Story 4.1~4.2)·친구에게 음식 배달(Story 5.4) 구현됨. 주문하기는 임시 화면, 커뮤니티는 자리만 있음, 내정보는 하단 탭 메뉴만 있음(화면 없음).
 - 플랫폼: iOS (iPhone) 전용. Android는 MVP 범위 밖.
 - 배포: 프로토타입을 **Streamlit**으로 만들어 배포한다. 자세한 내용은 아래 "기술 스택" 참조.
 - 그 밖의 기술 스택은 아직 정하지 않음. 스택을 고르는 작업이 필요하면 임의로 정하지 말고 사용자에게 먼저 묻는다. 정해지면 이 파일의 "기술 스택" 항목에 기록한다.
@@ -126,7 +126,10 @@ MUKBOGI는 먹고 싶은 음식을 앱에서 "주문"하고, 걷거나 뛰어서
 | `core/images.py` | 음식 이미지 생성 (체크무늬 배경을 투명하게 빼고 음식 크기를 고르게 맞춤) + 한 입씩 베어 먹은 단계별 이미지(`food_bitten`) + 프로필 원형 사진. 화면에는 원본 대신 항상 이걸 쓴다 |
 | `core/onboarding.py` | 온보딩 화면 (PRD Epic 1) |
 | `core/meal.py` | 주문·대기열·소화·냉장고 상태와 규칙 (Streamlit과 분리, `tests/test_meal.py`) |
-| `core/home.py` | 홈 화면(PRD Epic 3) + 하단 탭 + 소화 완료 연출 + 임시 주문 화면 + 냉장고·커뮤니티 자리 |
+| `core/home.py` | 홈 화면(PRD Epic 3) + 하단 탭 + 소화 완료 연출 + 임시 주문 화면 + 커뮤니티 자리. 화면 전환(`render`)도 여기서 한다 |
+| `core/fridge.py` | 냉장고 화면(PRD Epic 4). 날짜별 묶음 로직 `group_by_day`는 화면과 분리 (`tests/test_fridge.py`) |
+| `core/gift.py` | 친구에게 음식 배달 보내기 화면 + 보낸 기록 + 친구 답례 도착(프로토타입 흉내, `st.fragment` 1초 타이머) (`tests/test_gift.py`) |
+| `core/korean.py` | 조사 붙이기 (`eul_reul` 을/를, `i_ga` 이/가). 이름·음식 이름 뒤 조사는 직접 쓰지 말고 이걸 쓴다 |
 | `core/demo.py` | 프로토타입 더미 데이터 (친구 소화 현황). 프로필 사진은 `assets/img/profile/` |
 | `.streamlit/config.toml` | 테마 색 (`DESIGN.md` 값) |
 | `tests/` | pytest. 규칙 테스트 + `streamlit.testing.v1.AppTest` 화면 흐름 테스트 |
@@ -136,7 +139,7 @@ MUKBOGI는 먹고 싶은 음식을 앱에서 "주문"하고, 걷거나 뛰어서
 - 화면은 **iOS 앱처럼** 만든다 (기준: iPhone 13·14, 390 × 844pt). `st.columns`는 좁은 폭에서 세로로 쌓이므로 쓰지 않고, 그리드는 key를 준 컨테이너에 CSS grid를 건다. 선택 카드는 key가 `tap_`으로 시작하는 컨테이너에 HTML 카드 + `st.button`을 넣으면 카드 전체가 버튼이 된다 (`core/style.py` 참고). 하단 주요 버튼은 key `bar_footer` 컨테이너에, 하단 탭은 key `bar_tabs` 컨테이너에 넣는다. 가로 스크롤 목록은 key `row_` 컨테이너 또는 `.mk-row-scroll`을 쓴다.
 - 짧은 알림은 `st.toast`(닫기 버튼 달린 큰 팝업)를 쓰지 않고 `core.style.toast("문구")`를 콜백에서 호출한다. `app.py` 끝의 `style.render_toast()`가 화면 맨 위에 한 번 띄우고 2.5초 뒤 사라진다.
 - `st.markdown` HTML 안에서 글자 크기를 정하는 문단은 `<p>` 대신 `<div>`를 쓴다. Streamlit이 `<p>`의 글자 크기를 덮어쓴다.
-- 화면 상태는 `session_state.screen`(home / order / fridge / community)으로 바꾸고, 주문·소화 상태는 `session_state.meal`(`core.meal.MealState`)에 둔다.
+- 화면 상태는 `session_state.screen`(home / order / fridge / community / gift)으로 바꾸고, 주문·소화 상태는 `session_state.meal`(`core.meal.MealState`)에 둔다.
 - `core/` 파일을 고친 뒤에는 실행 중인 Streamlit 서버를 재시작해야 바뀐 내용이 반영된다.
 
 ### 명령

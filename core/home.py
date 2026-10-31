@@ -3,7 +3,7 @@
 - 움직임 감지는 PRD 프로토타입 대체 표대로 "활동(걷기/달리기) + 거리 버튼"으로 흉내 낸다.
 - 백그라운드 측정·푸시·햅틱은 프로토타입에 없다.
 - 주문하기는 홈 확인용 임시 화면이다 (추천·카테고리는 Epic 2에서 만든다).
-- 냉장고·커뮤니티 탭은 자리만 있다.
+- 냉장고 화면은 core/fridge.py, 커뮤니티 탭은 자리만 있다.
 """
 
 from datetime import datetime
@@ -11,10 +11,11 @@ from html import escape
 
 import streamlit as st
 
-from core import meal
+from core import fridge, gift, meal
 from core.data import FOODS, FOODS_BY_ID
 from core.demo import FRIENDS
 from core.images import food_bitten, food_thumb, profile_thumb
+from core.korean import eul_reul, i_ga
 from core.style import html, toast
 
 TABS = (("home", "홈"), ("fridge", "냉장고"), ("community", "커뮤니티"), ("my", "내정보"))
@@ -50,6 +51,9 @@ def _today_target() -> int:
 
 
 def _go(screen: str) -> None:
+    if screen == "order" and st.session_state.screen != "order":
+        # 주문 화면의 "이전"은 들어오기 전 화면(홈·냉장고)으로 돌아간다
+        st.session_state.order_from = st.session_state.screen
     st.session_state.screen = screen
     st.session_state.order_pick = None
 
@@ -88,14 +92,6 @@ def _close_celebration(next_screen: str) -> None:
         _go("fridge")
 
 
-def _eul_reul(word: str) -> str:
-    """받침이 있으면 '을', 없으면 '를'."""
-    last = word[-1]
-    if "가" <= last <= "힣":
-        return word + ("을" if (ord(last) - ord("가")) % 28 else "를")
-    return word + "을(를)"
-
-
 def _pick_order(food_id: str) -> None:
     st.session_state.order_pick = food_id
 
@@ -103,7 +99,7 @@ def _pick_order(food_id: str) -> None:
 def _place_order() -> None:
     food_id = st.session_state.order_pick
     if food_id and meal.order(_state(), food_id):
-        toast(f"{_eul_reul(FOODS_BY_ID[food_id].name)} 주문했어요")
+        toast(f"{eul_reul(FOODS_BY_ID[food_id].name)} 주문했어요")
         _go("home")
 
 
@@ -227,11 +223,12 @@ def _queue_section(state: meal.MealState) -> None:
     with st.container(key="row_queue"):
         for idx, o in enumerate(state.waiting):
             html(
-                '<div class="mk-q">'
+                f'<div class="mk-q{" mk-q-gift" if o.sender else ""}">'
                 f'<img src="{food_thumb(o.food)}" alt="">'
                 f'<div class="mk-q-name">{escape(o.food.name)}</div>'
                 f'<div class="mk-q-kcal">{o.food.kcal}kcal</div>'
-                "</div>"
+                + (f'<div class="mk-q-from">{escape(i_ga(o.sender))} 보냄</div>' if o.sender else "")
+                + "</div>"
             )
         if meal.can_order(state):
             with st.container(key="tap_queue_add"):
@@ -248,25 +245,28 @@ def _friends_section() -> None:
             html('<div class="mk-sub">친구를 추가해 보세요</div>')
             st.button("커뮤니티 가기", key="home_community", on_click=_go, args=("community",))
         return
-    cards = []
-    for f in FRIENDS:
-        if f.food_id is None:
-            body = '<div class="mk-fr-rest">쉬는 중이에요</div>'
-        else:
+    html('<div class="mk-count">소화 중인 친구 카드를 누르면 음식을 배달할 수 있어요</div>')
+    with st.container(key="row_friends"):
+        for idx, f in enumerate(FRIENDS):
+            sent = gift.sent_count(f)
+            badge = f'<span class="mk-fr-gift">배달 {sent}</span>' if sent else ""
+            head = f'<div class="mk-fr-head">{_avatar(f)}<span>{escape(f.name)}</span>{badge}</div>'
+            if f.food_id is None:
+                html(f'<div class="mk-fr">{head}<div class="mk-fr-rest">쉬는 중이에요</div></div>')
+                continue
             food = FOODS_BY_ID[f.food_id]
             pct = round(f.progress * 100)
-            body = (
-                f'<div class="mk-fr-food"><img src="{food_thumb(food)}" alt="">{escape(food.name)}</div>'
-                f'<div class="mk-bar" role="img" aria-label="{escape(f.name)} {escape(food.name)} {pct}% 소화">'
-                f'<i style="width:{pct}%"></i></div>'
-                f'<div class="mk-fr-pct">{pct}%</div>'
-            )
-        cards.append(
-            '<div class="mk-fr">'
-            f'<div class="mk-fr-head">{_avatar(f)}<span>{escape(f.name)}</span></div>'
-            f"{body}</div>"
-        )
-    html(f'<div class="mk-row-scroll">{"".join(cards)}</div>')
+            with st.container(key=f"tap_friend_{idx}"):
+                html(
+                    '<div class="mk-card mk-fr">'
+                    f"{head}"
+                    f'<div class="mk-fr-food"><img src="{food_thumb(food)}" alt="">{escape(food.name)}</div>'
+                    f'<div class="mk-bar" role="img" aria-label="{escape(f.name)} {escape(food.name)} {pct}% 소화">'
+                    f'<i style="width:{pct}%"></i></div>'
+                    f'<div class="mk-fr-pct">{pct}%</div>'
+                    "</div>"
+                )
+                st.button(f"{f.name}에게 음식 배달 보내기", key=f"friend_{idx}", on_click=gift.open_for, args=(idx,))
 
 
 def _ad_slot() -> None:
@@ -345,7 +345,8 @@ def _order() -> None:
     state = _state()
     pick = st.session_state.order_pick
     with st.container(key="nav_row", horizontal=True, vertical_alignment="center"):
-        st.button("이전", key="order_back", type="tertiary", on_click=_go, args=("home",))
+        back_to = st.session_state.get("order_from", "home")
+        st.button("이전", key="order_back", type="tertiary", on_click=_go, args=(back_to,))
         html('<div class="mk-nav-title">주문하기</div>')
         html('<div class="mk-nav-slot"></div>')
     sub = (
@@ -404,8 +405,7 @@ def _placeholder(title: str, sub: str) -> None:
 
 
 def _fridge() -> None:
-    count = len(_state().fridge)
-    _placeholder("냉장고", f"지금까지 {count}개를 소화했어요. 냉장고 화면은 다음 단계에서 만들어요.")
+    fridge.render(_state().fridge, datetime.now().date(), _today_target(), _go)
 
 
 def _community() -> None:
@@ -417,15 +417,18 @@ def _community() -> None:
 
 def render() -> None:
     _init_state()
+    gift.init_state()
+    gift.deliver_due(_state())  # 도착 시간이 된 친구의 답례 배달을 조리 중인 음식에 넣는다
     screen = st.session_state.screen
 
     if st.session_state.celebrate:
         _celebration()
-        return
-
-    if screen == "order":
+    elif screen == "order":
         _order()
-        return
+    elif screen == "gift":
+        gift.render_send()
+    else:
+        {"home": _home, "fridge": _fridge, "community": _community}[screen]()
+        _tab_bar(screen)
 
-    {"home": _home, "fridge": _fridge, "community": _community}[screen]()
-    _tab_bar(screen)
+    gift.timer()

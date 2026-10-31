@@ -120,7 +120,7 @@ def test_finish_last_food_then_fridge():
     _click(at, "move_3_0")
     _click(at, "done_fridge")
     assert at.session_state["screen"] == "fridge"
-    assert "지금까지 1개를 소화했어요" in _text(at)
+    assert "지금까지 1개, 모두 150kcal를 소화했어요" in _text(at)
     _click(at, "tab_home")
     assert "주문하러 가요" in _text(at)
 
