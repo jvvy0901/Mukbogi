@@ -54,7 +54,7 @@ def test_send_food_to_friend():
     _click(at, "friend_haneul")
     assert at.session_state["screen"] == "gift"
     text = _text(at)
-    assert "하늘에게" in text and "무엇을 보낼까요?" in text and "마라탕을 소화 중이에요" in text
+    assert "하늘에게" in text and "무엇을 보낼까요?" in text and "마라탕 소화 중" in text and "62%" in text
     assert at.button(key="gift_send").disabled
     _click(at, "gift_ttuckbokki")
     assert at.button(key="gift_send").label == "떡볶이 보내기"

@@ -44,7 +44,7 @@ def test_friends_tab_shows_my_id_requests_and_friends():
     assert "받은 요청" in text and "도윤" in text
     for name in ("하늘", "준", "수아", "민"):
         assert name in text
-    assert at.button(key="gift_to_haneul").label == "배달 보내기"
+    assert at.button(key="gift_to_haneul").label == "배달하기"
 
 
 def test_search_and_send_then_cancel_request():
@@ -90,6 +90,7 @@ def test_open_friend_fridge_and_remove_friend_with_confirm():
     text = _text(at)
     assert "준의 냉장고" in text and "kcal" in text
     assert "km" not in text.split("준의 냉장고")[1]  # 다른 유저의 거리는 숨긴다
+    assert at.button(key="u_gift").label == "배달하기"
     _click(at, "u_remove")
     assert "준을 친구에서 삭제할까요?" in _text(at)
     _click(at, "u_remove_ok")
@@ -139,3 +140,12 @@ def test_gift_tab_lists_sent_and_received_with_status():
     assert "소화 중이에요" in text  # 내 음식이 없었으므로 바로 소화 중
     _click(at, [b.key for b in at.button if (b.key or "").startswith("thx_")][0])
     assert at.session_state["screen"] == "gift" and at.session_state["gift_to"] == "sua"
+
+
+def test_friend_status_is_one_line_with_compact_progress():
+    at = _start()
+    md = " ".join(m.value for m in at.markdown)
+    # [음식 이름 (스크린리더: 소화 중)] [막대][%] — 한 줄, 다른 목록 줄과 같은 높이
+    assert '<div class="mk-doing-food">마라탕<span class="mk-sr"> 소화 중</span></div><div class="mk-doing-prog">' in md
+    assert '<b class="mk-doing-pct">62%</b>' in md
+    assert '<div class="mk-doing-food">쉬는 중이에요</div>' in md  # 민 (막대 없음)

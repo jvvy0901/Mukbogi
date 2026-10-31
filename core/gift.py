@@ -142,10 +142,21 @@ def avatar(user: User, cls: str = "mk-avatar") -> str:
     return f'<span class="{cls} mk-avatar-initial" aria-hidden="true">{escape(user.name[0])}</span>'
 
 
-def doing_text(user: User) -> str:
-    if user.food_id:
-        return f"{eul_reul(FOODS_BY_ID[user.food_id].name)} 소화 중이에요 · {round(user.progress * 100)}%"
-    return "쉬는 중이에요"
+def doing_html(user: User) -> str:
+    """친구 상태 한 줄: [음식 이름 (남는 폭, 길면 …)] [진행 막대 48px] [%]  — "소화 중"은 막대가 보여 주므로 스크린리더에만 읽힌다.
+    막대와 %는 고정 폭으로 글자 칸 오른쪽 끝에 붙어서, 목록의 모든 줄에서 같은 위치에 세로로 맞는다.
+    """
+    if not user.food_id:
+        return '<div class="mk-doing"><div class="mk-doing-food">쉬는 중이에요</div></div>'
+    pct = round(user.progress * 100)
+    return (
+        '<div class="mk-doing">'
+        f'<div class="mk-doing-food">{escape(FOODS_BY_ID[user.food_id].name)}<span class="mk-sr"> 소화 중</span></div>'
+        '<div class="mk-doing-prog">'
+        f'<span class="mk-doing-bar" aria-hidden="true"><i style="width:{pct}%"></i></span>'
+        f'<b class="mk-doing-pct">{pct}%</b>'
+        "</div></div>"
+    )
 
 
 # 배달 보내기 화면 -------------------------------------------------------------
@@ -172,7 +183,7 @@ def render_send() -> None:
         '<div class="mk-gift-to">'
         f"{avatar(user, 'mk-avatar mk-avatar-lg')}"
         f'<div><div class="mk-gift-name">{escape(user.name)}</div>'
-        f'<div class="mk-gift-doing">지금 {escape(doing_text(user))}</div></div>'
+        f"{doing_html(user)}</div>"
         + (f'<span class="mk-fr-gift">배달 {count}</span>' if count else "")
         + "</div>"
     )

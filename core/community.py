@@ -118,26 +118,31 @@ def _me_avatar(cls: str = "mk-avatar") -> str:
     return f'<span class="{cls} mk-avatar-initial" aria-hidden="true">{ME_NAME}</span>'
 
 
-def _user_info(user: User, sub: str, extra: str = "", avatar_cls: str = "mk-avatar mk-avatar-md") -> str:
+def _user_info(user: User, sub: str, extra: str = "", avatar_cls: str = "mk-avatar mk-avatar-md",
+               sub_html: str | None = None) -> str:
+    """sub_html이 있으면 상태 줄을 그 조각으로 그린다 (예: 소화 중 + 진행률)."""
+    sub_part = sub_html if sub_html is not None else f'<div class="mk-u-sub">{escape(sub)}</div>'
     return (
         '<div class="mk-u">'
         f"{gift.avatar(user, avatar_cls)}"
         '<div class="mk-u-text">'
         f'<div class="mk-u-name">{escape(user.name)}<span class="mk-u-id">@{escape(user.id)}</span>{extra}</div>'
-        f'<div class="mk-u-sub">{escape(sub)}</div>'
+        f"{sub_part}"
         "</div></div>"
     )
 
 
-def _user_row(key: str, user: User, sub: str, actions, extra: str = "", openable: bool = True) -> None:
+def _user_row(key: str, user: User, sub: str, actions, extra: str = "", openable: bool = True,
+              sub_html: str | None = None) -> None:
     """한 줄: [아바타 · 이름 · 상태(누르면 그 유저 화면)] [버튼들]"""
+    info = _user_info(user, sub, extra, sub_html=sub_html)
     with st.container(key=f"urow_{key}", horizontal=True, vertical_alignment="center"):
         if openable:
             with st.container(key=f"tap_u_{key}"):
-                html(_user_info(user, sub, extra))
+                html(info)
                 st.button(f"{user.name} 프로필 보기", key=f"open_{key}", on_click=_open_user, args=(user.id,))
         else:
-            html(_user_info(user, sub, extra))
+            html(info)
         for label, bkey, btype, cb, args in actions:
             st.button(label, key=bkey, type=btype, on_click=cb, args=args)
 
@@ -219,8 +224,8 @@ def _friends_tab() -> None:
         for u in friends:
             n = gift.sent_count(u.id)
             badge = f'<span class="mk-fr-gift">배달 {n}</span>' if n else ""
-            _user_row(f"fr_{u.id}", u, gift.doing_text(u), [
-                ("배달 보내기", f"gift_to_{u.id}", "secondary", gift.open_for, (u.id, "community")),
+            _user_row(f"fr_{u.id}", u, "", sub_html=gift.doing_html(u), actions=[
+                ("배달하기", f"gift_to_{u.id}", "secondary", gift.open_for, (u.id, "community")),
             ], extra=badge)
 
 
@@ -413,14 +418,14 @@ def render_user(state: meal.MealState) -> None:
         '<div class="mk-u-text">'
         f'<div class="mk-prof-name">{escape(user.name)}<span class="mk-rel">{rel_text}</span></div>'
         f'<div class="mk-u-id">@{escape(user.id)}</div>'
-        f'<div class="mk-u-sub">{escape(gift.doing_text(user))}</div>'
+        f"{gift.doing_html(user)}"
         f'<div class="mk-u-sub">이번 주 <b>{week_kcal:,}kcal</b> 소화</div>'
         "</div></div>"
     )
 
     with st.container(key="user_actions", horizontal=True):
         if rel == "friend":
-            st.button("배달 보내기", key="u_gift", type="primary", on_click=gift.open_for, args=(user.id, "user"))
+            st.button("배달하기", key="u_gift", type="primary", on_click=gift.open_for, args=(user.id, "user"))
             st.button("친구 삭제", key="u_remove", type="secondary", on_click=_ask_remove, args=(user.id,))
         elif rel == "none":
             st.button("친구 요청", key="u_request", type="primary", on_click=_request, args=(user.id,))

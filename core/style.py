@@ -398,6 +398,19 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-u-id { font-size: 12px; font-weight: 500; color: var(--sub); overflow: hidden; text-overflow: ellipsis; }
 .mk-u-sub { font-size: 13px; color: var(--sub); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mk-u-sub b { color: var(--ink); font-weight: 700; }
+/* 친구 상태 한 줄 (다른 목록 줄과 같은 두 줄 높이 유지):
+   [음식 소화 중 — 남는 폭, 길면 …] [진행 막대 48px + % 34px — 고정 폭, 글자 칸 오른쪽 끝]
+   → 막대·%가 모든 줄에서 같은 위치에 세로로 맞는다 */
+.mk-doing { display: flex; align-items: center; gap: 8px; min-width: 0; margin-top: 2px; }
+.mk-doing-food { flex: 1 1 auto; min-width: 0; font-size: 13px; color: var(--sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mk-doing-prog { flex: none; display: flex; align-items: center; gap: 6px; }
+.mk-doing-bar { flex: none; width: 48px; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.mk-doing-bar i { display: block; height: 100%; background: var(--ink); border-radius: inherit; }
+.mk-doing-pct { flex: none; width: 34px; text-align: right; font-size: 13px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+@media (max-width: 359px) { .mk-doing-bar { display: none; } }  /* 좁은 화면(SE 등): 막대를 숨기고 음식 이름에 자리를 준다 (%는 같은 자리에 그대로) */
+/* 화면에는 안 보이고 스크린리더만 읽는 글자 */
+.mk-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.mk-gift-to .mk-u-text, .mk-gift-to > div:nth-child(2) { flex: 1; min-width: 0; }
 .mk-u-food { width: 44px; height: 44px; flex: none; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(30, 37, 48, .14)); }
 .mk-avatar-md { width: 40px; height: 40px; font-size: 14px; }
 .mk-avatar-xl { width: 64px; height: 64px; font-size: 22px; }
