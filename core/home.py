@@ -176,10 +176,6 @@ def _hero(order: meal.Order, measuring: bool) -> str:
 
 def _meal_card(order: meal.Order, measuring: bool) -> None:
     food = order.food
-    pct = round(order.progress * 100)
-    dots = "".join(
-        f'<span class="{"on" if i < order.bites_eaten else ""}"></span>' for i in range(food.bites)
-    )
     chip = (
         '<span class="mk-chip on"><i></i>소화 중이에요</span>'
         if measuring
@@ -191,9 +187,7 @@ def _meal_card(order: meal.Order, measuring: bool) -> None:
         + _hero(order, measuring)
         + f'<div class="mk-meal-name">{escape(food.name)}</div>'
         f'<div class="mk-meal-kcal">{food.kcal}kcal</div>'
-        f'<div class="mk-dots" aria-hidden="true">{dots}</div>'
-        f'<div class="mk-meal-prog"><span><b>{pct}%</b> 소화했어요</span>'
-        f"<span>남은 <b>{round(order.remaining_kcal)}kcal</b></span></div>"
+        f'<div class="mk-meal-prog">남은 <b>{round(order.remaining_kcal)}kcal</b></div>'
         '<dl class="mk-stats">'
         f'<div class="mk-stat"><dt>움직인 거리</dt><dd>{order.distance_km:.2f}<small>km</small></dd></div>'
         f'<div class="mk-stat"><dt>소모 칼로리</dt><dd>{round(order.eaten_kcal)}<small>kcal</small></dd></div>'

@@ -67,7 +67,7 @@ def test_start_stop_and_digest_by_bites():
     _click(at, "move_1_0")  # 달리기 1km = 60kcal = 1입
     text = _text(at)
     assert "한 입 1/10" in text
-    assert "10% 소화했어요" in text
+    assert "소화했어요" not in text  # 진행률은 한 입 수와 남은 칼로리로만 보여 준다
     assert "남은 540kcal" in text
     assert "1.00km" in text
 

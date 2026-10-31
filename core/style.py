@@ -280,10 +280,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 }
 .mk-meal-name { text-align: center; font-size: 20px; font-weight: 700; margin-top: 12px; }
 .mk-meal-kcal { text-align: center; font-size: 14px; color: var(--sub); }
-.mk-dots { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
-.mk-dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
-.mk-dots span.on { background: var(--ink); }
-.mk-meal-prog { display: flex; justify-content: space-between; font-size: 14px; color: var(--sub); margin-top: 16px; }
+.mk-meal-prog { text-align: center; font-size: 14px; color: var(--sub); margin-top: 12px; }
 .mk-meal-prog b { color: var(--ink); }
 .mk-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 0; }
 .mk-stat { background: #FFFFFF; border-radius: 12px; padding: 10px 12px; }
