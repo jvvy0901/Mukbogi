@@ -496,10 +496,30 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .st-key-my_weight [data-testid="stNumberInputStepDown"], .st-key-my_weight [data-testid="stNumberInputStepUp"],
 .st-key-my_weight [data-testid="InputInstructions"] { display: none; }
 /* 플러스 카드 */
-.st-key-plus_box { background: var(--soft); border-radius: 16px; padding: 16px; gap: 12px !important; }
-.mk-plus-state { font-size: 13px; font-weight: 700; color: var(--ink); }
-.mk-plus-list { margin: 0; padding-left: 18px; font-size: 15px; color: var(--ink); line-height: 1.7; }
-.mk-soon { font-size: 11px; font-weight: 700; color: var(--sub); background: #FFFFFF; border-radius: 999px; padding: 2px 7px; margin-left: 4px; }
+/* 근접: 머리말(배지+제목) 안 8px · 머리말→혜택 16px · 혜택→버튼 16px · 버튼→안내 6px (안내는 버튼에 붙는다)
+   위계: 섹션 제목 18px > 카드 제목 17px > 혜택 15px > 안내 12px */
+.st-key-plus_box { background: var(--soft); border-radius: 16px; padding: 20px 16px 16px; gap: 16px !important; }
+.mk-plus-head { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.mk-plus-badge { font-size: 12px; font-weight: 700; color: var(--sub); background: #FFFFFF; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; }
+.mk-plus-badge.on { color: var(--ink); background: var(--cyan); border-color: var(--cyan); }
+.mk-plus-title { font-size: 17px; font-weight: 700; color: var(--ink); line-height: 1.35; }
+/* 혜택 목록: 흰 카드 안 [아이콘 원 | 이름 | (준비 중)] 줄 */
+.mk-plus-perks { list-style: none; margin: 16px 0 0 !important; padding: 0 14px !important; background: #FFFFFF; border-radius: 14px; }
+.mk-plus-perks li { margin: 0 !important; padding: 0 !important; display: flex; align-items: center; gap: 12px; min-height: 56px; font-size: 15px; font-weight: 600; color: var(--ink); }
+.mk-plus-perks li + li { border-top: 1px solid var(--soft); }
+.mk-perk-ico { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--soft); position: relative; }
+.mk-perk-ico::before {
+  content: ""; position: absolute; inset: 8px; background: var(--ink);
+  -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat;
+}
+.mk-plus-perks .mk-soon { margin-left: auto; }
+.mk-ico-noad { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='5' width='18' height='14' rx='3'/><path d='M4 4l16 16'/></svg>"); }
+.mk-ico-report { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='4' y='3' width='16' height='18' rx='2'/><path d='M8 16v-3M12 16V9M16 16v-5'/></svg>"); }
+.mk-soon { font-size: 11px; font-weight: 700; color: var(--sub); background: var(--soft); border-radius: 999px; padding: 3px 8px; white-space: nowrap; }
+/* 플러스 시작·해지 버튼은 같은 크기 (높이 52px · 모서리 14px · 17px/700). 해지는 흰 채움 + 남색 2px 테두리 */
+.st-key-plus_box .stButton button { height: 52px; min-height: 52px; border-radius: 14px; font-size: 17px; font-weight: 700; box-sizing: border-box; }
+.st-key-plus_box [data-testid="stBaseButton-secondary"] { border: 2px solid var(--ink); background: #FFFFFF; color: var(--ink); }
+.mk-plus-note { font-size: 12px; color: var(--sub); text-align: center; margin-top: -10px; }
 .st-key-reset_ask [data-testid="stBaseButton-secondary"] { min-height: 48px; border-radius: 14px; }
 
 /* ---------- 광고 자리 ---------- */

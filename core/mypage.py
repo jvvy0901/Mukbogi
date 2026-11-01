@@ -152,20 +152,22 @@ def render(state: meal.MealState) -> None:
     _section("MUKBOGI 플러스")
     plus_on = ss.plus
     with st.container(key="plus_box"):
+        state = '<span class="mk-plus-badge on">이용 중</span>' if plus_on else '<span class="mk-plus-badge">무료 이용 중</span>'
+        title = "광고 없이 쓰고 있어요" if plus_on else "광고 없이 소화에만 집중해요"
         html(
-            '<div class="mk-plus-head">'
-            f'<span class="mk-plus-state">{"이용 중" if plus_on else "무료 이용 중"}</span>'
-            "</div>"
-            '<ul class="mk-plus-list">'
-            "<li>광고 없이 쓰기</li>"
-            "<li>주간·월간 소화 리포트 <span class='mk-soon'>준비 중</span></li>"
+            f'<div class="mk-plus-head">{state}<div class="mk-plus-title">{title}</div></div>'
+            '<ul class="mk-plus-perks">'
+            '<li><i class="mk-perk-ico mk-ico-noad" aria-hidden="true"></i>'
+            '<span>광고 없이 쓰기</span></li>'
+            '<li><i class="mk-perk-ico mk-ico-report" aria-hidden="true"></i>'
+            "<span>주간·월간 소화 리포트</span><span class='mk-soon'>준비 중</span></li>"
             "</ul>"
         )
         if plus_on:
             st.button("플러스 해지하기", key="plus_off", type="secondary", width="stretch", on_click=_set_plus, args=(False,))
         else:
             st.button("플러스 시작하기", key="plus_on", type="primary", width="stretch", on_click=_set_plus, args=(True,))
-        html('<div class="mk-my-note">프로토타입이라 실제로 결제되지 않아요.</div>')
+        html('<div class="mk-plus-note">프로토타입이라 실제로 결제되지 않아요.</div>')
 
     # 프로토타입 전용
     _section("프로토타입")
