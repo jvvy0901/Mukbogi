@@ -99,6 +99,7 @@ def _pick_order(food_id: str) -> None:
 def _place_order() -> None:
     food_id = st.session_state.order_pick
     if food_id and meal.order(_state(), food_id):
+        st.session_state.just_added_id = id(_state().orders[-1])  # 들어간 자리에서 나타나게 (한 번만)
         toast(f"{eul_reul(FOODS_BY_ID[food_id].name)} 주문했어요")
         _go("home")
 
@@ -180,8 +181,9 @@ def _meal_card(order: meal.Order, measuring: bool) -> None:
         if measuring
         else '<span class="mk-chip"><i></i>멈춰 있어요</span>'
     )
+    new = " mk-new" if st.session_state.get("just_added_id") == id(order) else ""
     html(
-        '<div class="mk-meal">'
+        f'<div class="mk-meal{new}">'
         f'<div class="mk-meal-top">{chip}<span class="mk-bites-label">한 입 {order.bites_eaten}/{food.bites}</span></div>'
         + _hero(order, measuring)
         + f'<div class="mk-meal-name">{escape(food.name)}</div>'
@@ -226,7 +228,7 @@ def _queue_section(state: meal.MealState) -> None:
     with st.container(key="row_queue"):
         for idx, o in enumerate(state.waiting):
             html(
-                f'<div class="mk-q{" mk-q-gift" if o.sender else ""}">'
+                f'<div class="mk-q{" mk-q-gift" if o.sender else ""}{" mk-new" if st.session_state.get("just_added_id") == id(o) else ""}">'
                 f'<img src="{food_thumb(o.food)}" alt="">'
                 f'<div class="mk-q-name">{escape(o.food.name)}</div>'
                 f'<div class="mk-q-kcal">{o.food.kcal}kcal</div>'
@@ -253,7 +255,8 @@ def _friends_section() -> None:
     with st.container(key="row_friends"):
         for f in friends:
             sent = gift.sent_count(f.id)
-            badge = f'<span class="mk-fr-gift">배달 {sent}</span>' if sent else ""
+            bump = " mk-bump" if st.session_state.get("just_gifted") == f.id else ""
+            badge = f'<span class="mk-fr-gift{bump}">배달 {sent}</span>' if sent else ""
             head = f'<div class="mk-fr-head">{gift.avatar(f)}<span>{escape(f.name)}</span>{badge}</div>'
             if f.food_id is None:
                 html(f'<div class="mk-fr">{head}<div class="mk-fr-rest">쉬는 중이에요</div></div>')

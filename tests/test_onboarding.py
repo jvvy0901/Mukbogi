@@ -111,3 +111,16 @@ def test_weight_kept_after_going_back():
     _click(at, "ob_back_2")
     _click(at, "ob_next_1")
     assert at.number_input(key="ob_weight").value == 70.0
+
+
+def test_step_header_slides_in_matching_direction():
+    """처음 열 때는 움직이지 않고, 다음 단계는 오른쪽에서·이전 단계는 왼쪽에서 들어온다."""
+    at = _start()
+    header = lambda: next(m.value for m in at.markdown if 'class="mk-header' in m.value)
+    assert 'class="mk-header"' in header()
+    _click(at, "ob_pick_mid")
+    _click(at, "ob_next_0")
+    assert "mk-header mk-fwd" in header()
+    assert 'class="on now"' in next(m.value for m in at.markdown if "mk-progress" in m.value and "<span" in m.value)
+    _click(at, "ob_back_1")
+    assert "mk-header mk-back" in header()

@@ -226,7 +226,8 @@ def _friends_tab() -> None:
     with st.container(key="list_friends"):
         for u in friends:
             n = gift.sent_count(u.id)
-            badge = f'<span class="mk-fr-gift">배달 {n}</span>' if n else ""
+            bump = " mk-bump" if st.session_state.get("just_gifted") == u.id else ""
+            badge = f'<span class="mk-fr-gift{bump}">배달 {n}</span>' if n else ""
             _user_row(f"fr_{u.id}", u, "", sub_html=gift.doing_html(u), actions=[
                 ("배달하기", f"gift_to_{u.id}", "secondary", gift.open_for, (u.id, "community")),
             ], extra=badge)

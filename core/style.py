@@ -39,6 +39,11 @@ _CSS = """
   --line-2: #C0C4CD;     /* colors.neutral-300 */
   --sub: #515160;        /* colors.neutral-600 */
   --gap-in: 10px;        /* 같은 묶음 안 */
+  /* 움직임 곡선 (ui-animation 스킬 기준값) */
+  --ease-press: cubic-bezier(.25, .46, .45, .94);  /* 누름에서 돌아올 때 */
+  --ease-enter: cubic-bezier(.22, 1, .36, 1);      /* 나타남 */
+  --ease-move: cubic-bezier(.25, 1, .5, 1);        /* 옆으로 이동·채움 */
+  --ease-pop: cubic-bezier(.34, 1.56, .64, 1);     /* 살짝 튀는 선택·축하 (드물게) */
   --gap-out: 28px;       /* 묶음과 묶음 사이 */
   --safe-bottom: max(env(safe-area-inset-bottom), var(--sim-safe-bottom, 0px));  /* 홈 인디케이터 영역 */
   --safe-top: max(env(safe-area-inset-top), var(--sim-safe-top, 0px));  /* 상태 표시줄 영역 */
@@ -98,7 +103,9 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
   min-height: 52px; border-radius: 14px; border: 0;
   background: var(--ink); color: #FFFFFF; font-size: 17px; font-weight: 700;
 }
-[data-testid="stBaseButton-primary"]:hover { background: var(--ink); color: #FFFFFF; opacity: .92; }
+@media (hover: hover) and (pointer: fine) {
+  [data-testid="stBaseButton-primary"]:hover { background: var(--ink); color: #FFFFFF; opacity: .92; }
+}
 [data-testid="stBaseButton-primary"]:disabled { background: var(--line); color: var(--sub); opacity: 1; }
 [data-testid="stBaseButton-tertiary"] {
   min-height: 44px; padding: 0 4px; color: var(--ink); font-size: 16px; font-weight: 600;
@@ -124,7 +131,8 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
   flex: none; width: 24px; height: 24px; border-radius: 50%;
   border: 2px solid var(--line-2); background: #FFFFFF;
 }
-.mk-card.sel .mk-pick { border-color: var(--ink); background: var(--ink) url("CHECK_WHITE") center / 15px no-repeat; }
+.mk-card.sel .mk-pick { border-color: var(--ink); background: var(--ink) url("CHECK_WHITE") center / 15px no-repeat; animation: mk-check .22s var(--ease-pop); }
+@keyframes mk-check { from { transform: scale(.6); } }
 
 /* ---------- 1단계: 유형 카드 (한 줄 = 사진 · 정보 · 선택 표시) ---------- */
 .mk-type { display: flex; align-items: center; gap: 14px; padding: 16px; }
@@ -193,7 +201,9 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
   min-height: 44px; border-radius: 12px; border: 1.5px solid var(--line);
   background: #FFFFFF; color: var(--ink); font-size: 15px; font-weight: 600;
 }
-[data-testid="stBaseButton-secondary"]:hover { border-color: var(--ink); color: var(--ink); background: #FFFFFF; }
+@media (hover: hover) and (pointer: fine) {
+  [data-testid="stBaseButton-secondary"]:hover { border-color: var(--ink); color: var(--ink); background: #FFFFFF; }
+}
 .st-key-bar_footer [data-testid="stBaseButton-secondary"],
 .st-key-sheet_done [data-testid="stBaseButton-secondary"] {
   min-height: 52px; border-radius: 14px; border: 2px solid var(--ink); font-size: 17px; font-weight: 700;
@@ -390,7 +400,8 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
   position: relative; min-height: 44px; border-radius: 10px; padding: 0 8px;
   color: var(--sub); font-size: 15px; font-weight: 600;
 }
-[class*="st-key-seg_"] .stButton button:hover { text-decoration: none; color: var(--ink); }
+[class*="st-key-seg_"] .stButton button:hover { text-decoration: none; }
+@media (hover: hover) and (pointer: fine) { [class*="st-key-seg_"] .stButton button:hover { color: var(--ink); } }
 [class*="st-key-seg_"] .stButton button::after {  /* 친구 요청 수 배지 (내용은 화면에서 넣는다) */
   position: absolute; top: 7px; right: calc(50% - 34px); min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px;
   background: var(--ink); color: #FFFFFF; font-size: 10px; font-weight: 700; line-height: 16px; text-align: center;
@@ -548,8 +559,13 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
   padding: 24px 16px calc(24px + var(--safe-bottom));
 }
 .mk-done { text-align: center; padding-bottom: calc(var(--gap-out) - var(--gap-in)); }
-.mk-done img { width: 200px; height: 200px; object-fit: contain; filter: drop-shadow(0 14px 14px rgba(30, 37, 48, .18)); animation: mk-pop .5s ease-out; }
+.mk-done img { width: 200px; height: 200px; object-fit: contain; filter: drop-shadow(0 14px 14px rgba(30, 37, 48, .18)); animation: mk-pop .45s var(--ease-pop); }
 @keyframes mk-pop { from { transform: scale(.6); opacity: 0; } }
+.mk-done-title, .mk-done-meta, .st-key-sheet_done .stButton { animation: mk-rise .26s var(--ease-enter) both; }
+.mk-done-title { animation-delay: .14s; }
+.mk-done-meta { animation-delay: .18s; }
+.st-key-sheet_done .stButton { animation-delay: .22s; }
+@keyframes mk-rise { from { opacity: 0; transform: translateY(8px); } }
 .mk-done-title { font-size: 26px; font-weight: 700; line-height: 1.35; margin-top: 20px; }
 .mk-done-meta { font-size: 14px; color: var(--sub); margin-top: 8px; }
 
@@ -575,7 +591,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
   background: var(--ink); color: #FFFFFF; font-size: 14px; font-weight: 600; line-height: 1.4; text-align: center;
   box-shadow: 0 6px 20px rgba(30, 37, 48, .18); pointer-events: none;
   transform: translateX(-50%); opacity: 0;
-  animation: mk-toast 2.6s ease forwards;
+  animation: mk-toast 2.6s var(--ease-enter) forwards;
 }
 @keyframes mk-toast {
   0% { opacity: 0; transform: translate(-50%, -8px); }
@@ -589,9 +605,45 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 }
 
 :focus-visible { outline: 3px solid var(--cyan) !important; outline-offset: 2px; }
-@media (prefers-reduced-motion: reduce) {
-  *:not(.mk-toast) { animation: none !important; transition: none !important; }
+/* ---------- 인터랙션 (ui-animation 스킬 기준) ----------
+   누름: 0ms로 바로 97%, 손을 떼면 160ms로 돌아온다. 상태 색은 150ms. 터치 기본 회색 깜빡임·두 번 탭 확대는 끈다 */
+.stApp .stButton button, [class*="st-key-tap_"] { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.stApp .stButton button {
+  transition: transform .16s var(--ease-press), background-color .15s ease, border-color .15s ease, color .15s ease, opacity .15s ease, box-shadow .15s ease;
 }
+.stApp .stButton button:not(:disabled):active { transform: scale(.97); transition-duration: 0s; }
+.stApp .stButton button:disabled { cursor: not-allowed; }
+.mk-card { transition: transform .16s var(--ease-press); }
+[class*="st-key-tap_"]:has(button:active) .mk-card { transform: scale(.97); transition-duration: 0s; }
+/* 온보딩 단계: 앞으로 가면 오른쪽에서, 이전으로 가면 왼쪽에서 들어온다 (공간 방향과 같게). 진행 막대는 새 칸만 왼쪽부터 찬다 */
+.mk-header.mk-fwd { animation: mk-in-fwd .24s var(--ease-move); }
+.mk-header.mk-back { animation: mk-in-back .24s var(--ease-move); }
+@keyframes mk-in-fwd { from { opacity: 0; transform: translateX(16px); } }
+@keyframes mk-in-back { from { opacity: 0; transform: translateX(-16px); } }
+.mk-progress span.now { position: relative; background: var(--line); }
+.mk-progress span.now::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--ink);
+  transform-origin: left; animation: mk-fill .3s var(--ease-move) both;
+}
+@keyframes mk-fill { from { transform: scaleX(0); } }
+/* 방금 주문한 음식(또는 도착한 배달): 들어간 자리에서 살짝 커지며 나타난다 */
+.mk-new { animation: mk-new .26s var(--ease-enter); }
+@keyframes mk-new { from { opacity: 0; transform: scale(.94); } }
+/* 배달 수 알약: 방금 보낸 친구 카드에서 톡 튄다 */
+.mk-fr-gift.mk-bump { animation: mk-bump .3s var(--ease-pop); }
+@keyframes mk-bump { from { transform: scale(.5); opacity: 0; } }
+
+/* 동작 줄이기: 위치·크기 이동(떠다님·튀어나옴·밀려옴·누름 축소)은 끄고, 색·투명도 피드백은 남긴다 */
+@media (prefers-reduced-motion: reduce) {
+  .mk-hero.on .mk-float, .mk-chip.on i { animation-play-state: paused; }
+  .mk-plate.chomp { animation: none; }
+  .mk-card.sel .mk-pick, .mk-done img, .mk-done-title, .mk-done-meta, .st-key-sheet_done .stButton,
+  .mk-header.mk-fwd, .mk-header.mk-back, .mk-new, .mk-fr-gift.mk-bump { animation: mk-fade .15s linear both; }
+  .mk-progress span.now::after { animation: none; }
+  .stApp .stButton button:not(:disabled):active { transform: none; opacity: .7; }
+  [class*="st-key-tap_"]:has(button:active) .mk-card { transform: none; opacity: .7; }
+}
+@keyframes mk-fade { from { opacity: 0; } }
 </style>
 """.replace("CHECK_WHITE", _CHECK_WHITE)
 

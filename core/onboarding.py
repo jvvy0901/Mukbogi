@@ -36,7 +36,9 @@ def _init_state() -> None:
 
 
 def _go(step: int) -> None:
-    st.session_state.ob_step = step
+    ss = st.session_state
+    ss.ob_dir = "fwd" if step > ss.ob_step else "back"  # 단계 전환 방향 (머리말이 그 방향에서 들어온다)
+    ss.ob_step = step
 
 
 def _choose_type(eater_type: str) -> None:
@@ -83,7 +85,11 @@ def _skip_weight() -> None:
 
 def _top(step: int, title: str, sub: str) -> None:
     """상단 내비게이션 줄 + 머리말. 모든 단계에서 같은 위치·높이로 그린다 (연속성)."""
-    bars = "".join(f'<span class="{"on" if i <= step else ""}"></span>' for i in range(TOTAL_STEPS))
+    direction = st.session_state.get("ob_dir")  # 처음 열 때는 없음 → 움직임 없이 보인다
+    bars = "".join(
+        f'<span class="{"on" if i <= step else ""}{" now" if i == step and direction == "fwd" else ""}"></span>'
+        for i in range(TOTAL_STEPS)
+    )
     with st.container(key="nav_row", horizontal=True, vertical_alignment="center"):
         if step == 0:
             html('<div class="mk-nav-slot"></div>')
@@ -92,7 +98,7 @@ def _top(step: int, title: str, sub: str) -> None:
         html(f'<div class="mk-progress" aria-hidden="true">{bars}</div>')
         html(f'<div class="mk-step" aria-label="{TOTAL_STEPS}단계 중 {step + 1}단계">{step + 1}/{TOTAL_STEPS}</div>')
     html(
-        '<div class="mk-header">'
+        f'<div class="mk-header{" mk-" + direction if direction else ""}">'
         f'<div class="mk-title" role="heading" aria-level="1">{title}</div>'
         f'<div class="mk-sub">{sub}</div>'
         "</div>"

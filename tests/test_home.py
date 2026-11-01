@@ -167,3 +167,16 @@ def test_bite_mark_animation_plays_once_and_food_keeps_size():
     _click(at, "act_walk")  # 다른 동작으로 다시 그리면 애니메이션은 없다
     md = " ".join(m.value for m in at.markdown)
     assert 'class="mk-bite-prev"' not in md and 'class="mk-plate"' in md and "10입 중 1입 먹음" in md
+
+
+def test_new_order_appears_once_where_it_lands():
+    """방금 주문한 음식은 들어간 자리(소화 카드 / 조리 중 목록)에 한 번만 나타남 표시가 붙는다."""
+    at = _start()
+    _click(at, "home_order")
+    _order(at, "mocci")
+    assert any('class="mk-meal mk-new"' in m.value for m in at.markdown)
+    at.run()  # 다시 그리면 표시가 사라진다
+    assert not any("mk-new" in m.value for m in at.markdown if "<div" in m.value)
+    _click(at, "home_more")
+    _order(at, "pasta")
+    assert any('class="mk-q mk-new"' in m.value for m in at.markdown)

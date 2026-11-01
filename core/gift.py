@@ -80,6 +80,7 @@ def _send() -> None:
         return
     ss.gifts_sent.setdefault(user.id, []).append(food_id)
     _log("sent", user.id, food_id)
+    ss.just_gifted = user.id  # 돌아간 화면의 "배달 N" 알약이 톡 튄다 (한 번만)
     reply = user.food_id or food_id
     ss.gift_replies.append({"user_id": user.id, "food_id": reply, "due": time.time() + REPLY_DELAY_S})
     toast(f"{user.name}에게 {eul_reul(FOODS_BY_ID[food_id].name)} 보냈어요")
@@ -100,6 +101,7 @@ def deliver_due(state: meal.MealState, now: float | None = None) -> None:
         if meal.can_order(state):
             gift_id = _log("received", user.id, food.id)
             meal.order(state, food.id, sender=user.name, gift_id=gift_id)
+            st.session_state.just_added_id = id(state.orders[-1])
             toast(f"{i_ga(user.name)} 보낸 {i_ga(food.name)} 도착했어요")
         else:
             _log("received", user.id, food.id, missed=True)
