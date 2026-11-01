@@ -85,7 +85,7 @@ def test_start_without_weight_shows_error():
     _to_step3(at)
     _click(at, "ob_start")
     assert "profile" not in at.session_state
-    assert "체중을 입력하거나 건너뛰기를 눌러 주세요" in _markdown(at)
+    assert "몸무게를 입력하거나 건너뛰기를 눌러 주세요" in _markdown(at)
 
 
 def test_entered_weight_is_saved():

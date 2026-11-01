@@ -54,8 +54,8 @@ def test_weight_save_without_clear_button():
     at = _start()
     at.number_input(key="my_weight").set_value(55.0).run()
     assert at.session_state["profile"]["weight_kg"] == 55.0
-    assert "체중을 저장했어요" in _text(at)
-    assert not any("지우기" in (b.label or "") for b in at.button)  # 체중 지우기 버튼은 없다
+    assert "몸무게를 저장했어요" in _text(at)
+    assert not any("지우기" in (b.label or "") for b in at.button)  # 몸무게 지우기 버튼은 없다
 
 
 def test_fridge_visibility_default_and_change():

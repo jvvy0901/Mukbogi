@@ -2,7 +2,7 @@
 
 1단계: 식사량 유형 선택 (Story 1.1)
 2단계: 소화하고 싶은 음식 선택 (Story 1.2)
-3단계: 체중 입력, 건너뛸 수 있음 (Story 1.3)
+3단계: 몸무게 입력, 건너뛸 수 있음 (Story 1.3)
 
 Story 1.4(움직임 측정 권한 안내)는 프로토타입 대체 방식이 PRD에 정해지지 않아 아직 넣지 않았다.
 """
@@ -13,7 +13,7 @@ import streamlit as st
 
 from core.data import FOODS
 from core.images import food_thumb
-from core.rules import DEFAULT_WEIGHT_KG, EATER_TYPES, daily_targets, food_groups
+from core.rules import EATER_TYPES, daily_targets, food_groups
 from core.style import html
 
 TOTAL_STEPS = 3
@@ -196,26 +196,24 @@ def _step_weight() -> None:
     _top(
         2,
         "칼로리를 더 정확하게<br>계산할게요",
-        "체중을 알려 주면 움직인 만큼 소모한 칼로리를 더 정확하게 계산해요.",
+        "소모한 칼로리를 더 정확하게 계산해요.",
     )
 
     st.number_input(
-        "체중",
+        "몸무게",
         min_value=20.0,
         max_value=250.0,
         step=0.5,
         format="%.1f",
         value=st.session_state.ob_weight_saved,
-        placeholder=f"예: {DEFAULT_WEIGHT_KG}",
+        placeholder="몸무게를 입력하세요.",
         key="ob_weight",
         on_change=_save_weight,
+        label_visibility="collapsed",  # 화면에서는 숨기고 스크린리더에는 "몸무게"로 읽힌다
     )
     if st.session_state.ob_weight_error:
-        html('<div class="mk-error" role="alert">체중을 입력하거나 건너뛰기를 눌러 주세요.</div>')
-    html(
-        f'<div class="mk-note">체중은 나만 볼 수 있어요. '
-        f"건너뛰면 {DEFAULT_WEIGHT_KG}kg 기준으로 계산하고, 나중에 설정에서 바꿀 수 있어요.</div>"
-    )
+        html('<div class="mk-error" role="alert">몸무게를 입력하거나 건너뛰기를 눌러 주세요.</div>')
+    html('<div class="mk-note">나한테만 보여요.</div>')
 
     with st.container(key="bar_footer"):
         st.button(

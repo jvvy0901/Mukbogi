@@ -2,7 +2,7 @@
 
 - 프로필 요약: 내 아이디, 이번 주 소화 칼로리, 지금까지 소화한 음식 수, 친구 수
 - 식사량 유형 (Story 1.1 "이후 설정에서 바꿀 수 있다") — 바꾸면 하루 목표 칼로리가 바로 바뀐다
-- 체중 (Story 1.3 "설정에서 수정할 수 있다") — 입력 전에는 60kg 기준, 나만 볼 수 있다
+- 몸무게 (Story 1.3 "설정에서 수정할 수 있다") — 입력 전에는 60kg 기준, 나만 볼 수 있다
 - 내 냉장고 공개 범위 (Story 5.3) — 전체 / 친구만(기본) / 비공개
 - MUKBOGI 플러스 (Story 6.2, 프로토타입: 결제 없이 켜고 끄기) — 켜면 광고가 사라진다
 - 온보딩 다시 하기 (프로토타입 전용, 확인 후 모든 기록을 지운다)
@@ -49,7 +49,7 @@ def _save_weight() -> None:
     if w is None:
         return
     _profile()["weight_kg"] = w
-    toast("체중을 저장했어요")
+    toast("몸무게를 저장했어요")
 
 
 def _set_visibility(label: str) -> None:
@@ -129,10 +129,10 @@ def render(state: meal.MealState) -> None:
     _segment("seg_mytype", "mtype", [(TYPE_KEYS[t], t, t) for t in EATER_TYPES], TYPE_KEYS[p["eater_type"]], _set_type)
     html(f'<div class="mk-my-note">하루 목표 <b>{targets[p["eater_type"]]}kcal</b> · 바꾸면 바로 적용돼요</div>')
 
-    # 체중
-    _section("체중")
+    # 몸무게
+    _section("몸무게")
     st.number_input(
-        "체중", min_value=20.0, max_value=250.0, step=0.5, format="%.1f",
+        "몸무게", min_value=20.0, max_value=250.0, step=0.5, format="%.1f",
         value=p.get("weight_kg"), placeholder=f"예: {DEFAULT_WEIGHT_KG}",
         key="my_weight", on_change=_save_weight, label_visibility="collapsed",
     )

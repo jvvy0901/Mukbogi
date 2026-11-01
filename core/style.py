@@ -146,7 +146,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-food-name { font-size: 15px; font-weight: 600; margin-top: 10px; line-height: 1.3; }
 .mk-food-kcal { font-size: 13px; color: var(--sub); line-height: 1.4; }
 
-/* ---------- 3단계: 체중 입력 (라벨 · 입력칸 · 도움말을 한 묶음으로) ---------- */
+/* ---------- 3단계: 몸무게 입력 (라벨 · 입력칸 · 도움말을 한 묶음으로) ---------- */
 .st-key-ob_weight label p { font-size: 15px; font-weight: 600; color: var(--ink); }
 .st-key-ob_weight [data-testid="stNumberInputContainer"] {
   position: relative; border-radius: 14px; background: var(--soft);
@@ -159,6 +159,8 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 }
 .st-key-ob_weight input:focus-visible { outline: none !important; }  /* 포커스는 입력칸 테두리로 표시 */
 .st-key-ob_weight input { font-size: 22px; font-weight: 700; color: var(--ink); background: transparent; padding-right: 48px; }
+/* 안내 문구는 입력한 숫자보다 작고 가볍게 */
+.st-key-ob_weight input::placeholder { font-size: 16px; font-weight: 400; color: var(--sub); opacity: 1; }
 .st-key-ob_weight [data-testid="stNumberInputStepDown"],
 .st-key-ob_weight [data-testid="stNumberInputStepUp"],
 .st-key-ob_weight [data-testid="InputInstructions"] { display: none; }
@@ -488,7 +490,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-my-note { font-size: 13px; color: var(--sub); line-height: 1.5; }
 .mk-my-note b { color: var(--ink); }
 .mk-plus-pill { font-size: 11px; font-weight: 700; color: var(--ink); background: var(--cyan); border-radius: 999px; padding: 3px 9px; }
-/* 체중 입력칸은 온보딩 체중칸과 같은 모양 */
+/* 몸무게 입력칸은 온보딩 몸무게칸과 같은 모양 */
 .st-key-my_weight [data-testid="stNumberInputContainer"] {
   position: relative; border-radius: 14px; background: var(--soft); border: 2px solid transparent; min-height: 56px;
 }
