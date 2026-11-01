@@ -83,10 +83,10 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-header { padding: 8px 0 calc(var(--gap-out) - var(--gap-in)); }
 .mk-title { font-size: 26px; font-weight: 700; line-height: 1.3; letter-spacing: -0.02em; color: var(--ink); }
 .mk-sub { font-size: 15px; line-height: 1.5; color: var(--sub); margin-top: 8px; }
-/* 로고: Pilcrow Rounded Heavy(900) + 시그니처 청록. 전체 글꼴(Pretendard) 규칙보다 우선한다 */
+/* 로고: Pilcrow Rounded Heavy(900) + 남색(#1E2530). 전체 글꼴(Pretendard) 규칙보다 우선한다 */
 .stApp .mk-wordmark {
   font-family: "Pilcrow Rounded", "Pretendard Variable", Pretendard, -apple-system, sans-serif !important;
-  font-size: 22px; font-weight: 900; letter-spacing: 0.01em; color: var(--cyan); line-height: 44px;
+  font-size: 22px; font-weight: 900; letter-spacing: 0.01em; color: var(--ink); line-height: 44px;
 }
 .mk-section { font-size: 18px; font-weight: 700; color: var(--ink); padding-top: calc(var(--gap-out) - var(--gap-in)); }  /* typography.section-header */
 .mk-count { font-size: 13px; font-weight: 600; color: var(--sub); }
