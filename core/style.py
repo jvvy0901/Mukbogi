@@ -41,6 +41,7 @@ _CSS = """
   --gap-in: 10px;        /* 같은 묶음 안 */
   --gap-out: 28px;       /* 묶음과 묶음 사이 */
   --safe-bottom: max(env(safe-area-inset-bottom), var(--sim-safe-bottom, 0px));  /* 홈 인디케이터 영역 */
+  --safe-top: max(env(safe-area-inset-top), var(--sim-safe-top, 0px));  /* 상태 표시줄 영역 */
 }
 
 html, body, .stApp, .stApp *:not([data-testid="stIconMaterial"]) {
@@ -56,7 +57,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 /* 폰 폭 한 열, 좌우 16px (spacing.screen-horizontal), 하단 고정 버튼 자리 확보 */
 [data-testid="stMainBlockContainer"], .block-container {
   max-width: 430px !important;
-  padding: 4px 16px 168px !important;
+  padding: calc(4px + var(--safe-top)) 16px 168px !important;
 }
 [data-testid="stVerticalBlock"] { gap: var(--gap-in); }
 /* Streamlit 텍스트 요소의 기본 음수 여백을 없애 카드·문단이 겹치지 않게 한다 */
@@ -230,7 +231,9 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-topbar { display: flex; justify-content: space-between; align-items: center; min-height: 44px; }
 /* 스크롤해도 상단 줄이 화면 맨 위에 붙어 있게 한다 */
 [data-testid="stElementContainer"]:has(.mk-topbar) {
-  position: sticky; top: 0; z-index: 90; background: #FFFFFF;
+  position: sticky; top: var(--safe-top); z-index: 90; background: #FFFFFF;
+  /* 상태 표시줄 뒤와 위쪽 틈도 흰색으로 덮는다 (상단 줄 높이 44px < 상태 표시줄 47px라 두 겹) */
+  box-shadow: 0 calc(-1 * var(--safe-top)) 0 #FFFFFF, 0 -12px 0 #FFFFFF;
 }
 .mk-today { font-size: 13px; font-weight: 600; color: var(--sub); background: var(--soft); border-radius: 999px; padding: 6px 12px; }
 .mk-today b { color: var(--ink); }
@@ -550,10 +553,23 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-done-title { font-size: 26px; font-weight: 700; line-height: 1.35; margin-top: 20px; }
 .mk-done-meta { font-size: 14px; color: var(--sub); margin-top: 8px; }
 
+/* ---------- 스플래시 (앱 실행 직후 1.8초): 남색 바탕 가운데 흰 텍스트 로고만 ---------- */
+.st-key-sheet_splash {
+  position: fixed; top: 0; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: min(100%, 430px); z-index: 400; background: #1E2530;
+  justify-content: center; align-items: center; gap: 0 !important; padding: 0 16px;
+}
+.st-key-sheet_splash > [data-testid="stElementContainer"]:has(.stButton) {
+  position: absolute; inset: 0; z-index: 2; margin: 0; width: 100% !important; height: 100% !important; max-width: none !important;
+}
+.st-key-sheet_splash .stButton, .st-key-sheet_splash .stButton button { width: 100%; height: 100%; min-height: 0; }
+.st-key-sheet_splash .stButton button { opacity: 0; cursor: pointer; }
+.stApp .mk-splash-logo { font-size: 44px; line-height: 1.1; letter-spacing: 0.02em; color: #FFFFFF; text-align: center; }
+
 /* ---------- 토스트 (iOS식: 화면 맨 위 로고 줄에 작은 알약, 2.5초 뒤 저절로 사라짐, 터치를 막지 않음)
    누를 버튼이 없는 상단에 띄워, 연달아 누르는 버튼(움직임·주문)을 가리지 않는다. ---------- */
 .mk-toast {
-  position: fixed; left: 50%; top: calc(6px + env(safe-area-inset-top)); z-index: 250;
+  position: fixed; left: 50%; top: calc(6px + var(--safe-top)); z-index: 250;
   max-width: min(358px, calc(100% - 32px)); width: max-content;
   padding: 10px 18px; border-radius: 999px;
   background: var(--ink); color: #FFFFFF; font-size: 14px; font-weight: 600; line-height: 1.4; text-align: center;
@@ -584,9 +600,11 @@ def inject() -> None:
     st.markdown(_CSS, unsafe_allow_html=True)
     # 아이폰 미리보기(preview/iphone14.html)는 iframe이라 기기의 안전 영역 값을 받지 못한다.
     # 미리보기가 ?safe_bottom=34 처럼 알려 주면 그만큼 하단 탭·버튼 아래를 비운다 (홈 인디케이터 자리).
-    sb = st.query_params.get("safe_bottom", "")
-    if sb.isdigit():
-        st.markdown(f"<style>:root {{ --sim-safe-bottom: {min(int(sb), 60)}px; }}</style>", unsafe_allow_html=True)
+    # ?safe_top=47 은 상태 표시줄 높이: 앱이 화면 맨 위까지 그려지고(스플래시 등), 내용은 그 아래부터 시작한다.
+    for param, var, cap in (("safe_bottom", "--sim-safe-bottom", 60), ("safe_top", "--sim-safe-top", 80)):
+        v = st.query_params.get(param, "")
+        if v.isdigit():
+            st.markdown(f"<style>:root {{ {var}: {min(int(v), cap)}px; }}</style>", unsafe_allow_html=True)
 
 
 def html(markup: str) -> None:

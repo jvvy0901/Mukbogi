@@ -70,6 +70,7 @@ def _reset_all() -> None:
     """프로토타입 전용: 모든 기록을 지우고 온보딩부터 다시 한다."""
     for key in list(st.session_state.keys()):
         del st.session_state[key]
+    st.session_state.splash_seen = True  # 스플래시는 앱을 처음 열 때만 보인다
 
 
 # 화면 조각 -------------------------------------------------------------------

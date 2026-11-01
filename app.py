@@ -5,12 +5,14 @@
 
 import streamlit as st
 
-from core import home, onboarding, style
+from core import home, onboarding, splash, style
 
 st.set_page_config(page_title="MUKBOGI", layout="centered")
 style.inject()
 
-if "profile" not in st.session_state:
+if splash.should_show():
+    splash.render()
+elif "profile" not in st.session_state:
     onboarding.render()
 else:
     home.render()
