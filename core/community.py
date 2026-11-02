@@ -85,6 +85,18 @@ def _decline(uid: str) -> None:
     toast("요청을 거절했어요")  # 상대에게는 알리지 않는다
 
 
+def _answer_in_list(uid: str, accepted: bool) -> None:
+    """친구 요청 목록에서 수락·거절: 결과를 그 줄 안에서 보여 주고 옆으로 밀어낸다(토스트 없이).
+    다음 한 번의 그리기에서만 쓰는 표시라 app.py 끝에서 지운다."""
+    soc = _soc()
+    index = soc.received.index(uid) if uid in soc.received else 0
+    if accepted:
+        social.accept(soc, uid)
+    else:
+        social.decline(soc, uid)  # 상대에게는 알리지 않는다
+    st.session_state.just_answered = {"uid": uid, "accepted": accepted, "index": index}
+
+
 def _ask_remove(uid: str | None) -> None:
     _ss().confirm_remove = uid
 
@@ -200,14 +212,25 @@ def _friends_tab() -> None:
         st.button("찾기", key="cm_search", type="primary", on_click=_search)
     _search_result()
 
-    if soc.received:
-        _section("친구 요청", len(soc.received))
+    answered = st.session_state.get("just_answered")
+    if soc.received or answered:
+        last = answered is not None and not soc.received  # 마지막 요청이면 섹션째 접힌다
+        if last:
+            html('<div class="mk-section mk-ghost-headline" role="heading" aria-level="2">친구 요청</div>')
+        else:
+            _section("친구 요청", len(soc.received))
         with st.container(key="list_received"):
-            for uid in soc.received:
+            rows = list(soc.received)
+            if answered:
+                rows.insert(min(answered["index"], len(rows)), None)  # 방금 답한 줄은 원래 자리에
+            for uid in rows:
+                if uid is None:
+                    _answered_row(answered, last)
+                    continue
                 u = USERS_BY_ID[uid]
                 _user_row(f"rq_{uid}", u, "", [
-                    ("수락", f"acc_{uid}", "primary", _accept, (uid,)),
-                    ("거절", f"dec_{uid}", "secondary", _decline, (uid,)),
+                    ("수락", f"acc_{uid}", "primary", _answer_in_list, (uid, True)),
+                    ("거절", f"dec_{uid}", "secondary", _answer_in_list, (uid, False)),
                 ])
 
     if soc.sent:
@@ -220,6 +243,9 @@ def _friends_tab() -> None:
                 ])
 
     friends = social.friend_users(soc)
+    if answered and answered["accepted"]:
+        # 방금 수락한 친구는 요청 줄이 빠져나간 뒤 친구 목록에 옆에서 들어온다
+        html(f"<style>.st-key-urow_fr_{answered['uid']} {{ animation: mk-friend-in .34s var(--ease-move) .62s both; }}</style>")
     _section("친구", len(friends))
     if not friends:
         html('<div class="mk-empty-line">아직 친구가 없어요. 아이디로 친구를 찾아 보세요.</div>')
@@ -240,6 +266,25 @@ def _friends_tab() -> None:
             _user_row(f"fr_{u.id}", u, "", sub_html=gift.doing_html(u), actions=[
                 ("배달하기", f"gift_to_{u.id}", "secondary", gift.open_for, (u.id, "community")),
             ], extra=sr)
+
+
+def _answered_row(answered: dict, last: bool) -> None:
+    """방금 수락·거절한 요청 줄 (버튼 없는 그림). 수락은 "친구가 됐어요"를 잠깐 보여 준 뒤 오른쪽으로,
+    거절은 바로 왼쪽으로 밀려 나가고 줄 높이가 접힌다. 다음 그리기에서는 사라진다."""
+    user = USERS_BY_ID[answered["uid"]]
+    if answered["accepted"]:
+        pill = '<span class="mk-ghost-pill ok"><i aria-hidden="true"></i>친구가 됐어요</span>'
+        live = f"{wa_gwa(user.name)} 친구가 됐어요"
+    else:
+        pill = '<span class="mk-ghost-pill">거절했어요</span>'
+        live = f"{user.name}의 요청을 거절했어요"
+    kind = "acc" if answered["accepted"] else "dec"
+    html(
+        f'<div class="mk-ghost mk-ghost-{kind}{" last" if last else ""}">'
+        f'<div class="mk-ghost-row">{_user_info(user, "")}{pill}</div>'
+        f'<span class="mk-sr" role="status">{escape(live)}</span>'
+        "</div>"
+    )
 
 
 def _search_result() -> None:

@@ -548,6 +548,46 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 [class*="st-key-urow_"] [data-testid="stBaseButton-primary"] { font-size: 14px; }
 [class*="st-key-urow_"] [class*="st-key-tap_"] .stButton button { border-radius: 0; padding: 0; }
 /* 친구 목록: 배달하기 오른쪽 위 동그란 숫자 배지 (보낸 배달 수, 내용은 화면에서 넣는다) */
+/* 친구 요청 수락·거절: 결과를 그 줄 안에서 보여 준 뒤 옆으로 밀어내고 줄 높이를 접는다 (다음 그리기에서 사라짐).
+   수락 = "친구가 됐어요" 알약이 톡 → 잠깐 머문 뒤 오른쪽으로 (새 친구는 친구 목록에 왼쪽에서 들어온다)
+   거절 = 바로 왼쪽으로. 마지막 요청이면 목록 카드·섹션 제목째 접힌다 */
+.mk-ghost-row { display: flex; align-items: center; gap: 8px; min-height: 64px; padding: 8px 0; }
+.mk-ghost-row > .mk-u { flex: 1 1 auto; min-width: 0; }
+.mk-ghost-pill { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px;
+  border-radius: 999px; font-size: 14px; font-weight: 600; white-space: nowrap; background: var(--fill); color: var(--sub); }
+.mk-ghost-pill.ok { background: var(--green); color: var(--ink); animation: mk-pop .28s var(--ease-pop) both; }
+.mk-ghost-pill.ok i { width: 14px; height: 14px; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M5 12.5l4.5 4.5L19 7.5'/></svg>") center / contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M5 12.5l4.5 4.5L19 7.5'/></svg>") center / contain no-repeat; }
+[class*="st-key-list_"] > [data-testid="stElementContainer"]:has(.mk-ghost) { overflow: hidden; max-height: 81px; }
+[class*="st-key-list_"] > [data-testid="stElementContainer"]:has(.mk-ghost-acc:not(.last)) {
+  animation: mk-ghost-right .28s var(--ease-move) .56s both, mk-ghost-fold .2s var(--ease-move) .82s both; }
+[class*="st-key-list_"] > [data-testid="stElementContainer"]:has(.mk-ghost-dec:not(.last)) {
+  animation: mk-ghost-left .24s var(--ease-move) both, mk-ghost-fold .18s var(--ease-move) .22s both; }
+/* 마지막 요청: 줄만이 아니라 목록 카드와 섹션 제목까지 접는다 (빈 "친구 요청" 칸이 남지 않게) */
+[class*="st-key-list_"]:has(.mk-ghost-acc.last) { overflow: hidden;
+  animation: mk-ghost-right .28s var(--ease-move) .56s both, mk-ghost-fold-box .22s var(--ease-move) .82s both; }
+[class*="st-key-list_"]:has(.mk-ghost-dec.last) { overflow: hidden;
+  animation: mk-ghost-left .24s var(--ease-move) both, mk-ghost-fold-box .2s var(--ease-move) .22s both; }
+.stApp:has(.mk-ghost-acc.last) [data-testid="stElementContainer"]:has(> * .mk-ghost-headline) { overflow: hidden;
+  animation: mk-ghost-fold-box .22s var(--ease-move) .82s both; }
+.stApp:has(.mk-ghost-dec.last) [data-testid="stElementContainer"]:has(> * .mk-ghost-headline) { overflow: hidden;
+  animation: mk-ghost-fold-box .2s var(--ease-move) .22s both; }
+/* 맨 위 줄이 접히면 그다음 줄이 맨 위가 되므로, 그 줄의 위 구분선도 같이 지운다 */
+[class*="st-key-list_"] > :first-child:has(.mk-ghost-acc) + * { animation: mk-line-out .2s var(--ease-move) .82s both; }
+[class*="st-key-list_"] > :first-child:has(.mk-ghost-dec) + * { animation: mk-line-out .18s var(--ease-move) .22s both; }
+@keyframes mk-line-out { to { border-top-color: transparent; } }
+@keyframes mk-ghost-right { to { transform: translateX(104%); opacity: 0; } }
+@keyframes mk-ghost-left { to { transform: translateX(-104%); opacity: 0; } }
+@keyframes mk-ghost-fold { to { max-height: 0; border-top-color: transparent; } }
+@keyframes mk-ghost-fold-box { from { max-height: 200px; } to { max-height: 0; padding-top: 0; padding-bottom: 0; margin-bottom: calc(-1 * var(--gap-in)); } }
+@keyframes mk-friend-in { from { transform: translateX(-24px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  /* 옆으로 미는 이동만 끄고, 사라짐·접힘과 결과 알약은 남긴다 */
+  @keyframes mk-ghost-right { to { opacity: 0; } }
+  @keyframes mk-ghost-left { to { opacity: 0; } }
+  @keyframes mk-friend-in { from { opacity: 0; } }
+}
 .st-key-list_friends [class*="st-key-gift_to_"] button { position: relative; overflow: visible; }
 .st-key-list_friends [class*="st-key-gift_to_"] button::after {
   position: absolute; top: -6px; right: -4px; min-width: 20px; height: 20px; padding: 0 4px; box-sizing: border-box;

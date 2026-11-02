@@ -22,6 +22,6 @@ else:
 style.enable_drag_scroll()
 style.render_toast()
 
-# 한 번만 보여 주는 연출 표시(방금 주문한 음식, 방금 보낸 배달)는 그린 뒤 지운다
-for _key in ("just_added_id", "just_gifted"):
+# 한 번만 보여 주는 연출 표시(방금 주문한 음식, 방금 보낸 배달, 방금 답한 친구 요청)는 그린 뒤 지운다
+for _key in ("just_added_id", "just_gifted", "just_answered"):
     st.session_state.pop(_key, None)

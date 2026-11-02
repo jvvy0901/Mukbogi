@@ -150,3 +150,24 @@ def test_friend_status_is_one_line_with_compact_progress():
     assert '<div class="mk-doing-food">마라탕<span class="mk-sr"> 소화 중</span></div><div class="mk-doing-prog">' in md
     assert '<b class="mk-doing-pct">62%</b>' in md
     assert '<div class="mk-doing-food">쉬는 중이에요</div>' in md  # 민 (막대 없음)
+
+
+def test_answered_request_slides_out_in_place_then_disappears():
+    at = _start()
+    at.session_state["social"].received.append("jiho")  # 요청 2개: 도윤, 지호
+    at.run()
+    _click(at, "acc_doyun")
+    ghosts = [m.value for m in at.markdown if 'class="mk-ghost ' in m.value]
+    assert len(ghosts) == 1 and "mk-ghost-acc" in ghosts[0] and " last" not in ghosts[0]
+    assert "친구가 됐어요" in ghosts[0]  # 결과를 그 줄 안에서 보여 준다 (토스트 대신)
+    assert not any(b.key == "acc_doyun" for b in at.button)  # 남은 그림에는 버튼이 없다
+    assert any(".st-key-urow_fr_doyun" in m.value and "mk-friend-in" in m.value for m in at.markdown)
+    at.run()  # 다음 그리기에서는 사라진다
+    assert not any('class="mk-ghost ' in m.value for m in at.markdown)
+
+    _click(at, "dec_jiho")  # 마지막 요청은 섹션째 접힌다
+    ghost = next(m.value for m in at.markdown if 'class="mk-ghost ' in m.value)
+    assert "mk-ghost-dec last" in ghost and "거절했어요" in ghost
+    assert any("mk-ghost-headline" in m.value for m in at.markdown)
+    at.run()
+    assert not any(m.value.startswith('<div class="mk-section"') and "친구 요청" in m.value for m in at.markdown)
