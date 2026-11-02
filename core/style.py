@@ -239,6 +239,12 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
   .st-key-plus_box [data-testid="stBaseButton-secondary"]:hover { background: var(--brand-soft); color: var(--ink); filter: brightness(.97); }
 }
 
+/* 홈 멈추기: 측정 중임을 또렷하게 — 검정 #212121 채움 + 흰 글자 (대비 16:1). 크기는 식사시작과 같다 */
+.st-key-bar_footer .st-key-home_stop [data-testid="stBaseButton-secondary"] { background: #212121; color: #FFFFFF; }
+@media (hover: hover) and (pointer: fine) {
+  .st-key-bar_footer .st-key-home_stop [data-testid="stBaseButton-secondary"]:hover { background: #212121; color: #FFFFFF; filter: brightness(1.15); }
+}
+
 /* ---------- 하단 탭 ---------- */
 .st-key-bar_tabs {
   position: fixed; left: 50%; bottom: 0; transform: translateX(-50%);
