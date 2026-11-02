@@ -158,6 +158,9 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 [class*="st-key-tap_"]:has(button:focus-visible) .mk-card { outline: 3px solid var(--ink); outline-offset: 2px; }
 /* 화살표 섹션 제목: 제목 줄 전체가 눌린다 (높이 44px). 섹션 사이 간격은 위 여백으로 */
 [class*="st-key-tap_sec_"] { margin-top: calc(var(--gap-out) - var(--gap-in)); }
+/* 제목 바로 아래 설명 줄은 제목에 붙인다 (제목 글자 → 설명 7px, 설명 → 아래 내용 21px) */
+[data-testid="stLayoutWrapper"]:has(> [class*="st-key-tap_sec_"]) + [data-testid="stElementContainer"]:has(.mk-sec-hint) { margin-top: -16px; margin-bottom: 8px; }
+.mk-sec-hint { line-height: 1.4; }
 .mk-sec-link { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding-top: 0; }
 .mk-sec-arrow { flex: none; width: 24px; height: 24px; margin-right: -4px; background: var(--sub);
   -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M9.5 6l6 6-6 6'/></svg>") center / contain no-repeat;
@@ -471,12 +474,12 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 /* 프로필 사진(core/avatar.py)은 이름 첫 글자 원 위에 CSS 배경으로 겹친다. 사진을 못 불러오면 배경이 비어 첫 글자가 보인다 */
 .mk-avatar-photo { position: absolute; inset: 0; border-radius: inherit; background: center / cover no-repeat; }
 .mk-avatar-initial { display: grid; place-items: center; background: var(--yellow); color: var(--ink); font-size: 13px; font-weight: 700; }
-.mk-fr-food { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-top: 12px; }
+.mk-fr-food { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-top: 10px; }
 .mk-fr-food img { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(30, 37, 48, .14)); }
 .mk-bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin-top: 10px; }
 .mk-bar i { display: block; height: 100%; background: var(--green); border-radius: inherit; }
-.mk-fr-pct { font-size: 12px; font-weight: 600; color: var(--sub); margin-top: 4px; }
-.mk-fr-rest { font-size: 13px; color: var(--sub); margin-top: 12px; }
+.mk-fr-pct { font-size: 12px; font-weight: 600; color: var(--sub); margin-top: 6px; line-height: 1.3; }
+.mk-fr-rest { font-size: 13px; color: var(--sub); margin-top: 10px; }
 
 /* ---------- 냉장고: 날짜 묶음 (날짜 머리줄 + 그날 음식 카드를 한 덩어리로) ---------- */
 .mk-fz-day { margin-top: calc(var(--gap-out) - var(--gap-in)); }

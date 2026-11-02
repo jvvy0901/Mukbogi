@@ -334,7 +334,7 @@ def _friends_section() -> None:
             html('<div class="mk-sub">친구를 추가해 보세요</div>')
             st.button("커뮤니티 가기", key="home_community", on_click=_go, args=("community",))
         return
-    html('<div class="mk-count">소화 중인 친구 카드를 누르면 음식을 배달할 수 있어요</div>')
+    html('<div class="mk-count mk-sec-hint">친구를 누르면 음식을 배달할 수 있어요</div>')
     with st.container(key="row_friends"):
         for f in friends:
             sent = gift.sent_count(f.id)
