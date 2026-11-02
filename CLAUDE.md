@@ -157,7 +157,7 @@ UI·UX를 만들거나 고친 뒤에는 **반드시 아이폰 14 크기에서 �
 | `tools/extract_brand_assets.py` | 브랜드 가이드 이미지에서 로고·마스코트를 잘라 배경을 빼고 `assets/img/brand/`에 저장 |
 | `core/images.py` | 음식 이미지 생성 (체크무늬 배경을 투명하게 빼고 음식 크기를 고르게 맞춤) + 한 입씩 베어 먹은 단계별 이미지(`food_bitten`) + 프로필 원형 사진. 화면에는 원본 대신 항상 이걸 쓴다 |
 | `core/splash.py` | 스플래시 화면. 프로필 없는 새 세션에서 한 번(1.8초, 누르면 바로 넘어감). `session_state.splash_seen` (`tests/test_splash.py`) |
-| `core/auth.py` | 로그인(카카오·Apple·휴대폰 번호·네이버·Google)·회원가입(약관 동의 → 아이디 정하기) 화면과 규칙(`check_user_id`, `normalize_phone`, `TERMS`). 가입하면 `session_state.account`, 내 아이디는 `auth.my_id()` (`tests/test_auth.py`) |
+| `core/auth.py` | 로그인(카카오·Apple·휴대폰 번호·네이버·Google)·회원가입(약관 동의 → 아이디 정하기 → 별명 정하기) 화면과 규칙(`check_user_id`, `check_nickname`, `normalize_phone`, `TERMS`). 가입하면 `session_state.account`, 내 아이디는 `auth.my_id()`, 내 이름(별명)은 `auth.my_name()` — 화면에 "나"를 직접 쓰지 말고 이걸 쓴다 (`tests/test_auth.py`) |
 | `core/onboarding.py` | 온보딩 화면 (PRD Epic 1) |
 | `core/meal.py` | 주문·대기열·소화·냉장고 상태와 규칙 (Streamlit과 분리, `tests/test_meal.py`) |
 | `core/home.py` | 홈 화면(PRD Epic 3) + 하단 탭 + 소화 완료 연출 + 임시 주문 화면 + 커뮤니티 자리. 화면 전환(`render`)도 여기서 한다 |

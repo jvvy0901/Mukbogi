@@ -7,7 +7,7 @@ uibowl 레퍼런스
 
 흐름 (프로토타입: 실제 계정 연동 없이 누르면 연동된 것처럼 바로 가입으로 넘어간다)
   로그인 ─ 소셜 버튼 ─────────────┐
-         └ 휴대폰 번호 → 인증번호 ─┴→ 약관 동의 → 아이디 정하기 → (가입 완료) → 온보딩
+         └ 휴대폰 번호 → 인증번호 ─┴→ 약관 동의 → 아이디 정하기 → 별명 정하기 → (가입 완료) → 온보딩
 
 상태: session_state.auth_step (login / phone / terms / id), 가입이 끝나면 session_state.account.
 전화번호는 확인에만 쓰고 저장하지 않는다.
@@ -51,6 +51,7 @@ TERMS: tuple[Term, ...] = (
 )
 
 USER_ID_RULE = re.compile(r"^[a-z0-9_]{4,15}$")
+NICKNAME_RULE = re.compile(r"^[가-힣a-zA-Z0-9]{2,10}$")  # 초안 — PRD Q23
 PROTO_CODE_LEN = 6
 
 
@@ -70,6 +71,16 @@ def check_user_id(user_id: str) -> str:
     return "ok"
 
 
+def check_nickname(nickname: str) -> str:
+    """ok / empty / format. 한글·영문·숫자 2~10자 (띄어쓰기·특수문자 없이). 다른 사람과 같아도 된다(아이디가 구분)."""
+    nick = (nickname or "").strip()
+    if not nick:
+        return "empty"
+    if not NICKNAME_RULE.match(nick):
+        return "format"
+    return "ok"
+
+
 def normalize_phone(phone: str) -> str | None:
     """010으로 시작하는 11자리 휴대폰 번호면 숫자만 남겨 돌려준다. 아니면 None."""
     digits = re.sub(r"\D", "", phone or "")
@@ -81,6 +92,11 @@ def check_code(code: str) -> bool:
     return bool(re.fullmatch(rf"\d{{{PROTO_CODE_LEN}}}", (code or "").strip()))
 
 
+def my_name() -> str:
+    """화면에 보여 줄 내 이름 = 가입 때 정한 별명. 가입 전(테스트 등)에는 "나"."""
+    return st.session_state.get("account", {}).get("nickname") or ME_NAME
+
+
 def my_id() -> str:
     """화면에 보여 줄 내 아이디. 가입 전(테스트 등)에는 데모 아이디."""
     return st.session_state.get("account", {}).get("user_id", ME_ID)
@@ -89,13 +105,18 @@ def my_id() -> str:
 def my_avatar(cls: str = "mk-avatar") -> str:
     """내 원형 프로필. 계정에 profile_image가 있으면 그 사진, 없으면 프로토타입용으로 고른 Pravatar 사진(ME_PRAVATAR)."""
     image = st.session_state.get("account", {}).get("profile_image") or pravatar_url(ME_PRAVATAR)
-    return avatar_html(my_id(), ME_NAME, image, cls)
+    return avatar_html(my_id(), my_name(), image, cls)
 
 
 def should_show() -> bool:
     ss = st.session_state
     return "account" not in ss and "profile" not in ss
 
+
+NICK_MESSAGES = {
+    "empty": "별명을 입력해 주세요.",
+    "format": "한글·영문·숫자로 2~10자를 써 주세요. (띄어쓰기·특수문자 없이)",
+}
 
 ID_MESSAGES = {
     "empty": "아이디를 입력해 주세요.",
@@ -116,7 +137,7 @@ def _init() -> None:
     ss.setdefault("auth_error", None)
 
 
-STEP_ORDER = ("login", "phone", "terms", "id")
+STEP_ORDER = ("login", "phone", "terms", "id", "nick")
 
 
 def _go(step: str) -> None:
@@ -182,22 +203,34 @@ def _toggle_all() -> None:
     ss.auth_cascade = turning_on  # 켤 때만 위에서 아래로 차례로 체크된다 (한 번만)
 
 
-def _sign_up() -> None:
+def _save_id() -> None:
+    """아이디를 확인하고 별명 단계로. 입력칸은 화면이 바뀌면 값이 지워지므로 따로 저장해 둔다."""
     ss = st.session_state
     result = check_user_id(ss.get("auth_in_id", ""))
     if result != "ok":
         _fail(result)
         return
-    user_id = ss.auth_in_id.strip().lstrip("@").lower()
+    ss.auth_user_id = ss.auth_in_id.strip().lstrip("@").lower()
+    _go("nick")
+
+
+def _sign_up() -> None:
+    ss = st.session_state
+    result = check_nickname(ss.get("auth_in_nick", ""))
+    if result != "ok":
+        _fail(result)
+        return
+    nickname = ss.auth_in_nick.strip()
     ss.account = {
-        "user_id": user_id,
+        "user_id": ss.auth_user_id,
+        "nickname": nickname,
         "method": ss.auth_method,
         "marketing": "marketing" in ss.auth_agreed,
     }
     for key in [k for k in ss.keys() if str(k).startswith("auth_")]:
         del ss[key]
     ss.ob_dir = "fwd"  # 온보딩 첫 단계가 가입 흐름에 이어 오른쪽에서 들어온다
-    toast(f"@{user_id}님, 반가워요! 먹고 싶은 걸 골라 볼까요?")
+    toast(f"{nickname}님, 반가워요! 먹고 싶은 걸 골라 볼까요?")
 
 
 # 화면 조각 ---------------------------------------------------------------------
@@ -259,7 +292,7 @@ def _login() -> None:
 
 def _phone() -> None:
     ss = st.session_state
-    _nav(0, 3, _phone_back)
+    _nav(0, 4, _phone_back)
     _header("휴대폰 번호를<br>알려 주세요", "가입 확인에만 쓰고, 다른 사람에게는 보이지 않아요.")
     st.text_input(
         "휴대폰 번호", key="auth_in_phone", placeholder="010-0000-0000", max_chars=13,
@@ -286,7 +319,7 @@ def _phone() -> None:
 def _terms() -> None:
     ss = st.session_state
     from_phone = ss.auth_method == "phone"
-    total, at = (3, 1) if from_phone else (2, 0)
+    total, at = (4, 1) if from_phone else (3, 0)
     _nav(at, total, _go, ("phone" if from_phone else "login",))
     checked = "휴대폰 번호를" if from_phone else f"{METHODS.get(ss.auth_method or '', '')} 계정을"
     _header("MUKBOGI를 쓰려면<br>동의가 필요해요", f"{escape(checked)} 확인했어요. 이제 거의 다 왔어요.")
@@ -326,17 +359,36 @@ def _terms() -> None:
 def _user_id() -> None:
     ss = st.session_state
     from_phone = ss.auth_method == "phone"
-    total, at = (3, 2) if from_phone else (2, 1)
+    total, at = (4, 2) if from_phone else (3, 1)
     _nav(at, total, _go, ("terms",))
     _header("친구가 찾을<br>아이디를 정해요", "친구는 이 아이디로 나를 찾아 친구 요청을 보내요.")
     st.text_input(
-        "아이디", key="auth_in_id", placeholder="예: mukbo_lover", max_chars=15, label_visibility="collapsed",
+        "아이디", key="auth_in_id", value=ss.get("auth_user_id", ""), placeholder="예: mukbo_lover", max_chars=15,
+        label_visibility="collapsed",
     )
     err = ss.auth_error
     if err in ID_MESSAGES:
         _field_error("auth_in_id", ID_MESSAGES[err])
     else:
         html('<div class="mk-note">영문 소문자·숫자·밑줄(_) 4~15자</div>')
+    with st.container(key="bar_footer"):
+        st.button("다음", key="auth_id_next", type="primary", width="stretch", on_click=_save_id)
+
+
+def _nickname() -> None:
+    ss = st.session_state
+    from_phone = ss.auth_method == "phone"
+    total, at = (4, 3) if from_phone else (3, 2)
+    _nav(at, total, _go, ("id",))
+    _header("MUKBOGI에서 쓸<br>별명을 정해요", "내정보와 먹보 랭킹에서 이 별명으로 보여요.")
+    st.text_input(
+        "별명", key="auth_in_nick", placeholder="예: 떡볶이요정", max_chars=10, label_visibility="collapsed",
+    )
+    err = ss.auth_error
+    if err in NICK_MESSAGES:
+        _field_error("auth_in_nick", NICK_MESSAGES[err])
+    else:
+        html(f'<div class="mk-note">한글·영문·숫자 2~10자 · 아이디 @{escape(ss.get("auth_user_id", ""))}</div>')
     with st.container(key="bar_footer"):
         st.button("가입하고 시작하기", key="auth_signup", type="primary", width="stretch", on_click=_sign_up)
 
@@ -346,4 +398,4 @@ def _user_id() -> None:
 
 def render() -> None:
     _init()
-    {"login": _login, "phone": _phone, "terms": _terms, "id": _user_id}[st.session_state.auth_step]()
+    {"login": _login, "phone": _phone, "terms": _terms, "id": _user_id, "nick": _nickname}[st.session_state.auth_step]()

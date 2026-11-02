@@ -15,7 +15,7 @@ import streamlit as st
 from core import auth, fridge, gift, meal, social
 from core.avatar import user_avatar
 from core.data import FOODS_BY_ID
-from core.demo import ME_ID, ME_NAME, USERS_BY_ID, User
+from core.demo import ME_ID, USERS_BY_ID, User
 from core.images import food_thumb
 from core.korean import eul_reul, i_ga, wa_gwa
 from core.style import html, toast
@@ -279,7 +279,7 @@ def _rank_tab(state: meal.MealState) -> None:
         "매주 월요일 00:00에 새로 시작해요.</div>"
     )
 
-    rows = social.ranking(_soc(), state.fridge, now, "전체" if scope == "all" else "친구")
+    rows = social.ranking(_soc(), state.fridge, now, "전체" if scope == "all" else "친구", my_name=auth.my_name())
     with st.container(key="list_rank"):
         for r in rows:
             top = " top" if r.rank <= 3 else ""
@@ -287,7 +287,7 @@ def _rank_tab(state: meal.MealState) -> None:
                 info = (
                     f'<div class="mk-rk me"><span class="mk-rk-n{top}">{r.rank}</span>'
                     f'{_me_avatar("mk-avatar mk-avatar-md")}'
-                    f'<div class="mk-rk-name">{ME_NAME}<span class="mk-me-pill">나</span></div>'
+                    f'<div class="mk-rk-name">{escape(r.name)}<span class="mk-me-pill">나</span></div>'
                     f'<div class="mk-rk-kcal">{r.kcal:,}<small>kcal</small></div></div>'
                 )
                 label = "내 냉장고 보기"

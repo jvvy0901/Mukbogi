@@ -126,12 +126,13 @@ class RankRow:
     is_me: bool
 
 
-def ranking(state: SocialState, my_entries: Sequence[FridgeEntry], now: datetime, scope: str = "전체") -> list[RankRow]:
+def ranking(state: SocialState, my_entries: Sequence[FridgeEntry], now: datetime, scope: str = "전체",
+            my_name: str = ME_NAME) -> list[RankRow]:
     """이번 주 소화 완료 총 칼로리 순위. scope: 전체 / 친구 (친구 + 나). 같은 칼로리는 같은 순위."""
     today = now.date()
     users = USERS if scope == "전체" else friend_users(state)
     scores = [(weekly_kcal(user_fridge(u, now), today), u.id, u.name, False) for u in users]
-    scores.append((weekly_kcal(my_entries, today), ME_ID, ME_NAME, True))
+    scores.append((weekly_kcal(my_entries, today), ME_ID, my_name, True))
     scores.sort(key=lambda s: (-s[0], not s[3], s[2]))
 
     rows, prev_kcal, prev_rank = [], None, 0

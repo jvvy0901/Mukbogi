@@ -39,6 +39,31 @@ def test_user_id_rules():
     assert auth.check_user_id("@Mukbo_Lover") == "ok"     # 앞 @·대문자는 정리해서 본다
 
 
+def test_nickname_rules():
+    assert auth.check_nickname("") == "empty"
+    assert auth.check_nickname("나") == "format"           # 1자
+    assert auth.check_nickname("떡볶이 요정") == "format"   # 띄어쓰기
+    assert auth.check_nickname("먹보!") == "format"         # 특수문자
+    assert auth.check_nickname("가나다라마바사아자차카") == "format"  # 11자
+    assert auth.check_nickname("떡볶이요정") == "ok"
+    assert auth.check_nickname("Mukbo99") == "ok"
+
+
+def test_nickname_shows_on_my_page_and_ranking():
+    at = AppTest.from_file(APP, default_timeout=60)
+    at.session_state["account"] = {"user_id": "mukbo_lover", "nickname": "떡볶이요정", "method": "kakao", "marketing": False}
+    at.session_state["profile"] = {"eater_type": "중식가", "daily_target_kcal": 308, "favorite_food_ids": ["pasta"], "weight_kg": None}
+    at.session_state["screen"] = "my"
+    at.run()
+    assert not at.exception
+    assert "떡볶이요정" in _text(at)
+    at.session_state["screen"] = "community"
+    at.session_state["comm_tab"] = "rank"
+    at.run()
+    assert not at.exception
+    assert any('class="mk-rk-name">떡볶이요정<span class="mk-me-pill">나</span>' in m.value for m in at.markdown)
+
+
 def test_phone_and_code_rules():
     assert auth.normalize_phone("010-1234-5678") == "01012345678"
     assert auth.normalize_phone("01112345678") is None
@@ -67,7 +92,7 @@ def test_login_shows_five_methods():
     assert "MUKBOGI" in _text(at)
 
 
-def test_social_signup_terms_then_id_then_onboarding():
+def test_social_signup_terms_then_id_then_nickname_then_onboarding():
     at = _start()
     _click(at, "auth_kakao")
     assert at.session_state["auth_step"] == "terms"
@@ -79,11 +104,24 @@ def test_social_signup_terms_then_id_then_onboarding():
     assert at.session_state["auth_step"] == "id"
 
     at.text_input(key="auth_in_id").input("haneul").run()
-    _click(at, "auth_signup")
+    _click(at, "auth_id_next")
     assert "이미 쓰고 있는 아이디예요" in _text(at)
     at.text_input(key="auth_in_id").input("mukbo_lover").run()
+    _click(at, "auth_id_next")
+    assert at.session_state["auth_step"] == "nick"
+    assert "@mukbo_lover" in _text(at)  # 정한 아이디를 별명 화면에서도 보여 준다
+
+    at.text_input(key="auth_in_nick").input("떡볶이 요정").run()  # 띄어쓰기는 안 된다
     _click(at, "auth_signup")
-    assert at.session_state["account"] == {"user_id": "mukbo_lover", "method": "kakao", "marketing": True}
+    assert "한글·영문·숫자로 2~10자" in _text(at)
+    _click(at, "auth_back_nick")  # 이전으로 가도 아이디가 남아 있다
+    assert at.text_input(key="auth_in_id").value == "mukbo_lover"
+    _click(at, "auth_id_next")
+    at.text_input(key="auth_in_nick").input("떡볶이요정").run()
+    _click(at, "auth_signup")
+    assert at.session_state["account"] == {
+        "user_id": "mukbo_lover", "nickname": "떡볶이요정", "method": "kakao", "marketing": True,
+    }
     assert any(b.key == "ob_next_0" for b in at.button)  # 가입하면 온보딩이 이어진다
 
 
@@ -151,5 +189,7 @@ def test_signup_slides_into_onboarding():
     _click(at, "auth_all")
     _click(at, "auth_terms_next")
     at.text_input(key="auth_in_id").input("mukbo_lover").run()
+    _click(at, "auth_id_next")
+    at.text_input(key="auth_in_nick").input("먹보").run()
     _click(at, "auth_signup")
     assert any("mk-header mk-fwd" in m.value for m in at.markdown)

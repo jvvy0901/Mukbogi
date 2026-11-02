@@ -15,7 +15,6 @@ import streamlit as st
 
 from core import auth, meal, social
 from core.data import FOODS
-from core.demo import ME_NAME
 from core.rules import DEFAULT_WEIGHT_KG, EATER_TYPES, daily_targets
 from core.style import html, toast
 
@@ -102,7 +101,7 @@ def _header(state: meal.MealState) -> None:
         '<div class="mk-my-head"><div class="mk-prof">'
         f'{auth.my_avatar("mk-avatar mk-avatar-xl")}'
         '<div class="mk-u-text">'
-        f'<div class="mk-prof-name">{ME_NAME}{plus}</div>'
+        f'<div class="mk-prof-name">{escape(auth.my_name())}{plus}</div>'
         f'<div class="mk-u-id">@{escape(auth.my_id())}</div>'
         "</div></div>"
         '<dl class="mk-stats mk-my-stats">'
