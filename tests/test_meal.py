@@ -81,3 +81,35 @@ def test_waiting_queue_limit():
     assert not meal.can_order(s)
     assert not meal.order(s, "tanghuru")
     assert len(s.waiting) == meal.MAX_WAITING
+
+
+def test_week_by_day_counts_from_monday_and_partial_digestion():
+    from datetime import date
+    s = meal.MealState()
+    s.digested_by_day = {date(2026, 10, 25): 999.0, date(2026, 11, 2): 120.0, date(2026, 11, 4): 300.5}
+    days = s.week_by_day(date(2026, 11, 4))  # 수요일
+    assert days == [120.0, 0.0, 300.5, 0.0, 0.0, 0.0, 0.0]  # 지난주 일요일(10/25)은 빠진다
+
+
+def test_food_count_wording():
+    from core import rules
+    from core.data import FOODS_BY_ID
+    assert rules.format_count(rules.food_count(720, FOODS_BY_ID["ttuckbokki"])) == "2"   # 1.5 → 반올림
+    assert rules.format_count(rules.food_count(670, FOODS_BY_ID["ttuckbokki"])) == "1"   # 1.4 → 소수점 없이
+    assert rules.format_count(rules.food_count(900, FOODS_BY_ID["chicken"])) == "1"      # 0.9 → 1
+    assert rules.format_count(rules.food_count(5, FOODS_BY_ID["chicken"])) == "1"  # 조금이라도 먹었으면 0으로 안 보인다
+    assert rules.format_count(rules.food_count(1600, FOODS_BY_ID["tanghuru"])) == "11"
+    assert rules.format_count(0) == "0"
+
+
+def test_week_compare_food_levels_up_near_higher_kcal_food():
+    from core import rules
+    from core.data import FOODS, FOODS_BY_ID
+    pasta, chicken, tteok = FOODS_BY_ID["pasta"], FOODS_BY_ID["chicken"], FOODS_BY_ID["ttuckbokki"]
+    assert rules.week_compare_food(600, pasta, FOODS) is pasta      # 파스타 1개
+    assert rules.week_compare_food(899, pasta, FOODS) is pasta      # 치킨(1000)의 90% 전
+    assert rules.week_compare_food(900, pasta, FOODS) is chicken    # 치킨 90% → 치킨으로
+    assert rules.week_compare_food(3000, pasta, FOODS) is chicken   # 가장 높은 음식에서 멈춘다
+    # 떡볶이(480)에서 시작하면 마라탕·파스타(600) 90%인 540에서 같은 칼로리 중 목록 앞쪽(마라탕)으로
+    assert rules.week_compare_food(540, tteok, FOODS) is FOODS_BY_ID["maratang"]
+    assert rules.week_compare_food(100, tteok, FOODS) is tteok       # 더 낮은 음식으로는 내려가지 않는다

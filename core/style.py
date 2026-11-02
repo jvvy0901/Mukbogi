@@ -334,6 +334,44 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 }
 .mk-empty-title { font-size: 22px; font-weight: 700; color: var(--ink); }
 
+/* ---------- 홈: 이번 주 소화 (음식 몇 개만큼) ---------- */
+.mk-nowrap { white-space: nowrap; }
+.mk-week { background: var(--soft); border-radius: 16px; padding: 16px; }
+.mk-week-head { display: flex; align-items: center; gap: 12px; }
+.mk-week-head img { flex: 0 0 56px; width: 56px; height: 56px; object-fit: contain; filter: drop-shadow(0 3px 4px rgba(34, 34, 34, .12)); }
+.mk-week-head > div { min-width: 0; }
+.mk-week-title { font-size: 16px; font-weight: 700; line-height: 1.4; color: var(--ink); text-wrap: balance; }
+.mk-week-title b { font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.mk-week-sub { font-size: 13px; color: var(--sub); margin-top: 4px; }
+.mk-week-sub b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.mk-week-empty .mk-week-head img { opacity: .45; filter: grayscale(.4); }
+.mk-week-empty .mk-week-title { font-size: 15px; font-weight: 600; }
+.mk-week-alt { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px; }
+.mk-week-alt-label { font-size: 12px; font-weight: 600; color: var(--sub); margin-right: 2px; }
+/* 기준 음식이 더 높은 칼로리 음식으로 바뀐 순간: 사진·문구가 한 번 톡 튀어 오른다 */
+.mk-week-swap .mk-week-head img { animation: mk-week-swap 420ms var(--ease-pop) both; }
+.mk-week-swap .mk-week-title { animation: mk-week-fade 320ms var(--ease-enter) both; }
+@keyframes mk-week-swap { from { transform: scale(.6) rotate(-8deg); opacity: 0; } }
+@keyframes mk-week-fade { from { opacity: 0; transform: translateY(4px); } }
+@media (prefers-reduced-motion: reduce) {
+  .mk-week-swap .mk-week-head img, .mk-week-swap .mk-week-title { animation-name: mk-week-fade-only; }
+  @keyframes mk-week-fade-only { from { opacity: 0; } }
+}
+/* 좁은 화면(SE): 칩 하나만 아랫줄로 떨어지지 않게 안내 문구를 윗줄로 따로 둔다 */
+@media (max-width: 360px) { .mk-week-alt-label { flex-basis: 100%; } }
+.mk-week-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--ink); background: var(--fill); border-radius: 999px; padding: 4px 10px 4px 4px; white-space: nowrap; }
+.mk-week-chip img { width: 22px; height: 22px; object-fit: contain; }
+.mk-week-chip b { font-variant-numeric: tabular-nums; }
+.mk-week-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.mk-wd { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.mk-wd-track { position: relative; width: 100%; max-width: 28px; height: 44px; border-radius: 6px; background: var(--fill); overflow: hidden; }
+.mk-wd-track i { position: absolute; left: 0; right: 0; bottom: 0; background: var(--green); border-radius: 6px; }
+.mk-wd span { font-size: 12px; font-weight: 500; color: var(--sub); }
+.mk-wd.today .mk-wd-track i { background: var(--brand); }
+.mk-wd.today span { color: var(--ink); font-weight: 700; }
+.mk-wd.later .mk-wd-track { background: transparent; border: 1px dashed var(--line); }
+.mk-wd.later span { color: var(--sub); opacity: .6; }
+
 /* ---------- 홈: 소화 중인 음식 카드 ---------- */
 .mk-meal { background: var(--soft); border-radius: 16px; padding: 16px; margin-top: calc(var(--gap-out) - var(--gap-in) - 8px); }
 .mk-meal-top { display: flex; justify-content: space-between; align-items: center; }

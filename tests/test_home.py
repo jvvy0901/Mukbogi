@@ -67,7 +67,8 @@ def test_start_stop_and_digest_by_bites():
     _click(at, "move_1_0")  # 달리기 1km = 60kcal = 1입
     text = _text(at)
     assert "한 입 1/10" in text
-    assert "소화했어요" not in text  # 진행률은 한 입 수와 남은 칼로리로만 보여 준다
+    meal_card = re.sub(r"<[^>]+>", "", next(m.value for m in at.markdown if 'class="mk-meal' in m.value))
+    assert "소화했어요" not in meal_card  # 진행률은 한 입 수와 남은 칼로리로만 보여 준다
     assert "남은 540kcal" in text
     assert "1.00km" in text
 
@@ -180,3 +181,37 @@ def test_new_order_appears_once_where_it_lands():
     _click(at, "home_more")
     _order(at, "pasta")
     assert any('class="mk-q mk-new"' in m.value for m in at.markdown)
+
+
+def test_week_section_shows_digested_kcal_as_food_count():
+    at = _start()
+    assert "이번 주는 아직 소화한 음식이 없어요" in _text(at)
+    _click(at, "home_order")
+    _order(at, "pasta")
+    _click(at, "home_start")
+    _click(at, "act_run")
+    _click(at, "move_3_0")  # 달리기 3km × 60kg = 180kcal
+    text = _text(at)
+    # 비교 음식은 온보딩에서 고른 파스타(600kcal)가 먼저: 180 ÷ 600 = 0.3 → 최소 1개
+    assert "파스타 1개 만큼 소화했어요" in text
+    assert "180kcal" in text
+    assert "다른 음식으로는" in text and "떡볶이 1개" in text  # 나머지는 음식 목록 순서로 채운다
+
+
+def test_week_section_switches_to_higher_kcal_food_when_close():
+    at = _start()  # 고른 음식: 파스타(600kcal)
+    _click(at, "home_order")
+    _order(at, "pasta")
+    _click(at, "home_start")
+    _click(at, "act_run")
+    _click(at, "move_3_0")
+    _click(at, "move_3_0")  # 360kcal
+    assert "파스타 1개 만큼 소화했어요" in _text(at)
+    at.session_state["meal"].digested_by_day[next(iter(at.session_state["meal"].digested_by_day))] = 950.0
+    at.run()
+    text = _text(at)
+    assert "후라이드치킨 1개 만큼 소화했어요" in text  # 치킨(1000)의 90%를 넘으면 치킨으로 센다
+    assert "파스타 2개" in text  # 처음 기준 음식은 칩으로 이어서 보여 준다
+    assert any('class="mk-week mk-week-swap"' in m.value for m in at.markdown)  # 바뀌는 순간에만 연출
+    at.run()
+    assert not any('class="mk-week mk-week-swap"' in m.value for m in at.markdown)

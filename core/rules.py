@@ -46,3 +46,34 @@ def daily_targets(foods: Sequence[Food]) -> dict[str, int]:
         mean = sum(f.kcal for f in group) / len(group)
         targets[eater_type] = int(mean + 0.5)
     return targets
+
+
+def food_count(kcal: float, food: Food) -> float:
+    """소화한 칼로리가 음식 몇 개만큼인지 (예: 720kcal ÷ 떡볶이 480kcal = 1.5개)."""
+    return max(0.0, kcal) / food.kcal
+
+
+def format_count(count: float) -> str:
+    """음식 개수 표시: 소수점 없이 반올림한 정수 (1.4 → 1, 1.5 → 2, 0.9 → 1).
+    조금이라도 소화했으면 0개로 보이지 않게 최소 1개로 보여 준다."""
+    if count <= 0:
+        return "0"
+    return str(max(1, int(count + 0.5)))
+
+
+# 이번 주 소화 기준 음식이 더 높은 칼로리 음식으로 바뀌는 지점 (초안, PRD Story 3.8):
+# 그 음식 칼로리의 90%까지 소화하면 "거의 한 개"이므로 그 음식으로 센다.
+LEVEL_UP_RATIO = 0.9
+
+
+def week_compare_food(total_kcal: float, base: Food, foods: Sequence[Food]) -> Food:
+    """이번 주 소화를 셀 기준 음식.
+
+    처음에는 base(온보딩에서 고른 첫 음식)로 세다가, 소화한 칼로리가 base보다 칼로리가 높은 음식의
+    LEVEL_UP_RATIO(90%)에 다다르면 그 음식으로 바꾼다. 다다른 음식이 여럿이면 가장 높은 칼로리 음식.
+    (칼로리가 같으면 음식 목록 앞쪽)"""
+    reached = [f for f in foods if f.kcal > base.kcal and total_kcal >= f.kcal * LEVEL_UP_RATIO]
+    if not reached:
+        return base
+    top = max(f.kcal for f in reached)
+    return next(f for f in reached if f.kcal == top)

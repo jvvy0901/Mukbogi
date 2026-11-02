@@ -11,7 +11,7 @@ from html import escape
 
 import streamlit as st
 
-from core import community, fridge, gift, meal, mypage, social
+from core import community, fridge, gift, meal, mypage, rules, social
 from core.avatar import user_avatar
 from core.data import FOODS, FOODS_BY_ID
 from core.images import food_bitten, food_thumb
@@ -19,6 +19,7 @@ from core.korean import eul_reul, i_ga
 from core.style import html, toast
 
 TABS = (("home", "홈"), ("fridge", "냉장고"), ("community", "커뮤니티"), ("my", "내정보"))
+WEEKDAYS = ("월", "화", "수", "목", "금", "토", "일")
 TABS_WITHOUT_PAGE: set[str] = set()  # 메뉴만 있고 화면은 아직 없는 탭
 DISTANCES = (0.5, 1.0, 3.0)
 
@@ -244,6 +245,70 @@ def _queue_section(state: meal.MealState) -> None:
         html(f'<div class="mk-count">조리 중인 음식은 {meal.MAX_WAITING}개까지 담을 수 있어요</div>')
 
 
+def _favorite_foods() -> list:
+    """온보딩에서 고른 음식 먼저, 그 뒤에 나머지 음식을 음식 목록 순서로."""
+    picked = [FOODS_BY_ID[i] for i in st.session_state.profile.get("favorite_food_ids", []) if i in FOODS_BY_ID]
+    return picked + [f for f in FOODS if f not in picked]
+
+
+def _week_section(state: meal.MealState) -> None:
+    """이번 주 소화: 월요일부터 움직여 소화한 칼로리를 '떡볶이 1.5개만큼'처럼 음식으로 보여 준다.
+
+    기준 음식은 온보딩에서 고른 첫 음식에서 시작해, 더 높은 칼로리 음식에 거의 다다르면(90%)
+    그 음식으로 바뀐다(rules.week_compare_food). 바뀌는 순간에만 문구가 살짝 튀어 오른다."""
+    today = datetime.now().date()
+    days = state.week_by_day(today)
+    total = round(sum(days))
+    favorites = _favorite_foods()
+    base = favorites[0]
+    main = rules.week_compare_food(total, base, FOODS)
+    # 칩: 기준이 바뀌었으면 처음 음식(base)을 먼저 보여 줘 이어서 읽히게 한다
+    others = [f for f in ([base] if main is not base else []) + favorites if f is not main]
+    others = list(dict.fromkeys(others))[:2]
+    monday = social.week_start(today)
+    since = f"{monday.month}월 {monday.day}일(월)부터"
+
+    prev = st.session_state.get("week_food")
+    st.session_state.week_food = main.id
+    swapped = " mk-week-swap" if prev is not None and prev != main.id else ""
+
+    if total > 0:
+        count = rules.format_count(rules.food_count(total, main))
+        title = f'{escape(main.name)} <span class="mk-nowrap"><b>{count}개</b> 만큼</span> 소화했어요'
+        sub = f"{since} <b>{total:,}</b>kcal"
+        alts = "".join(
+            f'<span class="mk-week-chip"><img src="{food_thumb(f, 96)}" alt="">{escape(f.name)} '
+            f'<b>{rules.format_count(rules.food_count(total, f))}개</b></span>'
+            for f in others
+        )
+        alt_row = f'<div class="mk-week-alt"><span class="mk-week-alt-label">다른 음식으로는</span>{alts}</div>'
+    else:
+        title = "이번 주는 아직 소화한 음식이 없어요"
+        sub = "식사시작을 누르고 움직이면 여기에 쌓여요"
+        alt_row = ""
+
+    top = max(days) or 1
+    bars = "".join(
+        f'<div class="mk-wd{" today" if i == today.weekday() else ""}{" later" if i > today.weekday() else ""}">'
+        f'<div class="mk-wd-track"><i style="height:{0 if v <= 0 else max(8, round(v / top * 100))}%"></i></div>'
+        f"<span>{WEEKDAYS[i]}</span></div>"
+        for i, v in enumerate(days)
+    )
+    spoken = ", ".join(f"{WEEKDAYS[i]} {round(v)}킬로칼로리" for i, v in enumerate(days) if i <= today.weekday())
+
+    html('<div class="mk-section">이번 주 소화</div>')
+    html(
+        f'<div class="mk-week{" mk-week-empty" if total <= 0 else ""}{swapped}">'
+        '<div class="mk-week-head">'
+        f'<img src="{food_thumb(main, 192)}" alt="">'
+        f'<div><div class="mk-week-title">{title}</div><div class="mk-week-sub">{sub}</div></div>'
+        "</div>"
+        f"{alt_row}"
+        f'<div class="mk-week-days" role="img" aria-label="요일별 소화 칼로리: {spoken}">{bars}</div>'
+        "</div>"
+    )
+
+
 def _friends_section() -> None:
     html('<div class="mk-section">친구들이 소화 중이에요</div>')
     friends = social.friend_users(st.session_state.social)
@@ -335,6 +400,7 @@ def _home() -> None:
             html('<div class="mk-hint">식사시작을 누르고 움직이면 한 입씩 소화돼요</div>')
         _queue_section(state)
 
+    _week_section(state)
     _friends_section()
     _ad_slot()
 

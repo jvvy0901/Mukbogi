@@ -4,7 +4,7 @@ PRD Story 2.3(대기열), 3.2(식사시작/멈추기), 3.3(한 입), 3.5(소화 
 """
 
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from core.data import FOODS_BY_ID, Food
 from core.rules import burned_kcal
@@ -70,6 +70,15 @@ class MealState:
 
     def digested_on(self, day: date) -> float:
         return self.digested_by_day.get(day, 0.0)
+
+    def week_by_day(self, today: date) -> list[float]:
+        """이번 주(월요일 00:00부터) 요일별 소화 칼로리. [월, 화, … 일] 7칸, 오늘 뒤는 0.
+        다 먹지 못한 음식도 움직인 만큼 들어간다(냉장고 기록이 아니라 소모 칼로리 기준)."""
+        monday = today - timedelta(days=today.weekday())
+        return [
+            self.digested_on(monday + timedelta(days=i)) if monday + timedelta(days=i) <= today else 0.0
+            for i in range(7)
+        ]
 
 
 def can_order(state: MealState) -> bool:
