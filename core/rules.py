@@ -61,19 +61,35 @@ def format_count(count: float) -> str:
     return str(max(1, int(count + 0.5)))
 
 
-# 이번 주 소화 기준 음식이 더 높은 칼로리 음식으로 바뀌는 지점 (초안, PRD Story 3.8):
-# 그 음식 칼로리의 90%까지 소화하면 "거의 한 개"이므로 그 음식으로 센다.
-LEVEL_UP_RATIO = 0.9
+# 이번 주 소화를 음식으로 셀 때 "거의 맞는다"고 보는 차이 (초안, PRD Story 3.8):
+# 음식 개수 × 칼로리가 실제 소화 칼로리와 10% 안으로 차이 나면 맞는 음식으로 본다.
+MATCH_TOLERANCE = 0.1
 
 
-def week_compare_food(total_kcal: float, base: Food, foods: Sequence[Food]) -> Food:
-    """이번 주 소화를 셀 기준 음식.
+def _rounded_count(total_kcal: float, food: Food) -> int:
+    return max(1, int(total_kcal / food.kcal + 0.5))
 
-    처음에는 base(온보딩에서 고른 첫 음식)로 세다가, 소화한 칼로리가 base보다 칼로리가 높은 음식의
-    LEVEL_UP_RATIO(90%)에 다다르면 그 음식으로 바꾼다. 다다른 음식이 여럿이면 가장 높은 칼로리 음식.
-    (칼로리가 같으면 음식 목록 앞쪽)"""
-    reached = [f for f in foods if f.kcal > base.kcal and total_kcal >= f.kcal * LEVEL_UP_RATIO]
-    if not reached:
-        return base
-    top = max(f.kcal for f in reached)
-    return next(f for f in reached if f.kcal == top)
+
+def match_error(total_kcal: float, food: Food) -> float:
+    """화면에 보이는 개수(정수)로 바꿨을 때 실제 칼로리와의 차이 비율. 150kcal를 마라탕 1개(600)로 보이면 3.0."""
+    return abs(_rounded_count(total_kcal, food) * food.kcal - total_kcal) / total_kcal
+
+
+def week_compare_foods(total_kcal: float, foods: Sequence[Food], favorites: Sequence[Food] = ()) -> list[Food]:
+    """이번 주 소화 칼로리에 가장 잘 맞는 음식 순서 (첫 번째가 큰 문구, 다음이 "다른 음식으로는" 칩).
+
+    1. 정수 개수로 바꿨을 때 차이가 10% 안인 음식이 먼저. 그중에서는 개수가 적은(= 칼로리가 큰) 음식부터 —
+       "떡볶이 3개"가 "탕후루 10개"보다 한눈에 들어온다.
+    2. 10% 안인 음식이 없으면 차이가 작은 음식부터.
+    같으면 차이가 작은 쪽 → 온보딩에서 고른 음식 → 음식 목록 순서.
+    예: 150kcal → 탕후루 1개, 360kcal → 과일모찌 2개, 900kcal → 후라이드치킨 1개, 1500kcal → 떡볶이 3개."""
+    fav_rank = {f.id: i for i, f in enumerate(favorites)}
+    order = {f.id: i for i, f in enumerate(foods)}
+
+    def key(f: Food):
+        err = match_error(total_kcal, f)
+        close = err <= MATCH_TOLERANCE + 1e-9
+        primary = _rounded_count(total_kcal, f) if close else err
+        return (0 if close else 1, primary, err, fav_rank.get(f.id, len(fav_rank)), order[f.id])
+
+    return sorted(foods, key=key) if total_kcal > 0 else list(foods)

@@ -102,14 +102,18 @@ def test_food_count_wording():
     assert rules.format_count(0) == "0"
 
 
-def test_week_compare_food_levels_up_near_higher_kcal_food():
+def test_week_compare_foods_picks_food_closest_to_digested_kcal():
     from core import rules
     from core.data import FOODS, FOODS_BY_ID
-    pasta, chicken, tteok = FOODS_BY_ID["pasta"], FOODS_BY_ID["chicken"], FOODS_BY_ID["ttuckbokki"]
-    assert rules.week_compare_food(600, pasta, FOODS) is pasta      # 파스타 1개
-    assert rules.week_compare_food(899, pasta, FOODS) is pasta      # 치킨(1000)의 90% 전
-    assert rules.week_compare_food(900, pasta, FOODS) is chicken    # 치킨 90% → 치킨으로
-    assert rules.week_compare_food(3000, pasta, FOODS) is chicken   # 가장 높은 음식에서 멈춘다
-    # 떡볶이(480)에서 시작하면 마라탕·파스타(600) 90%인 540에서 같은 칼로리 중 목록 앞쪽(마라탕)으로
-    assert rules.week_compare_food(540, tteok, FOODS) is FOODS_BY_ID["maratang"]
-    assert rules.week_compare_food(100, tteok, FOODS) is tteok       # 더 낮은 음식으로는 내려가지 않는다
+
+    def top(kcal, favorites=()):
+        return rules.week_compare_foods(kcal, FOODS, favorites)[0].name
+
+    assert top(150) == "탕후루"         # 150kcal에 마라탕(600) 같은 먼 음식이 나오지 않는다
+    assert top(150, [FOODS_BY_ID["bungeoppang"]]) == "붕어빵"  # 칼로리가 같으면 고른 음식 먼저
+    assert top(250) == "아이스크림"
+    assert top(360) == "과일모찌"       # 2개 = 360
+    assert top(1000) == "후라이드치킨"
+    assert top(1500) == "떡볶이"        # 10% 안의 음식 중 개수가 가장 적은 음식 (3개 = 1440)
+    for kcal in (150, 180, 250, 300, 360, 480, 600, 900, 1000, 1500, 2400):
+        assert rules.match_error(kcal, rules.week_compare_foods(kcal, FOODS)[0]) <= rules.MATCH_TOLERANCE

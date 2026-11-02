@@ -252,19 +252,18 @@ def _favorite_foods() -> list:
 
 
 def _week_section(state: meal.MealState) -> None:
-    """이번 주 소화: 월요일부터 움직여 소화한 칼로리를 '떡볶이 1.5개만큼'처럼 음식으로 보여 준다.
+    """이번 주 소화: 월요일부터 움직여 소화한 칼로리를 '떡볶이 2개 만큼'처럼 음식으로 보여 준다.
 
-    기준 음식은 온보딩에서 고른 첫 음식에서 시작해, 더 높은 칼로리 음식에 거의 다다르면(90%)
-    그 음식으로 바뀐다(rules.week_compare_food). 바뀌는 순간에만 문구가 살짝 튀어 오른다."""
+    음식은 소화한 칼로리에 가장 가까운 음식으로 고른다(rules.week_compare_foods) — 150kcal면 탕후루 1개.
+    고른 음식이 바뀌는 순간에만 사진·문구가 살짝 튀어 오른다."""
     today = datetime.now().date()
     days = state.week_by_day(today)
     total = round(sum(days))
     favorites = _favorite_foods()
-    base = favorites[0]
-    main = rules.week_compare_food(total, base, FOODS)
-    # 칩: 기준이 바뀌었으면 처음 음식(base)을 먼저 보여 줘 이어서 읽히게 한다
-    others = [f for f in ([base] if main is not base else []) + favorites if f is not main]
-    others = list(dict.fromkeys(others))[:2]
+    if total > 0:
+        main, *others = rules.week_compare_foods(total, FOODS, favorites)[:3]
+    else:
+        main, others = favorites[0], []
     monday = social.week_start(today)
     since = f"{monday.month}월 {monday.day}일(월)부터"
 
@@ -272,7 +271,12 @@ def _week_section(state: meal.MealState) -> None:
     st.session_state.week_food = main.id
     swapped = " mk-week-swap" if prev is not None and prev != main.id else ""
 
-    if total > 0:
+    if total > 0 and rules.match_error(total, main) > rules.MATCH_TOLERANCE + 1e-9 and total < main.kcal:
+        # 가장 작은 음식 1개에도 못 미치면(예: 50kcal) 억지로 "1개"라고 하지 않고 남은 칼로리를 알려 준다
+        title = f'{escape(main.name)} <span class="mk-nowrap"><b>1개</b>까지</span> {main.kcal - total:,}kcal 남았어요'
+        sub = f"{since} <b>{total:,}</b>kcal"
+        alt_row = ""
+    elif total > 0:
         count = rules.format_count(rules.food_count(total, main))
         title = f'{escape(main.name)} <span class="mk-nowrap"><b>{count}개</b> 만큼</span> 소화했어요'
         sub = f"{since} <b>{total:,}</b>kcal"

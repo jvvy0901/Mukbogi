@@ -183,7 +183,7 @@ def test_new_order_appears_once_where_it_lands():
     assert any('class="mk-q mk-new"' in m.value for m in at.markdown)
 
 
-def test_week_section_shows_digested_kcal_as_food_count():
+def test_week_section_shows_digested_kcal_as_closest_food():
     at = _start()
     assert "이번 주는 아직 소화한 음식이 없어요" in _text(at)
     _click(at, "home_order")
@@ -192,26 +192,28 @@ def test_week_section_shows_digested_kcal_as_food_count():
     _click(at, "act_run")
     _click(at, "move_3_0")  # 달리기 3km × 60kg = 180kcal
     text = _text(at)
-    # 비교 음식은 온보딩에서 고른 파스타(600kcal)가 먼저: 180 ÷ 600 = 0.3 → 최소 1개
-    assert "파스타 1개 만큼 소화했어요" in text
+    # 180kcal에 가장 가까운 음식: 과일모찌(180kcal) 1개 — 고른 음식(파스타 600kcal)과 상관없이 칼로리로 고른다
+    assert "과일모찌 1개 만큼 소화했어요" in text
     assert "180kcal" in text
-    assert "다른 음식으로는" in text and "떡볶이 1개" in text  # 나머지는 음식 목록 순서로 채운다
+    assert "다른 음식으로는" in text and "군고구마 1개" in text  # 다음으로 가까운 음식
 
 
-def test_week_section_switches_to_higher_kcal_food_when_close():
-    at = _start()  # 고른 음식: 파스타(600kcal)
+def test_week_section_changes_food_as_kcal_grows_and_handles_tiny_amounts():
+    at = _start()
     _click(at, "home_order")
     _order(at, "pasta")
     _click(at, "home_start")
     _click(at, "act_run")
     _click(at, "move_3_0")
     _click(at, "move_3_0")  # 360kcal
-    assert "파스타 1개 만큼 소화했어요" in _text(at)
-    at.session_state["meal"].digested_by_day[next(iter(at.session_state["meal"].digested_by_day))] = 950.0
+    assert "과일모찌 2개 만큼 소화했어요" in _text(at)
+    day = next(iter(at.session_state["meal"].digested_by_day))
+    at.session_state["meal"].digested_by_day[day] = 950.0
     at.run()
-    text = _text(at)
-    assert "후라이드치킨 1개 만큼 소화했어요" in text  # 치킨(1000)의 90%를 넘으면 치킨으로 센다
-    assert "파스타 2개" in text  # 처음 기준 음식은 칩으로 이어서 보여 준다
-    assert any('class="mk-week mk-week-swap"' in m.value for m in at.markdown)  # 바뀌는 순간에만 연출
+    assert "후라이드치킨 1개 만큼 소화했어요" in _text(at)  # 950kcal ≈ 치킨 1개(1000)
+    assert any('class="mk-week mk-week-swap"' in m.value for m in at.markdown)  # 음식이 바뀌는 순간에만 연출
     at.run()
     assert not any('class="mk-week mk-week-swap"' in m.value for m in at.markdown)
+    at.session_state["meal"].digested_by_day[day] = 50.0
+    at.run()
+    assert "탕후루 1개까지 100kcal 남았어요" in _text(at)  # 가장 작은 음식에도 못 미치면 억지로 1개라 하지 않는다
