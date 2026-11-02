@@ -75,6 +75,11 @@ html, body, .stApp, .stApp *:not([data-testid="stIconMaterial"]) {
 }
 .stApp { background: var(--cream); color: var(--ink); word-break: keep-all; overflow-wrap: break-word; }  /* 한국어는 낱말 단위로 줄바꿈 */
 
+/* 스크롤바 숨기기: 아이폰처럼 스크롤은 되지만 막대는 보이지 않게 (미리보기·데스크톱 브라우저 포함) */
+html, body, [data-testid="stMain"], [data-testid="stAppViewContainer"] { scrollbar-width: none !important; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar,
+[data-testid="stMain"]::-webkit-scrollbar, [data-testid="stAppViewContainer"]::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+
 /* Streamlit 기본 화면 요소 숨기기 */
 header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"],
 [data-testid="stStatusWidget"], #MainMenu, footer { display: none !important; }
@@ -567,9 +572,21 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-lock-title { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
 
 /* ---------- 내정보 ---------- */
-.mk-my-stats { grid-template-columns: repeat(3, 1fr); margin-top: 4px; }
-.mk-my-stats .mk-stat { background: var(--soft); }
-.mk-my-stats .mk-stat dd { font-size: 20px; }
+/* 프로필 머리: 아바타 56px + 이름. 요약은 한 장의 흰 카드 안 3칸(숫자 위, 이름 아래, 칸 사이 선) */
+.mk-my-head .mk-prof { gap: 14px; padding: 4px 0 0; }
+.mk-my-head .mk-avatar-xl { width: 56px; height: 56px; font-size: 20px; }
+.mk-my-head .mk-prof-name { font-size: 20px; }
+.mk-my-stats {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin: 20px 0 0;
+  background: var(--soft); border-radius: 16px; padding: 16px 0;
+}
+.mk-my-stats .mk-stat {
+  display: flex; flex-direction: column-reverse; align-items: center; gap: 4px;
+  background: transparent; border-radius: 0; padding: 0 6px; min-width: 0; text-align: center;
+}
+.mk-my-stats .mk-stat + .mk-stat { border-left: 1px solid var(--line); }
+.mk-my-stats .mk-stat dt { white-space: nowrap; }
+.mk-my-stats .mk-stat dd { font-size: clamp(17px, 5.2vw, 20px); margin: 0; white-space: nowrap; }  /* 좁은 화면에서도 다섯 자리 kcal이 한 줄에 */
 .mk-my-note { font-size: 13px; color: var(--sub); line-height: 1.5; }
 .mk-my-note b { color: var(--ink); }
 .mk-plus-pill { font-size: 11px; font-weight: 700; color: var(--ink); background: var(--yellow); border-radius: 999px; padding: 3px 9px; }
@@ -756,7 +773,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 
 /* ---------- 브랜드 표면: 크림 바탕 위 흰 카드 + 은은한 그림자 ---------- */
 .mk-card, .mk-summary, .mk-favs, .st-key-empty_box, .mk-meal, .mk-q:not(.mk-q-add), .mk-fr, .mk-fz-list, .mk-gift-to,
-[class*="st-key-list_"], .mk-empty-line, .mk-note-box, .mk-idcard, .st-key-confirm_box, .mk-lock, .mk-my-stats .mk-stat,
+[class*="st-key-list_"], .mk-empty-line, .mk-note-box, .mk-idcard, .st-key-confirm_box, .mk-lock, .mk-my-stats,
 .mk-gift-stats .mk-stat, .st-key-plus_box, .mk-today, .mk-rel,
 .st-key-ob_weight [data-testid="stNumberInputContainer"], .st-key-my_weight [data-testid="stNumberInputContainer"],
 .st-key-cm_query [data-testid="stTextInputRootElement"], [class*="st-key-auth_in_"] [data-testid="stTextInputRootElement"] { box-shadow: var(--shadow); }

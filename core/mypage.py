@@ -99,7 +99,7 @@ def _header(state: meal.MealState) -> None:
     friends = len(st.session_state.social.friends) if "social" in st.session_state else 0
     plus = '<span class="mk-plus-pill">플러스</span>' if st.session_state.get("plus") else ""
     html(
-        '<div class="mk-prof">'
+        '<div class="mk-my-head"><div class="mk-prof">'
         f'{auth.my_avatar("mk-avatar mk-avatar-xl")}'
         '<div class="mk-u-text">'
         f'<div class="mk-prof-name">{ME_NAME}{plus}</div>'
@@ -109,7 +109,7 @@ def _header(state: meal.MealState) -> None:
         f'<div class="mk-stat"><dt>이번 주</dt><dd>{week_kcal:,}<small>kcal</small></dd></div>'
         f'<div class="mk-stat"><dt>소화한 음식</dt><dd>{len(state.fridge)}<small>개</small></dd></div>'
         f'<div class="mk-stat"><dt>친구</dt><dd>{friends}<small>명</small></dd></div>'
-        "</dl>"
+        "</dl></div>"
     )
 
 
