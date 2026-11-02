@@ -117,7 +117,9 @@ def _step_type() -> None:
 
     for eater_type in EATER_TYPES:
         foods = groups[eater_type]
-        thumbs = "".join(f'<img src="{food_thumb(f)}" alt="">' for f in foods)
+        # 그림은 칼로리가 가장 낮은·높은 2개만 겹쳐 보여 주고(카드 폭 유지), 이름은 그룹 음식 전부를 적는다
+        shown = [foods[0], foods[-1]] if len(foods) > 2 else foods
+        thumbs = "".join(f'<img src="{food_thumb(f)}" alt="">' for f in shown)
         names = " · ".join(f.name for f in foods)
         sel = " sel" if chosen == eater_type else ""
         with st.container(key=f"tap_type_{TYPE_KEYS[eater_type]}"):

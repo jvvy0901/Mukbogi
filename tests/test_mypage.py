@@ -39,7 +39,7 @@ def test_my_tab_opens_page_with_profile_summary():
     text = _text(at)
     assert "내정보" in text and "@tester" in text
     assert "친구4명" in text.replace(" ", "")
-    assert "하루 목표 365kcal" in text
+    assert "하루 목표 308kcal" in text
     assert "소화하고 싶은 음식" not in text  # 내정보에서는 선호 음식을 바꾸지 않는다
 
 
@@ -47,8 +47,8 @@ def test_change_eater_type_updates_daily_target():
     at = _start()
     _click(at, "mtype_big")
     assert at.session_state["profile"]["eater_type"] == "대식가"
-    assert at.session_state["profile"]["daily_target_kcal"] == 600
-    assert "하루 목표 600kcal" in _text(at)
+    assert at.session_state["profile"]["daily_target_kcal"] == 733
+    assert "하루 목표 733kcal" in _text(at)
 
 
 def test_weight_save_without_clear_button():

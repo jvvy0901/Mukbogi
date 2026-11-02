@@ -33,7 +33,7 @@ def test_step1_shows_three_types_and_next_disabled_until_chosen():
     for t in ("대식가", "중식가", "소식가"):
         assert f"{t} 선택하기" in labels
     md = _markdown(at)
-    for kcal in (600, 365, 165):
+    for kcal in (733, 308, 160):
         assert f"하루 목표 {kcal}kcal" in md
     assert at.button(key="ob_next_0").disabled
 
@@ -48,7 +48,7 @@ def test_step2_requires_at_least_one_food_and_toggles():
     _click(at, "ob_next_0")
 
     food_buttons = [b for b in at.button if (b.key or "").startswith("ob_food_")]
-    assert len(food_buttons) == 6
+    assert len(food_buttons) == 10
     assert at.button(key="ob_next_1").disabled
 
     _click(at, "ob_food_pasta")
@@ -75,7 +75,7 @@ def test_skip_weight_uses_default():
 
     assert at.session_state["profile"] == {
         "eater_type": "소식가",
-        "daily_target_kcal": 165,
+        "daily_target_kcal": 160,
         "favorite_food_ids": ["mocci"],
         "weight_kg": None,
     }

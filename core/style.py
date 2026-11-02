@@ -144,7 +144,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-type-name { font-size: 17px; font-weight: 700; line-height: 1.3; }
 .mk-type-goal { font-size: 14px; color: var(--sub); line-height: 1.4; margin-top: 4px; }
 .mk-type-goal b { font-size: 15px; font-weight: 700; color: var(--ink); }
-.mk-type-ex { font-size: 13px; color: var(--sub); line-height: 1.4; }
+.mk-type-ex { font-size: 13px; color: var(--sub); line-height: 1.4; min-height: 2.8em; word-break: keep-all; }  /* 음식 이름이 두 줄인 카드가 있어도 세 카드 높이를 맞춘다 */
 
 /* ---------- 2단계: 음식 3열 그리드 ---------- */
 [class*="st-key-grid_"] {
@@ -153,7 +153,9 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-food { display: flex; flex-direction: column; align-items: center; padding: 16px 6px 12px; text-align: center; }
 .mk-food .mk-pick { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; }
 .mk-food img { width: 64px; height: 64px; object-fit: contain; filter: drop-shadow(0 3px 4px rgba(30, 37, 48, .14)); }
-.mk-food-name { font-size: 15px; font-weight: 600; margin-top: 10px; line-height: 1.3; }
+.mk-food-name { font-size: 15px; font-weight: 600; margin-top: 10px; line-height: 1.3; word-break: keep-all; }
+/* 좁은 화면(SE)에서는 "후라이드치킨"처럼 긴 이름이 두 줄이 되므로, 모든 칸이 두 줄 자리를 잡아 줄 높이를 맞춘다 */
+@media (max-width: 359px) { .mk-food-name { min-height: 2.6em; display: flex; align-items: center; justify-content: center; } }
 .mk-food-kcal { font-size: 13px; color: var(--sub); line-height: 1.4; }
 
 /* ---------- 3단계: 몸무게 입력 (라벨 · 입력칸 · 도움말을 한 묶음으로) ---------- */

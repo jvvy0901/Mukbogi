@@ -29,6 +29,11 @@ FOODS: tuple[Food, ...] = (
     Food("mocci", "과일모찌", "디저트", 180, 5, "mocci.png"),
     Food("icecream", "아이스크림", "디저트", 250, 5, "icecream.png"),
     Food("pasta", "파스타", "양식", 600, 10, "pasta.png"),
+    # 2026-11-02 추가 (칼로리·입 수는 초안 — PRD Q21)
+    Food("bungeoppang", "붕어빵", "디저트", 150, 5, "붕어빵.png"),     # 1개
+    Food("eomuktang", "어묵탕", "한식", 300, 10, "어묵탕.png"),
+    Food("chicken", "후라이드치킨", "양식", 1000, 10, "후라이드치킨.png"),  # 반 마리
+    Food("goguma", "군고구마", "디저트", 200, 5, "군고구마.png"),       # 1개
 )
 
 FOODS_BY_ID: dict[str, Food] = {f.id: f for f in FOODS}

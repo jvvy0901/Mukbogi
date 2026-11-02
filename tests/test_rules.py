@@ -9,15 +9,16 @@ def _food(kcal: int) -> Food:
 
 
 def test_mvp_targets_match_prd():
-    assert daily_targets(FOODS) == {"대식가": 600, "중식가": 365, "소식가": 165}
+    # 10종: 소식가 (150+150+180)/3=160, 중식가 (200+250+300+480)/4=307.5→308, 대식가 (600+600+1000)/3=733.3→733
+    assert daily_targets(FOODS) == {"대식가": 733, "중식가": 308, "소식가": 160}
 
 
 def test_mvp_groups_match_prd():
     names = {t: {f.name for f in g} for t, g in food_groups(FOODS).items()}
     assert names == {
-        "대식가": {"마라탕", "파스타"},
-        "중식가": {"떡볶이", "아이스크림"},
-        "소식가": {"탕후루", "과일모찌"},
+        "대식가": {"마라탕", "파스타", "후라이드치킨"},
+        "중식가": {"군고구마", "아이스크림", "어묵탕", "떡볶이"},  # 남는 1개는 적당한 그룹
+        "소식가": {"탕후루", "붕어빵", "과일모찌"},
     }
 
 
