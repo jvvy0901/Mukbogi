@@ -44,6 +44,7 @@ _CSS = """
 :root {
   /* 브랜드 가이드 색 (assets/img/Brand_Guide/mukbogibrand.png) */
   --brand: #FF8A3D;      /* 주황: 주요 버튼·포인트 (글자는 남색 #222 — 흰 글자는 대비 2.3:1이라 쓰지 않음) */
+  --brand-soft: #FFE3CC; /* 연주황: 큰 보조 버튼 채움 (검정 글자 대비 14:1) */
   --yellow: #FFD166;     /* 노랑: 강조 알약(목표 달성·플러스) */
   --cream: #FFF7EE;      /* 크림: 화면 바탕 */
   --green: #8CC084;      /* 초록: 움직임·소화 진행, 현재 탭 아이콘 */
@@ -225,9 +226,17 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 @media (hover: hover) and (pointer: fine) {
   [data-testid="stBaseButton-secondary"]:hover { border-color: var(--ink); color: var(--ink); background: #FFFFFF; }
 }
+/* 큰 보조 버튼(멈추기·냉장고 보기·플러스 해지): 주요 버튼과 같은 크기, 연주황 채움 + 검정 글자로 색만 다르게 */
 .st-key-bar_footer [data-testid="stBaseButton-secondary"],
-.st-key-sheet_done [data-testid="stBaseButton-secondary"] {
-  min-height: 52px; border-radius: 14px; border: 2px solid var(--ink); font-size: 17px; font-weight: 700;
+.st-key-sheet_done [data-testid="stBaseButton-secondary"],
+.st-key-plus_box [data-testid="stBaseButton-secondary"] {
+  min-height: 52px; border-radius: 14px; border: 0; background: var(--brand-soft); color: var(--ink);
+  font-size: 17px; font-weight: 700;
+}
+@media (hover: hover) and (pointer: fine) {
+  .st-key-bar_footer [data-testid="stBaseButton-secondary"]:hover,
+  .st-key-sheet_done [data-testid="stBaseButton-secondary"]:hover,
+  .st-key-plus_box [data-testid="stBaseButton-secondary"]:hover { background: var(--brand-soft); color: var(--ink); filter: brightness(.97); }
 }
 
 /* ---------- 하단 탭 ---------- */
@@ -588,9 +597,8 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-ico-noad { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='5' width='18' height='14' rx='3'/><path d='M4 4l16 16'/></svg>"); }
 .mk-ico-report { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='4' y='3' width='16' height='18' rx='2'/><path d='M8 16v-3M12 16V9M16 16v-5'/></svg>"); }
 .mk-soon { font-size: 11px; font-weight: 700; color: var(--sub); background: var(--soft); border-radius: 999px; padding: 3px 8px; white-space: nowrap; }
-/* 플러스 시작·해지 버튼은 같은 크기 (높이 52px · 모서리 14px · 17px/700). 해지는 흰 채움 + 남색 2px 테두리 */
+/* 플러스 시작·해지 버튼은 같은 크기 (높이 52px · 모서리 14px · 17px/700). 해지는 연주황 채움 */
 .st-key-plus_box .stButton button { height: 52px; min-height: 52px; border-radius: 14px; font-size: 17px; font-weight: 700; box-sizing: border-box; }
-.st-key-plus_box [data-testid="stBaseButton-secondary"] { border: 2px solid var(--ink); background: #FFFFFF; color: var(--ink); }
 .mk-plus-note { font-size: 12px; color: var(--sub); text-align: center; margin-top: -10px; }
 .st-key-reset_ask [data-testid="stBaseButton-secondary"] { min-height: 48px; border-radius: 14px; }
 
