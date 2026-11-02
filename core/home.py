@@ -300,7 +300,7 @@ def _week_section(state: meal.MealState) -> None:
     )
     spoken = ", ".join(f"{WEEKDAYS[i]} {round(v)}킬로칼로리" for i, v in enumerate(days) if i <= today.weekday())
 
-    html('<div class="mk-section">이번 주 소화</div>')
+    html('<div class="mk-section">이번 주 소화 칼로리</div>')
     html(
         f'<div class="mk-week{" mk-week-empty" if total <= 0 else ""}{swapped}">'
         '<div class="mk-week-head">'
