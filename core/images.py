@@ -25,15 +25,20 @@ from core.data import Food
 WORK_PX = 640  # 배경 처리용 축소 크기 (긴 변)
 FOOD_PAD = 0.06  # 상자 안 여백 비율 (한쪽)
 FOOD_AREA_RATIO = 0.70  # 보이는 면적의 제곱근 ÷ 상자 안쪽 한 변 — 음식 크기를 고르게 맞추는 기준
+BG_MAX_SPREAD = 5  # 배경(체크무늬)으로 볼 R·G·B 최대 차이 — 무채색만
 PROFILE_CROP = 0.62
 PROFILE_TOP = 0.06  # 위에서부터 자르기 시작하는 위치 (높이 비율)
 
 
 def _background_mask(im: Image.Image) -> np.ndarray:
-    """사진 가장자리에서 이어지는 체크무늬 배경 = True."""
+    """사진 가장자리에서 이어지는 체크무늬 배경 = True.
+
+    체크무늬는 무채색(흰색 253~255, 회색 223/223/225)이라 R·G·B 차이가 거의 없다(≤ 2).
+    차이를 14까지 배경으로 보면 후라이드치킨의 흰 종이 상자(따뜻한 흰색, 예: 232/221/218)가
+    배경과 이어져 상자 일부가 투명하게 뚫렸다 → 차이 5 이하만 배경으로 본다."""
     a = np.asarray(im).astype(np.int16)
     h, w, _ = a.shape
-    is_bg = (a.max(axis=2) - a.min(axis=2) < 14) & (a.min(axis=2) > 190)
+    is_bg = (a.max(axis=2) - a.min(axis=2) <= BG_MAX_SPREAD) & (a.min(axis=2) > 190)
 
     seen = np.zeros((h, w), dtype=bool)
     queue: deque[tuple[int, int]] = deque()

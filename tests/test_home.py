@@ -217,3 +217,15 @@ def test_week_section_changes_food_as_kcal_grows_and_handles_tiny_amounts():
     at.session_state["meal"].digested_by_day[day] = 50.0
     at.run()
     assert "탕후루 1개까지 100kcal 남았어요" in _text(at)  # 가장 작은 음식에도 못 미치면 억지로 1개라 하지 않는다
+
+
+def test_section_arrows_open_fridge_and_community_friends_tab():
+    at = _start()
+    _click(at, "sec_week")
+    assert at.session_state["screen"] == "fridge"
+    _click(at, "tab_community")
+    _click(at, "ctab_rank")
+    _click(at, "tab_home")
+    _click(at, "sec_friends")
+    assert at.session_state["screen"] == "community"
+    assert at.session_state["comm_tab"] == "friends"  # 랭킹을 보고 있었어도 친구 탭으로 연다

@@ -156,6 +156,16 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 [class*="st-key-tap_"] .stButton button { width: 100%; height: 100%; min-height: 0; }
 [class*="st-key-tap_"] .stButton button { opacity: 0; cursor: pointer; }
 [class*="st-key-tap_"]:has(button:focus-visible) .mk-card { outline: 3px solid var(--ink); outline-offset: 2px; }
+/* 화살표 섹션 제목: 제목 줄 전체가 눌린다 (높이 44px). 섹션 사이 간격은 위 여백으로 */
+[class*="st-key-tap_sec_"] { margin-top: calc(var(--gap-out) - var(--gap-in)); }
+.mk-sec-link { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding-top: 0; }
+.mk-sec-arrow { flex: none; width: 24px; height: 24px; margin-right: -4px; background: var(--sub);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M9.5 6l6 6-6 6'/></svg>") center / contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M9.5 6l6 6-6 6'/></svg>") center / contain no-repeat;
+  transition: transform .16s var(--ease-press); }
+[class*="st-key-tap_sec_"]:active .mk-sec-arrow { transform: translateX(3px); }
+@media (hover: hover) and (pointer: fine) { [class*="st-key-tap_sec_"]:hover .mk-sec-arrow { background: var(--ink); transform: translateX(2px); } }
+[class*="st-key-tap_sec_"]:has(button:focus-visible) .mk-sec-link { outline: 3px solid var(--ink); outline-offset: 2px; border-radius: 8px; }
 
 /* ---------- 카드 공통 + 선택 표시 (유사성: 어디서나 같은 모양) ---------- */
 .mk-card { position: relative; border-radius: 16px; background: var(--soft); border: 2px solid transparent; }

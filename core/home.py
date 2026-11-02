@@ -118,6 +118,19 @@ def _tab(key: str) -> None:
     _go(key)
 
 
+def _open_friends_tab() -> None:
+    st.session_state.comm_tab = "friends"
+    _go("community")
+
+
+def _section_link(key: str, title: str, label: str, on_click, args=()) -> None:
+    """오른쪽에 화살표가 붙은 섹션 제목. 제목 줄 전체(높이 44px)가 눌리고, 누르면 그 섹션의 전체 화면으로 간다."""
+    with st.container(key=f"tap_sec_{key}"):
+        html(f'<div class="mk-section mk-sec-link" role="heading" aria-level="2">{title}'
+             '<span class="mk-sec-arrow" aria-hidden="true"></span></div>')
+        st.button(label, key=f"sec_{key}", on_click=on_click, args=args)
+
+
 def _tab_bar(active: str) -> None:
     # 현재 탭: 초록 채움 아이콘(브랜드 가이드) + 검정 굵은 라벨 / 다른 탭: 회색 선 아이콘 + 보통 라벨
     html(
@@ -300,7 +313,7 @@ def _week_section(state: meal.MealState) -> None:
     )
     spoken = ", ".join(f"{WEEKDAYS[i]} {round(v)}킬로칼로리" for i, v in enumerate(days) if i <= today.weekday())
 
-    html('<div class="mk-section">이번 주 소화 칼로리</div>')
+    _section_link("week", "이번 주 소화 칼로리", "냉장고 보기", _go, ("fridge",))
     html(
         f'<div class="mk-week{" mk-week-empty" if total <= 0 else ""}{swapped}">'
         '<div class="mk-week-head">'
@@ -314,7 +327,7 @@ def _week_section(state: meal.MealState) -> None:
 
 
 def _friends_section() -> None:
-    html('<div class="mk-section">친구들이 소화 중이에요</div>')
+    _section_link("friends", "친구들이 소화 중이에요", "친구 목록 보기", _open_friends_tab)
     friends = social.friend_users(st.session_state.social)
     if not friends:
         with st.container(key="friends_empty"):
