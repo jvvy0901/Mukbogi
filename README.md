@@ -157,6 +157,7 @@ tests/                  pytest
 | [`PRD.md`](PRD.md) | 제품 요구사항 — 기능, 우선순위, 완료 조건, 범위, 열린 질문 |
 | [`DESIGN.md`](DESIGN.md) | 브랜드 · 시각 디자인 기준 |
 | [`CLAUDE.md`](CLAUDE.md) | 개발 작업 안내 (구조, 규칙, 화면 확인 체크리스트) |
+| [`prompt.md`](prompt.md) | Claude Code로 만들면서 보낸 프롬프트 기록 |
 
 ---
 
