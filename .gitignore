@@ -2,3 +2,14 @@
 __pycache__/
 .pytest_cache/
 .DS_Store
+
+# 비밀 값·로컬 설정 (배포 전에 실수로 올라가지 않게)
+.streamlit/secrets.toml
+.env
+.env.*
+*.pem
+*.key
+# 편집기·로그
+.vscode/
+.idea/
+*.log
