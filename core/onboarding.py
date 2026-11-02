@@ -2,7 +2,7 @@
 
 1단계: 식사량 유형 선택 (Story 1.1)
 2단계: 소화하고 싶은 음식 선택 (Story 1.2)
-3단계: 몸무게 입력, 건너뛸 수 있음 (Story 1.3)
+3단계: 성별·키·몸무게 입력, 건너뛸 수 있음 (Story 1.3)
 
 Story 1.4(움직임 측정 권한 안내)는 프로토타입 대체 방식이 PRD에 정해지지 않아 아직 넣지 않았다.
 """
@@ -18,9 +18,10 @@ from core.style import html
 
 TOTAL_STEPS = 3
 TYPE_KEYS = {"대식가": "big", "중식가": "mid", "소식가": "small"}
+GENDERS = (("female", "여성"), ("male", "남성"))
 
 # Streamlit은 화면에 그려지지 않은 위젯의 값을 지운다. 그래서 단계를 오가도 선택이 남도록
-# 고른 값은 위젯 키(ob_weight)와 별도인 키(ob_foods, ob_weight_saved)에 저장한다.
+# 고른 값은 위젯 키(ob_weight, ob_height)와 별도인 키(ob_foods, ob_weight_saved, ob_height_saved, ob_gender)에 저장한다.
 
 
 def _init_state() -> None:
@@ -29,6 +30,8 @@ def _init_state() -> None:
     ss.setdefault("ob_type", None)
     ss.setdefault("ob_foods", [])
     ss.setdefault("ob_weight_saved", None)
+    ss.setdefault("ob_height_saved", None)
+    ss.setdefault("ob_gender", None)
     ss.setdefault("ob_weight_error", False)
 
 
@@ -56,6 +59,15 @@ def _save_weight() -> None:
     st.session_state.ob_weight_error = False
 
 
+def _save_height() -> None:
+    st.session_state.ob_height_saved = st.session_state.ob_height
+
+
+def _choose_gender(gender: str) -> None:
+    ss = st.session_state
+    ss.ob_gender = None if ss.ob_gender == gender else gender  # 한 번 더 누르면 선택 해제
+
+
 def _finish(weight_kg: float | None) -> None:
     ss = st.session_state
     targets = daily_targets(FOODS)
@@ -64,6 +76,9 @@ def _finish(weight_kg: float | None) -> None:
         "daily_target_kcal": targets[ss.ob_type],
         "favorite_food_ids": list(ss.ob_foods),
         "weight_kg": weight_kg,  # None이면 기본값으로 계산
+        # 성별·키는 저장만 한다. 소모 칼로리 계산식에 넣을지는 PRD Open Question (지금 식은 몸무게만 쓴다)
+        "gender": ss.ob_gender,
+        "height_cm": ss.ob_height_saved,
     }
 
 
@@ -77,6 +92,8 @@ def _start_with_weight() -> None:
 
 
 def _skip_weight() -> None:
+    st.session_state.ob_gender = None
+    st.session_state.ob_height_saved = None
     _finish(None)
 
 
@@ -207,6 +224,30 @@ def _step_weight() -> None:
         "소모한 칼로리를 더 정확하게 계산해요.",
     )
 
+    # 성별 (고르지 않아도 된다)
+    active = st.session_state.ob_gender
+    picked = f'<span class="mk-sr">, {dict(GENDERS)[active]} 선택됨</span>' if active else ""
+    html(f'<div class="mk-field-label">성별{picked}</div>')
+    if active:
+        html(
+            f"<style>.st-key-gen_{active} button {{ background: #FFFFFF !important; color: var(--ink) !important; "
+            "box-shadow: 0 1px 3px rgba(30, 37, 48, .14); }</style>"
+        )
+    with st.container(key="seg_gender", horizontal=True):
+        for key, label in GENDERS:
+            st.button(label, key=f"gen_{key}", type="tertiary", on_click=_choose_gender, args=(key,))
+
+    st.number_input(
+        "키",
+        min_value=100.0,
+        max_value=250.0,
+        step=0.5,
+        format="%.1f",
+        value=st.session_state.ob_height_saved,
+        placeholder="키를 입력하세요.",
+        key="ob_height",
+        on_change=_save_height,
+    )
     st.number_input(
         "몸무게",
         min_value=20.0,
@@ -217,11 +258,10 @@ def _step_weight() -> None:
         placeholder="몸무게를 입력하세요.",
         key="ob_weight",
         on_change=_save_weight,
-        label_visibility="collapsed",  # 화면에서는 숨기고 스크린리더에는 "몸무게"로 읽힌다
     )
     if st.session_state.ob_weight_error:
         html('<div class="mk-error" role="alert">몸무게를 입력하거나 건너뛰기를 눌러 주세요.</div>')
-    html('<div class="mk-note">나한테만 보여요.</div>')
+    html('<div class="mk-note">성별·키·몸무게는 나한테만 보여요.</div>')
 
     with st.container(key="bar_footer"):
         st.button(

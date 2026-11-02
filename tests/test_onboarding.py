@@ -78,6 +78,8 @@ def test_skip_weight_uses_default():
         "daily_target_kcal": 160,
         "favorite_food_ids": ["mocci"],
         "weight_kg": None,
+        "gender": None,
+        "height_cm": None,
     }
     assert "주문하러 가요" in _markdown(at)  # 온보딩이 끝나면 홈으로 간다
 
@@ -96,6 +98,27 @@ def test_entered_weight_is_saved():
     at.number_input(key="ob_weight").set_value(55.5).run()
     _click(at, "ob_start")
     assert at.session_state["profile"]["weight_kg"] == 55.5
+
+
+def test_gender_and_height_are_saved_and_optional():
+    at = _start()
+    _to_step3(at)
+    assert "성별" in _markdown(at)
+    _click(at, "gen_female")
+    _click(at, "gen_male")  # 다른 쪽을 누르면 바뀐다
+    at.number_input(key="ob_height").set_value(168.0).run()
+    at.number_input(key="ob_weight").set_value(60.0).run()
+    _click(at, "ob_start")
+    p = at.session_state["profile"]
+    assert p["gender"] == "male" and p["height_cm"] == 168.0 and p["weight_kg"] == 60.0
+
+
+def test_gender_tap_again_clears():
+    at = _start()
+    _to_step3(at)
+    _click(at, "gen_female")
+    _click(at, "gen_female")
+    assert at.session_state["ob_gender"] is None
 
 
 def test_back_keeps_previous_choice():

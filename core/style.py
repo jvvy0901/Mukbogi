@@ -182,24 +182,29 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 @media (max-width: 359px) { .mk-food-name { min-height: 2.6em; display: flex; align-items: center; justify-content: center; } }
 .mk-food-kcal { font-size: 13px; color: var(--sub); line-height: 1.4; }
 
-/* ---------- 3단계: 몸무게 입력 (라벨 · 입력칸 · 도움말을 한 묶음으로) ---------- */
-.st-key-ob_weight label p { font-size: 15px; font-weight: 600; color: var(--ink); }
-.st-key-ob_weight [data-testid="stNumberInputContainer"] {
+/* ---------- 3단계: 성별·키·몸무게 입력 (라벨 · 입력칸 한 묶음씩, 단위는 칸 안 오른쪽) ---------- */
+:is(.st-key-ob_weight, .st-key-ob_height) label p { font-size: 15px; font-weight: 600; color: var(--ink); }
+:is(.st-key-ob_weight, .st-key-ob_height) [data-testid="stNumberInputContainer"] {
   position: relative; border-radius: 14px; background: var(--soft);
   border: 2px solid transparent; min-height: 56px;
 }
-.st-key-ob_weight [data-testid="stNumberInputContainer"]:focus-within { border-color: var(--ink); background: #FFFFFF; }
-.st-key-ob_weight [data-testid="stNumberInputContainer"]::after {
+:is(.st-key-ob_weight, .st-key-ob_height) [data-testid="stNumberInputContainer"]:focus-within { border-color: var(--ink); background: #FFFFFF; }
+:is(.st-key-ob_weight, .st-key-ob_height) [data-testid="stNumberInputContainer"]::after {
   content: "kg"; position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
   font-size: 17px; font-weight: 600; color: var(--sub); pointer-events: none;
 }
-.st-key-ob_weight input:focus-visible { outline: none !important; }  /* 포커스는 입력칸 테두리로 표시 */
-.st-key-ob_weight input { font-size: 22px; font-weight: 700; color: var(--ink); background: transparent; padding-right: 48px; }
+:is(.st-key-ob_weight, .st-key-ob_height) input:focus-visible { outline: none !important; }  /* 포커스는 입력칸 테두리로 표시 */
+:is(.st-key-ob_weight, .st-key-ob_height) input { font-size: 22px; font-weight: 700; color: var(--ink); background: transparent; padding-right: 48px; }
 /* 안내 문구는 입력한 숫자보다 작고 가볍게 */
-.st-key-ob_weight input::placeholder { font-size: 16px; font-weight: 400; color: var(--sub); opacity: 1; }
-.st-key-ob_weight [data-testid="stNumberInputStepDown"],
-.st-key-ob_weight [data-testid="stNumberInputStepUp"],
-.st-key-ob_weight [data-testid="InputInstructions"] { display: none; }
+:is(.st-key-ob_weight, .st-key-ob_height) input::placeholder { font-size: 16px; font-weight: 400; color: var(--sub); opacity: 1; }
+:is(.st-key-ob_weight, .st-key-ob_height) [data-testid="stNumberInputStepDown"],
+:is(.st-key-ob_weight, .st-key-ob_height) [data-testid="stNumberInputStepUp"],
+:is(.st-key-ob_weight, .st-key-ob_height) [data-testid="InputInstructions"] { display: none; }
+:is(.st-key-ob_height) [data-testid="stNumberInputContainer"]::after { content: "cm"; }
+.mk-field-label { font-size: 15px; font-weight: 600; color: var(--ink); line-height: 1.4; }
+/* 근접: 라벨–칸은 붙이고(4px), 묶음 사이는 넓게(20px) */
+.stElementContainer:has(.mk-field-label) { margin-bottom: -6px; }
+.st-key-ob_height, .st-key-ob_weight { margin-top: 10px; }
 .mk-note { font-size: 13px; color: var(--sub); line-height: 1.5; margin-top: -4px; }
 .mk-error { font-size: 13px; font-weight: 600; color: var(--danger); margin-top: -4px; }
 
@@ -787,7 +792,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-card, .mk-summary, .mk-favs, .st-key-empty_box, .mk-meal, .mk-q:not(.mk-q-add), .mk-fr, .mk-fz-list, .mk-gift-to,
 [class*="st-key-list_"], .mk-empty-line, .mk-note-box, .mk-idcard, .st-key-confirm_box, .mk-lock, .mk-my-stats,
 .mk-gift-stats .mk-stat, .st-key-plus_box, .mk-today, .mk-rel,
-.st-key-ob_weight [data-testid="stNumberInputContainer"], .st-key-my_weight [data-testid="stNumberInputContainer"],
+.st-key-ob_weight [data-testid="stNumberInputContainer"], .st-key-ob_height [data-testid="stNumberInputContainer"], .st-key-my_weight [data-testid="stNumberInputContainer"],
 .st-key-cm_query [data-testid="stTextInputRootElement"], [class*="st-key-auth_in_"] [data-testid="stTextInputRootElement"] { box-shadow: var(--shadow); }
 .mk-card.mk-term, .mk-q.mk-q-add { box-shadow: none; }
 /* 빈 상태(홈 "주문하러 가요" · 냉장고 · 배달): 카드 위에 빼꼼 내다보는 마스코트 */
