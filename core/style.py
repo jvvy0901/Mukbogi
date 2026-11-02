@@ -521,6 +521,17 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-idcard-label { font-size: 12px; color: var(--sub); }
 .mk-idcard-id { font-size: 18px; font-weight: 700; color: var(--ink); }
 .mk-idcard-hint { font-size: 12px; color: var(--sub); text-align: right; line-height: 1.45; }
+/* 찾기·수락: #212121 채움 + 흰 글자 (대비 16:1) */
+.st-key-cm_search [data-testid="stBaseButton-primary"],
+[class*="st-key-acc_"] [data-testid="stBaseButton-primary"],
+[class*="st-key-sacc_"] [data-testid="stBaseButton-primary"],
+.st-key-u_accept [data-testid="stBaseButton-primary"] { background: #212121; color: #FFFFFF; }
+@media (hover: hover) and (pointer: fine) {
+  .st-key-cm_search [data-testid="stBaseButton-primary"]:hover,
+  [class*="st-key-acc_"] [data-testid="stBaseButton-primary"]:hover,
+  [class*="st-key-sacc_"] [data-testid="stBaseButton-primary"]:hover,
+  .st-key-u_accept [data-testid="stBaseButton-primary"]:hover { background: #212121; color: #FFFFFF; filter: brightness(1.15); }
+}
 .st-key-cm_search_row { flex-wrap: nowrap !important; gap: 8px !important; }
 .st-key-cm_search_row > :first-child { flex: 1 1 auto !important; width: auto !important; min-width: 0; }
 .st-key-cm_search_row > :last-child { flex: none !important; width: auto !important; }
