@@ -452,10 +452,10 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-fr.mk-card { border-width: 2px; }
 .mk-fr-head { position: relative; }
 .mk-fr-gift {
-  margin-left: auto; font-size: 11px; font-weight: 700; color: var(--ink); background: var(--brand);
+  margin-left: auto; font-size: 11px; font-weight: 700; color: #FFFFFF; background: var(--ink);
   border-radius: 999px; padding: 2px 7px; white-space: nowrap;
 }
-.mk-q-from { font-size: 11px; font-weight: 700; color: var(--ink); background: var(--fill); border-radius: 999px; padding: 2px 7px; margin-top: 6px; }
+.mk-q-from { font-size: 11px; font-weight: 700; color: #FFFFFF; background: var(--ink); border-radius: 999px; padding: 2px 7px; margin-top: 6px; }
 
 /* ---------- 배달 보내기: 받는 친구 ---------- */
 .mk-gift-to { display: flex; align-items: center; gap: 12px; background: var(--soft); border-radius: 16px; padding: 12px 14px; }
