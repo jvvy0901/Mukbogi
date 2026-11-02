@@ -271,6 +271,10 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .st-key-tab_my { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' cx='12' cy='8' r='3.75'/><path fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M4.75 20c.7-3.7 3.6-6.1 7.25-6.1s6.55 2.4 7.25 6.1'/></svg>"); --icon-on: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle fill='black' stroke='black' stroke-width='1.2' stroke-linejoin='round' fill-rule='evenodd' cx='12' cy='8' r='4.1'/><path fill='black' stroke='black' stroke-width='1.2' stroke-linejoin='round' fill-rule='evenodd' d='M4.2 19.8c.7-4 3.9-6.5 7.8-6.5s7.1 2.5 7.8 6.5a1 1 0 0 1-1 1.2H5.2a1 1 0 0 1-1-1.2z'/></svg>"); }
 /* 탭이 있는 화면: 주요 버튼은 탭 바로 위에 붙인다 */
 .stApp:has(.st-key-bar_tabs) .st-key-bar_footer { bottom: calc(61px + var(--safe-bottom)); border-top: 0; padding-bottom: 10px; }
+/* 홈 식사시작·멈추기: 바탕 띠 없이 버튼만 떠 있게. 버튼 밖은 터치가 뒤 내용으로 지나간다 */
+.stApp .st-key-bar_footer:has(.st-key-home_start, .st-key-home_stop) { background: transparent; pointer-events: none; }
+.st-key-bar_footer .st-key-home_start button,
+.st-key-bar_footer .st-key-home_stop button { pointer-events: auto; box-shadow: 0 6px 16px rgba(34, 34, 34, .18); }
 .stApp:has(.st-key-bar_tabs) [data-testid="stMainBlockContainer"] { padding-bottom: calc(220px + var(--safe-bottom)) !important; }
 
 /* ---------- 홈: 상단 줄 ---------- */
