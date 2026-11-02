@@ -10,7 +10,7 @@ from collections import deque
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "assets" / "img" / "Brand_Guide" / "mukbogibrand.png"
@@ -55,6 +55,20 @@ def _knock_out_orange(im: Image.Image) -> Image.Image:
     return _trim(Image.fromarray(rgba, "RGBA"))
 
 
+def _upscale_flat(im: Image.Image, scale: int = 4, color=(255, 250, 242)) -> Image.Image:
+    """한 가지 색으로 된 실루엣(흰 마스코트)을 크게 다시 그린다.
+    원본이 작아(약 160px) 화면에서 깨져 보이므로, 투명도(모양)만 키운 뒤 살짝 흐리게 하고 다시 날카롭게 잘라
+    가장자리가 매끈한 고해상도 이미지를 만든다. 색은 한 가지로 채운다."""
+    alpha = im.getchannel("A").resize((im.width * scale, im.height * scale), Image.LANCZOS)
+    alpha = alpha.filter(ImageFilter.GaussianBlur(scale * 0.6))
+    a = np.asarray(alpha).astype(float)
+    a = np.clip((a - 128) * 3.2 + 128, 0, 255)  # 가장자리 1~2px만 부드럽게 남기고 나머지는 선명하게
+    out = np.zeros((a.shape[0], a.shape[1], 4), np.uint8)
+    out[..., :3] = color
+    out[..., 3] = a.astype(np.uint8)
+    return Image.fromarray(out, "RGBA")
+
+
 def _trim(im: Image.Image, pad: int = 4) -> Image.Image:
     box = im.getchannel("A").getbbox()
     if not box:
@@ -68,7 +82,8 @@ def main() -> None:
     guide = Image.open(SRC)
     for name, box in BOXES.items():
         _transparent_edges(guide.crop(box)).save(OUT / f"{name}.png")
-    _knock_out_orange(guide.crop(ICON_BOX)).save(OUT / "mascot_white.png")
+    # 스플래시에 크게 쓰므로 4배로 다시 그린다 (아이폰 3배 화면에서도 선명하게)
+    _upscale_flat(_knock_out_orange(guide.crop(ICON_BOX))).save(OUT / "mascot_white.png", optimize=True)
     for p in sorted(OUT.glob("*.png")):
         print(p.relative_to(ROOT), Image.open(p).size)
 
