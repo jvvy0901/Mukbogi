@@ -44,6 +44,10 @@ _CSS = """
 :root {
   /* 브랜드 가이드 색 (assets/img/Brand_Guide/mukbogibrand.png) */
   --brand: #FF8A3D;      /* 주황: 주요 버튼·포인트 (글자는 남색 #222 — 흰 글자는 대비 2.3:1이라 쓰지 않음) */
+  /* 주요 버튼 글로우: 주황 빛이 버튼 아래로 은은하게 번진다 (보통 · 마우스 올림 · 누름) */
+  --glow: 0 4px 14px rgba(255, 138, 61, .45), 0 0 0 1px rgba(255, 138, 61, .15);
+  --glow-strong: 0 6px 22px rgba(255, 138, 61, .6), 0 0 0 3px rgba(255, 138, 61, .18);
+  --glow-press: 0 2px 8px rgba(255, 138, 61, .4);
   --brand-soft: #FFE3CC; /* 연주황: 큰 보조 버튼 채움 (검정 글자 대비 14:1) */
   --yellow: #FFD166;     /* 노랑: 강조 알약(목표 달성·플러스) */
   --cream: #FFF7EE;      /* 크림: 화면 바탕 */
@@ -127,11 +131,15 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 [data-testid="stBaseButton-primary"] {
   min-height: 52px; border-radius: 14px; border: 0;
   background: var(--brand); color: var(--ink); font-size: 17px; font-weight: 700;
+  box-shadow: var(--glow);
 }
 @media (hover: hover) and (pointer: fine) {
-  [data-testid="stBaseButton-primary"]:hover { background: var(--brand); color: var(--ink); filter: brightness(.97); }
+  [data-testid="stBaseButton-primary"]:not(:disabled):hover { background: var(--brand); color: var(--ink); box-shadow: var(--glow-strong); }
 }
-[data-testid="stBaseButton-primary"]:disabled { background: var(--line); color: var(--sub); opacity: 1; }
+.stApp [data-testid="stBaseButton-primary"]:not(:disabled):active { box-shadow: var(--glow-press); }
+[data-testid="stBaseButton-primary"]:disabled { background: var(--line); color: var(--sub); opacity: 1; box-shadow: none; }
+/* 작은 알약 버튼(수락 · 친구 요청)은 글로우도 작게 */
+[class*="st-key-urow_"] [data-testid="stBaseButton-primary"]:not(:disabled) { box-shadow: 0 2px 8px rgba(255, 138, 61, .4); }
 [data-testid="stBaseButton-tertiary"] {
   min-height: 44px; padding: 0 4px; color: var(--ink); font-size: 16px; font-weight: 600;
 }
@@ -285,6 +293,12 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .stApp .st-key-bar_footer:has(.st-key-home_start, .st-key-home_stop) { background: transparent; pointer-events: none; }
 .st-key-bar_footer .st-key-home_start button,
 .st-key-bar_footer .st-key-home_stop button { pointer-events: auto; box-shadow: 0 6px 16px rgba(34, 34, 34, .18); }
+/* 식사시작은 다른 주요 버튼과 같은 주황 글로우 (마우스 올림·누름은 공통 규칙이 이어받는다) */
+.st-key-bar_footer .st-key-home_start [data-testid="stBaseButton-primary"] { box-shadow: var(--glow); }
+@media (hover: hover) and (pointer: fine) {
+  .st-key-bar_footer .st-key-home_start [data-testid="stBaseButton-primary"]:hover { box-shadow: var(--glow-strong); }
+}
+.stApp .st-key-bar_footer .st-key-home_start [data-testid="stBaseButton-primary"]:active { box-shadow: var(--glow-press); }
 .stApp:has(.st-key-bar_tabs) [data-testid="stMainBlockContainer"] { padding-bottom: calc(220px + var(--safe-bottom)) !important; }
 
 /* ---------- 홈: 상단 줄 ---------- */
@@ -534,9 +548,9 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-idcard-id { font-size: 18px; font-weight: 700; color: var(--ink); }
 .mk-idcard-hint { font-size: 12px; color: var(--sub); text-align: right; line-height: 1.45; }
 /* 찾기: #212121 채움 + 흰 글자 (대비 16:1). 수락은 기본 주요 버튼(주황 #FF8A3D + 검정 글자) */
-.st-key-cm_search [data-testid="stBaseButton-primary"] { background: #212121; color: #FFFFFF; }
+.st-key-cm_search [data-testid="stBaseButton-primary"] { background: #212121; color: #FFFFFF; box-shadow: 0 4px 12px rgba(33, 33, 33, .25); }
 @media (hover: hover) and (pointer: fine) {
-  .st-key-cm_search [data-testid="stBaseButton-primary"]:hover { background: #212121; color: #FFFFFF; filter: brightness(1.15); }
+  .st-key-cm_search [data-testid="stBaseButton-primary"]:not(:disabled):hover { background: #212121; color: #FFFFFF; filter: brightness(1.15); box-shadow: 0 6px 18px rgba(33, 33, 33, .32); }
 }
 .st-key-cm_search_row { flex-wrap: nowrap !important; gap: 8px !important; }
 .st-key-cm_search_row > :first-child { flex: 1 1 auto !important; width: auto !important; min-width: 0; }
