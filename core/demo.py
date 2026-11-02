@@ -13,6 +13,7 @@ PROFILE_DIR = ROOT / "assets" / "img" / "profile"
 
 ME_ID = "mukbo_me"  # 프로토타입의 "나" (로그인 대신)
 ME_NAME = "나"
+ME_PRAVATAR = 12  # 프로토타입 "나"의 더미 사진 번호 (남성, 데모 사용자와 겹치지 않음). 가입한 아이디와 상관없이 고정
 
 
 @dataclass(frozen=True)

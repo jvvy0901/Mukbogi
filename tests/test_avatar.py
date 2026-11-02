@@ -42,3 +42,9 @@ def test_avatar_html_has_initial_fallback_under_photo():
     html = avatar.avatar_html("sua", "수아", cls="mk-avatar mk-avatar-md")
     assert html.startswith('<span class="mk-avatar mk-avatar-md mk-avatar-initial" aria-hidden="true">수<span class="mk-avatar-photo"')
     assert "background-image:url(&#x27;https://i.pravatar.cc/150?img=" in html
+
+
+def test_my_avatar_is_fixed_prototype_photo_not_used_by_demo_users():
+    from core.demo import ME_PRAVATAR
+    assert ME_PRAVATAR not in {avatar.pravatar_number(u.id) for u in USERS}
+    assert avatar.pravatar_url(ME_PRAVATAR) == "https://i.pravatar.cc/150?img=12"

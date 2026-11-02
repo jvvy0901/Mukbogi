@@ -26,6 +26,11 @@ def pravatar_number(user_id: int | str) -> int:
     return int(hashlib.md5(str(user_id).encode("utf-8")).hexdigest(), 16) % PRAVATAR_COUNT + 1
 
 
+def pravatar_url(number: int, size: int = 150) -> str:
+    """Pravatar 사진 번호(1~70)를 직접 골라 쓸 때의 주소."""
+    return PRAVATAR_URL.format(size=size, number=number)
+
+
 def get_avatar_url(user_id: int | str, size: int = 150, profile_image: str | Path | None = None) -> str:
     """프로필 사진 주소. profile_image(실제 사진)가 있으면 그것, 없으면 Pravatar 더미 사진."""
     if profile_image:
@@ -35,7 +40,7 @@ def get_avatar_url(user_id: int | str, size: int = 150, profile_image: str | Pat
                 return profile_thumb(path)
         else:
             return str(profile_image)
-    return PRAVATAR_URL.format(size=size, number=pravatar_number(user_id))
+    return pravatar_url(pravatar_number(user_id), size)
 
 
 def avatar_html(user_id: int | str, name: str, profile_image: str | Path | None = None,
