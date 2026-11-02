@@ -490,6 +490,13 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 [class*="st-key-urow_"] .stButton button { min-height: 44px; border-radius: 999px; padding: 0 14px; font-size: 14px; white-space: nowrap; }
 [class*="st-key-urow_"] [data-testid="stBaseButton-primary"] { font-size: 14px; }
 [class*="st-key-urow_"] [class*="st-key-tap_"] .stButton button { border-radius: 0; padding: 0; }
+/* 친구 목록: 배달하기 오른쪽 위 동그란 숫자 배지 (보낸 배달 수, 내용은 화면에서 넣는다) */
+.st-key-list_friends [class*="st-key-gift_to_"] button { position: relative; overflow: visible; }
+.st-key-list_friends [class*="st-key-gift_to_"] button::after {
+  position: absolute; top: -6px; right: -4px; min-width: 20px; height: 20px; padding: 0 4px; box-sizing: border-box;
+  border-radius: 999px; border: 2px solid var(--soft); background: var(--ink); color: #FFFFFF;
+  font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; font-variant-numeric: tabular-nums;
+}
 .mk-u { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .mk-u-text { min-width: 0; flex: 1; }
 .mk-u-name { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; color: var(--ink); white-space: nowrap; }
@@ -521,16 +528,10 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-idcard-label { font-size: 12px; color: var(--sub); }
 .mk-idcard-id { font-size: 18px; font-weight: 700; color: var(--ink); }
 .mk-idcard-hint { font-size: 12px; color: var(--sub); text-align: right; line-height: 1.45; }
-/* 찾기·수락: #212121 채움 + 흰 글자 (대비 16:1) */
-.st-key-cm_search [data-testid="stBaseButton-primary"],
-[class*="st-key-acc_"] [data-testid="stBaseButton-primary"],
-[class*="st-key-sacc_"] [data-testid="stBaseButton-primary"],
-.st-key-u_accept [data-testid="stBaseButton-primary"] { background: #212121; color: #FFFFFF; }
+/* 찾기: #212121 채움 + 흰 글자 (대비 16:1). 수락은 기본 주요 버튼(주황 #FF8A3D + 검정 글자) */
+.st-key-cm_search [data-testid="stBaseButton-primary"] { background: #212121; color: #FFFFFF; }
 @media (hover: hover) and (pointer: fine) {
-  .st-key-cm_search [data-testid="stBaseButton-primary"]:hover,
-  [class*="st-key-acc_"] [data-testid="stBaseButton-primary"]:hover,
-  [class*="st-key-sacc_"] [data-testid="stBaseButton-primary"]:hover,
-  .st-key-u_accept [data-testid="stBaseButton-primary"]:hover { background: #212121; color: #FFFFFF; filter: brightness(1.15); }
+  .st-key-cm_search [data-testid="stBaseButton-primary"]:hover { background: #212121; color: #FFFFFF; filter: brightness(1.15); }
 }
 .st-key-cm_search_row { flex-wrap: nowrap !important; gap: 8px !important; }
 .st-key-cm_search_row > :first-child { flex: 1 1 auto !important; width: auto !important; min-width: 0; }

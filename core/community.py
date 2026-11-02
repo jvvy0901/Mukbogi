@@ -224,14 +224,22 @@ def _friends_tab() -> None:
     if not friends:
         html('<div class="mk-empty-line">아직 친구가 없어요. 아이디로 친구를 찾아 보세요.</div>')
         return
+    # 보낸 배달 수는 배달하기 버튼 오른쪽 위 동그란 숫자로 (버튼 글자는 그대로, 숫자는 CSS로 붙인다)
+    styles = []
+    for u in friends:
+        n = gift.sent_count(u.id)
+        if n:
+            bump = " animation: mk-bump .3s var(--ease-pop);" if st.session_state.get("just_gifted") == u.id else ""
+            styles.append(f'.st-key-gift_to_{u.id} button::after {{ content: "{n}";{bump} }}')
+    if styles:
+        html(f"<style>{' '.join(styles)}</style>")
     with st.container(key="list_friends"):
         for u in friends:
             n = gift.sent_count(u.id)
-            bump = " mk-bump" if st.session_state.get("just_gifted") == u.id else ""
-            badge = f'<span class="mk-fr-gift{bump}">배달 {n}</span>' if n else ""
+            sr = f'<span class="mk-sr">배달 {n}번 보냄</span>' if n else ""
             _user_row(f"fr_{u.id}", u, "", sub_html=gift.doing_html(u), actions=[
                 ("배달하기", f"gift_to_{u.id}", "secondary", gift.open_for, (u.id, "community")),
-            ], extra=badge)
+            ], extra=sr)
 
 
 def _search_result() -> None:
