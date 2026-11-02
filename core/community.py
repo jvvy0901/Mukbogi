@@ -13,6 +13,7 @@ from html import escape
 import streamlit as st
 
 from core import auth, fridge, gift, meal, social
+from core.avatar import user_avatar
 from core.data import FOODS_BY_ID
 from core.demo import ME_ID, ME_NAME, USERS_BY_ID, User
 from core.images import food_thumb
@@ -115,7 +116,7 @@ def _back_from_user() -> None:
 
 
 def _me_avatar(cls: str = "mk-avatar") -> str:
-    return f'<span class="{cls} mk-avatar-initial" aria-hidden="true">{ME_NAME}</span>'
+    return auth.my_avatar(cls)
 
 
 def _user_info(user: User, sub: str, extra: str = "", avatar_cls: str = "mk-avatar mk-avatar-md",
@@ -127,7 +128,7 @@ def _user_info(user: User, sub: str, extra: str = "", avatar_cls: str = "mk-avat
         sub_part = f'<div class="mk-u-sub">{escape(sub)}</div>' if sub else ""
     return (
         '<div class="mk-u">'
-        f"{gift.avatar(user, avatar_cls)}"
+        f"{user_avatar(user, avatar_cls)}"
         '<div class="mk-u-text">'
         f'<div class="mk-u-name">{escape(user.name)}<span class="mk-u-id">@{escape(user.id)}</span>{extra}</div>'
         f"{sub_part}"
@@ -286,7 +287,7 @@ def _rank_tab(state: meal.MealState) -> None:
                 u = USERS_BY_ID[r.user_id]
                 info = (
                     f'<div class="mk-rk"><span class="mk-rk-n{top}">{r.rank}</span>'
-                    f'{gift.avatar(u, "mk-avatar mk-avatar-md")}'
+                    f'{user_avatar(u, "mk-avatar mk-avatar-md")}'
                     f'<div class="mk-rk-name">{escape(u.name)}</div>'
                     f'<div class="mk-rk-kcal">{r.kcal:,}<small>kcal</small></div></div>'
                 )
@@ -418,7 +419,7 @@ def render_user(state: meal.MealState) -> None:
     week_kcal = social.weekly_kcal(entries, now.date())
     html(
         '<div class="mk-prof">'
-        f"{gift.avatar(user, 'mk-avatar mk-avatar-xl')}"
+        f"{user_avatar(user, 'mk-avatar mk-avatar-xl')}"
         '<div class="mk-u-text">'
         f'<div class="mk-prof-name">{escape(user.name)}<span class="mk-rel">{rel_text}</span></div>'
         f'<div class="mk-u-id">@{escape(user.id)}</div>'

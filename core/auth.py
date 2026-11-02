@@ -19,7 +19,8 @@ from html import escape
 
 import streamlit as st
 
-from core.demo import ME_ID, USERS_BY_ID
+from core.avatar import avatar_html
+from core.demo import ME_ID, ME_NAME, USERS_BY_ID
 from core.style import html, toast
 
 # 규칙 ---------------------------------------------------------------------------
@@ -83,6 +84,11 @@ def check_code(code: str) -> bool:
 def my_id() -> str:
     """화면에 보여 줄 내 아이디. 가입 전(테스트 등)에는 데모 아이디."""
     return st.session_state.get("account", {}).get("user_id", ME_ID)
+
+
+def my_avatar(cls: str = "mk-avatar") -> str:
+    """내 원형 프로필. 계정에 profile_image가 있으면 그 사진, 없으면 내 아이디로 고정된 Pravatar 사진."""
+    return avatar_html(my_id(), ME_NAME, st.session_state.get("account", {}).get("profile_image"), cls)
 
 
 def should_show() -> bool:

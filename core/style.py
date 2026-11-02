@@ -374,7 +374,9 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-row-scroll::-webkit-scrollbar, .st-key-row_queue::-webkit-scrollbar { display: none; }
 .mk-fr { flex: 0 0 148px; background: var(--soft); border-radius: 14px; padding: 12px; }
 .mk-fr-head { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
-.mk-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex: none; }
+.mk-avatar { position: relative; overflow: hidden; width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex: none; }
+/* 프로필 사진(core/avatar.py)은 이름 첫 글자 원 위에 CSS 배경으로 겹친다. 사진을 못 불러오면 배경이 비어 첫 글자가 보인다 */
+.mk-avatar-photo { position: absolute; inset: 0; border-radius: inherit; background: center / cover no-repeat; }
 .mk-avatar-initial { display: grid; place-items: center; background: var(--yellow); color: var(--ink); font-size: 13px; font-weight: 700; }
 .mk-fr-food { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-top: 12px; }
 .mk-fr-food img { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(30, 37, 48, .14)); }

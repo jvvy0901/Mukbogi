@@ -100,7 +100,7 @@ def _header(state: meal.MealState) -> None:
     plus = '<span class="mk-plus-pill">플러스</span>' if st.session_state.get("plus") else ""
     html(
         '<div class="mk-prof">'
-        f'<span class="mk-avatar mk-avatar-xl mk-avatar-initial" aria-hidden="true">{ME_NAME}</span>'
+        f'{auth.my_avatar("mk-avatar mk-avatar-xl")}'
         '<div class="mk-u-text">'
         f'<div class="mk-prof-name">{ME_NAME}{plus}</div>'
         f'<div class="mk-u-id">@{escape(auth.my_id())}</div>'

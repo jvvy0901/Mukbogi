@@ -18,7 +18,8 @@ import streamlit as st
 from core import meal
 from core.data import FOODS, FOODS_BY_ID
 from core.demo import USERS_BY_ID, User
-from core.images import food_thumb, profile_thumb
+from core.avatar import user_avatar
+from core.images import food_thumb
 from core.korean import eul_reul, i_ga
 from core.style import html, toast
 
@@ -138,12 +139,6 @@ def timer() -> None:
 # 공통 조각 -------------------------------------------------------------------
 
 
-def avatar(user: User, cls: str = "mk-avatar") -> str:
-    if user.photo is not None and user.photo.exists():
-        return f'<img class="{cls}" src="{profile_thumb(user.photo)}" alt="">'
-    return f'<span class="{cls} mk-avatar-initial" aria-hidden="true">{escape(user.name[0])}</span>'
-
-
 def doing_html(user: User) -> str:
     """친구 상태 한 줄: [음식 이름 (남는 폭, 길면 …)] [진행 막대 48px] [%]  — "소화 중"은 막대가 보여 주므로 스크린리더에만 읽힌다.
     막대와 %는 고정 폭으로 글자 칸 오른쪽 끝에 붙어서, 목록의 모든 줄에서 같은 위치에 세로로 맞는다.
@@ -183,7 +178,7 @@ def render_send() -> None:
     count = sent_count(user.id)
     html(
         '<div class="mk-gift-to">'
-        f"{avatar(user, 'mk-avatar mk-avatar-lg')}"
+        f"{user_avatar(user, 'mk-avatar mk-avatar-lg')}"
         f'<div><div class="mk-gift-name">{escape(user.name)}</div>'
         f"{doing_html(user)}</div>"
         + (f'<span class="mk-fr-gift">배달 {count}</span>' if count else "")

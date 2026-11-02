@@ -12,6 +12,7 @@ from html import escape
 import streamlit as st
 
 from core import community, fridge, gift, meal, mypage, social
+from core.avatar import user_avatar
 from core.data import FOODS, FOODS_BY_ID
 from core.images import food_bitten, food_thumb
 from core.korean import eul_reul, i_ga
@@ -257,7 +258,7 @@ def _friends_section() -> None:
             sent = gift.sent_count(f.id)
             bump = " mk-bump" if st.session_state.get("just_gifted") == f.id else ""
             badge = f'<span class="mk-fr-gift{bump}">배달 {sent}</span>' if sent else ""
-            head = f'<div class="mk-fr-head">{gift.avatar(f)}<span>{escape(f.name)}</span>{badge}</div>'
+            head = f'<div class="mk-fr-head">{user_avatar(f)}<span>{escape(f.name)}</span>{badge}</div>'
             if f.food_id is None:
                 html(f'<div class="mk-fr">{head}<div class="mk-fr-rest">쉬는 중이에요</div></div>')
                 continue

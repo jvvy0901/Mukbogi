@@ -20,7 +20,7 @@ MUKBOGI는 먹고 싶은 음식을 앱에서 "주문"하고, 걷거나 뛰어서
 | `assets/img/Brand_Guide/mukbogibrand.png` | 브랜드 가이드(로고·색·글꼴·마스코트). `DESIGN.md` "브랜드 가이드 적용" 절이 이 이미지를 옮긴 값이다 |
 | `assets/img/brand/` | 브랜드 가이드에서 잘라 낸 로고·마스코트 PNG. `tools/extract_brand_assets.py`로 다시 만든다 |
 | `assets/img/food/` | 음식 이미지. 음식 이미지는 항상 여기서 먼저 찾는다 (MVP 10종 모두 있음) |
-| `assets/img/profile/` | 프로필 인물 사진. 사용자·친구·랭킹 유저 사진은 항상 여기서 가져온다 (현재 2장) |
+| `assets/img/profile/` | 실제 프로필 사진을 둘 곳 (지금은 비어 있음 — 데모 사용자는 모두 Pravatar 더미 사진, `core/avatar.py`) |
 
 - 기능을 만들거나 바꾸기 전에 `PRD.md`의 해당 Story와 Acceptance Criteria를 확인한다.
 - 사용자와 새로 결정한 사항은 `PRD.md`에 반영하고, 상단 **버전·최종 수정일**을 올린다. 결정된 Open Question은 표에서 취소선 + **확정:** 으로 표시한다.
@@ -95,10 +95,12 @@ UI·UX를 만들거나 고친 뒤에는 **반드시 아이폰 14 크기에서 �
 
 ### 프로필 사진
 
-- 사용자·친구·랭킹 유저 등 **프로필에 들어갈 인물 사진은 `assets/img/profile/`에 있는 파일만 사용한다.** 작업 전에 폴더를 확인해 지금 있는 파일을 쓴다.
-- 외부 인물 사진, AI 생성 인물, 일러스트 아바타, 이모지로 대신하지 않는다.
-- 화면에 필요한 사람 수보다 사진이 적으면 사진을 중복해서 쓰지 않는다. 남는 자리는 이름 첫 글자를 넣은 원형 아바타로 채우고, 사진이 몇 장 더 필요한지 사용자에게 알린다.
-- 파일 이름에 한글·공백이 들어 있으므로 HTML·코드에서 경로를 쓸 때는 URL 인코딩하거나 따옴표로 정확히 감싼다.
+- 프로필 사진은 **항상 `core/avatar.py`를 거쳐** 그린다. 데모 사용자는 `user_avatar(user, cls)`, 나는 `auth.my_avatar(cls)`, 그 밖에는 `avatar_html(아이디, 이름, profile_image, cls)`. 화면 코드에서 `<img>`나 사진 주소를 직접 만들지 않는다.
+- 우선순위: 사용자 데이터의 `profile_image`(파일 경로 또는 URL)가 있으면 그것 → 없으면 **Pravatar** 더미 사진 `https://i.pravatar.cc/{size}?img={번호}` (`get_avatar_url(user_id, size=150, profile_image=None)`).
+- Pravatar 번호(1~70)는 아이디로 고정한다: 숫자 아이디는 `id % 70 + 1`, 글자 아이디는 `md5(아이디) % 70 + 1`(crc32는 데모 사용자끼리 겹쳐서 쓰지 않음). 같은 사람은 항상 같은 사진이어야 하므로 랜덤·`hash()`를 쓰지 않는다.
+- 사진을 못 불러오면 이름 첫 글자 원(노랑 바탕)이 보인다. 사진은 `<img>`가 아니라 CSS 배경으로 겹친다(실패한 `<img>`는 깨진 아이콘이 남는다).
+- 데모 사용자 8명은 모두 Pravatar 사진이다(서로 겹치지 않음). 실제 프로필 사진이 생기면 해당 사용자의 `profile_image`만 채우면 된다.
+- 파일 이름에 한글·공백이 들어 있으므로 경로는 따옴표로 정확히 감싼다.
 
 ## 용어
 
@@ -165,7 +167,8 @@ UI·UX를 만들거나 고친 뒤에는 **반드시 아이폰 14 크기에서 �
 | `core/social.py` | 친구·친구 요청·먹보 랭킹·냉장고 공개 범위 규칙. 상태는 `session_state.social` (`SocialState`) (`tests/test_social.py`) |
 | `core/gift.py` | 친구에게 음식 배달 보내기 화면 + 보낸 기록 + 친구 답례 도착(프로토타입 흉내, `st.fragment` 1초 타이머) (`tests/test_gift.py`) |
 | `core/korean.py` | 조사 붙이기 (`eul_reul` 을/를, `i_ga` 이/가). 이름·음식 이름 뒤 조사는 직접 쓰지 말고 이걸 쓴다 |
-| `core/demo.py` | 프로토타입 더미 유저 8명(아이디·소화 중인 음식·냉장고 공개 범위·냉장고 기록)과 내 아이디. 프로필 사진은 `assets/img/profile/` |
+| `core/demo.py` | 프로토타입 더미 유저 8명(아이디·소화 중인 음식·냉장고 공개 범위·냉장고 기록·`profile_image`)과 내 아이디 |
+| `core/avatar.py` | 프로필 사진: `profile_image` 우선, 없으면 아이디로 고정된 Pravatar(`get_avatar_url`), 실패하면 이름 첫 글자 (`tests/test_avatar.py`) |
 | `.streamlit/config.toml` | 테마 색 (`DESIGN.md` 값) |
 | `tests/` | pytest. 규칙 테스트 + `streamlit.testing.v1.AppTest` 화면 흐름 테스트 |
 

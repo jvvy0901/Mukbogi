@@ -123,9 +123,10 @@ core/
   images.py             음식 이미지 처리 (배경 제거, 크기 맞춤, 한 입씩 베어 문 이미지)
   style.py              공통 CSS — iOS 앱처럼 보이게 하는 레이아웃 · 브랜드 색 · 인터랙션
   korean.py             조사 붙이기 (을/를, 이/가)
+  avatar.py             프로필 사진 (profile_image 우선 → Pravatar → 이름 첫 글자)
 assets/img/
   food/                 음식 이미지
-  profile/              데모 사용자 프로필 사진
+  profile/              실제 프로필 사진을 둘 곳 (지금은 비어 있음 — 데모 사용자는 Pravatar 더미 사진)
   brand/                로고 · 마스코트 (브랜드 가이드에서 잘라 냄)
   Brand_Guide/          브랜드 가이드 원본
 tools/
