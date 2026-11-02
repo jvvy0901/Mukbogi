@@ -242,11 +242,24 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 
 /* ---------- 홈: 상단 줄 ---------- */
 .mk-topbar { display: flex; justify-content: space-between; align-items: center; min-height: 44px; }
-/* 스크롤해도 상단 줄이 화면 맨 위에 붙어 있게 한다 */
-[data-testid="stElementContainer"]:has(.mk-topbar) {
+/* GNB: 스크롤해도 화면 맨 위(상태 표시줄 바로 아래)에 붙어 있게 한다.
+   탭 화면의 로고 줄(.mk-topbar)과, 이전 버튼이 있는 화면의 [이전][제목·진행 막대][자리] 줄(nav_row:
+   배달 보내기 · 주문하기 · 다른 유저 · 온보딩 · 회원가입)이 같은 규칙을 쓴다.
+   nav_row는 높이가 같은 래퍼(stLayoutWrapper)에 싸여 있어, sticky는 그 래퍼에 건다 (안쪽에 걸면 움직일 공간이 없다) */
+[data-testid="stElementContainer"]:has(.mk-topbar), [data-testid="stLayoutWrapper"]:has(> .st-key-nav_row) {
   position: sticky; top: var(--safe-top); z-index: 90; background: #FFFFFF;
   /* 상태 표시줄 뒤와 위쪽 틈도 흰색으로 덮는다 (상단 줄 높이 44px < 상태 표시줄 47px라 두 겹) */
   box-shadow: 0 calc(-1 * var(--safe-top)) 0 #FFFFFF, 0 -12px 0 #FFFFFF;
+}
+/* 스크롤하면 GNB 아래에 1px 구분선이 생긴다 (iOS처럼, 맨 위에서는 없음). 스크롤 위치에 따라 움직이므로 곡선·시간 없이 linear.
+   scroll-timeline을 못 쓰는 브라우저에서는 선 없이 그대로 */
+@supports (animation-timeline: scroll()) {
+  [data-testid="stElementContainer"]:has(.mk-topbar), [data-testid="stLayoutWrapper"]:has(> .st-key-nav_row) {
+    animation: mk-gnb-line linear both; animation-timeline: scroll(nearest); animation-range: 0 16px;
+  }
+  @keyframes mk-gnb-line {
+    to { box-shadow: 0 calc(-1 * var(--safe-top)) 0 #FFFFFF, 0 -12px 0 #FFFFFF, 0 1px 0 var(--line); }
+  }
 }
 .mk-today { font-size: 13px; font-weight: 600; color: var(--sub); background: var(--soft); border-radius: 999px; padding: 6px 12px; }
 .mk-today b { color: var(--ink); }
