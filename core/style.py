@@ -15,9 +15,19 @@ DESIGN.md에 없던 값은 DESIGN.md "MUKBOGI 적용값" 절에 기록해 두었
 덮어서, 카드 어디를 눌러도 버튼이 눌리게 한다 (버튼 라벨은 스크린리더가 읽는다).
 """
 
+import base64
 from html import escape
+from pathlib import Path
 
 import streamlit as st
+
+_BRAND_DIR = Path(__file__).resolve().parent.parent / "assets" / "img" / "brand"
+
+
+def _brand_uri(name: str) -> str:
+    """assets/img/brand/의 PNG를 data URI로 (tools/extract_brand_assets.py가 브랜드 가이드에서 잘라 만든 파일)."""
+    data = (_BRAND_DIR / f"{name}.png").read_bytes()
+    return "data:image/png;base64," + base64.b64encode(data).decode()
 
 _CHECK_WHITE = (
     "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'>"
@@ -28,16 +38,22 @@ _CHECK_WHITE = (
 _CSS = """
 <style>
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
-/* 로고 전용 글꼴: Pilcrow Rounded Heavy(900), Fontshare */
-@import url('https://api.fontshare.com/v2/css?f[]=pilcrow-rounded@900&display=swap');
 
 :root {
-  --ink: #1E2530;        /* colors.primary-dark */
-  --cyan: #00D4EA;       /* colors.signature-cyan */
-  --soft: #F4F5FB;       /* colors.neutral-50 */
-  --line: #D6D9E1;       /* colors.neutral-200 */
-  --line-2: #C0C4CD;     /* colors.neutral-300 */
-  --sub: #515160;        /* colors.neutral-600 */
+  /* 브랜드 가이드 색 (assets/img/Brand_Guide/mukbogibrand.png) */
+  --brand: #FF8A3D;      /* 주황: 주요 버튼·포인트 (글자는 남색 #222 — 흰 글자는 대비 2.3:1이라 쓰지 않음) */
+  --yellow: #FFD166;     /* 노랑: 강조 알약(목표 달성·플러스) */
+  --cream: #FFF7EE;      /* 크림: 화면 바탕 */
+  --green: #8CC084;      /* 초록: 움직임·소화 진행, 현재 탭 아이콘 */
+  --line: #E5E5E5;       /* 회색: 구분선·테두리 */
+  --ink: #222222;        /* 검정: 글자·선택 표시 */
+  /* 가이드 색에서 파생 */
+  --soft: #FFFFFF;       /* 카드 바탕 (크림 위 흰 카드) */
+  --fill: #FFF7EE;       /* 흰 카드 안 작은 칸 */
+  --track: #F2E8DC;      /* 크림 위 세그먼트 틀 */
+  --line-2: #CCCCCC;     /* 빈 선택 원 테두리 */
+  --sub: #666666;        /* 보조 글자 (크림 대비 5.4:1 · 흰 바탕 5.7:1) */
+  --shadow: 0 1px 2px rgba(34, 34, 34, .04), 0 4px 14px rgba(34, 34, 34, .05);
   --gap-in: 10px;        /* 같은 묶음 안 */
   --danger: #B42318;     /* 오류 글자·테두리 (흰 바탕 대비 6.3:1) */
   /* 움직임 곡선 (ui-animation 스킬 기준값) */
@@ -54,7 +70,7 @@ html, body, .stApp, .stApp *:not([data-testid="stIconMaterial"]) {
   font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
-.stApp { background: #FFFFFF; color: var(--ink); }
+.stApp { background: var(--cream); color: var(--ink); word-break: keep-all; overflow-wrap: break-word; }  /* 한국어는 낱말 단위로 줄바꿈 */
 
 /* Streamlit 기본 화면 요소 숨기기 */
 header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"],
@@ -79,7 +95,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-nav-slot { width: 44px; height: 44px; }
 .mk-progress { display: flex; gap: 6px; }
 .mk-progress span { flex: 1; height: 4px; border-radius: 2px; background: var(--line); }
-.mk-progress span.on { background: var(--ink); }
+.mk-progress span.on { background: var(--brand); }
 .mk-step { width: 44px; text-align: right; font-size: 13px; font-weight: 600; color: var(--sub); }
 /* 이전 버튼: 44×44 아이콘. 글자 "이전"은 크기 0으로 숨겨 스크린리더만 읽게 한다 */
 .st-key-nav_row .stButton button { width: 44px; height: 44px; min-height: 44px; padding: 0; justify-content: flex-start; }
@@ -90,10 +106,10 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-header { padding: 8px 0 calc(var(--gap-out) - var(--gap-in)); }
 .mk-title { font-size: 26px; font-weight: 700; line-height: 1.3; letter-spacing: -0.02em; color: var(--ink); }
 .mk-sub { font-size: 15px; line-height: 1.5; color: var(--sub); margin-top: 8px; }
-/* 로고: Pilcrow Rounded Heavy(900) + 남색(#1E2530). 전체 글꼴(Pretendard) 규칙보다 우선한다 */
+/* 로고: 브랜드 가이드 로고(마스코트 얼굴이 O 자리) 이미지. 글자는 크기 0으로 남겨 스크린리더가 "MUKBOGI"로 읽는다 */
 .stApp .mk-wordmark {
-  font-family: "Pilcrow Rounded", "Pretendard Variable", Pretendard, -apple-system, sans-serif !important;
-  font-size: 22px; font-weight: 900; letter-spacing: 0.01em; color: var(--ink); line-height: 44px;
+  display: inline-block; vertical-align: middle; font-size: 0 !important; color: transparent;
+  width: 102px; height: 28px; background: url("BRAND_LOGO") left center / contain no-repeat;
 }
 .mk-section { font-size: 18px; font-weight: 700; color: var(--ink); padding-top: calc(var(--gap-out) - var(--gap-in)); }  /* typography.section-header */
 .mk-count { font-size: 13px; font-weight: 600; color: var(--sub); }
@@ -102,10 +118,10 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .stButton button p { font-size: inherit; font-weight: inherit; }
 [data-testid="stBaseButton-primary"] {
   min-height: 52px; border-radius: 14px; border: 0;
-  background: var(--ink); color: #FFFFFF; font-size: 17px; font-weight: 700;
+  background: var(--brand); color: var(--ink); font-size: 17px; font-weight: 700;
 }
 @media (hover: hover) and (pointer: fine) {
-  [data-testid="stBaseButton-primary"]:hover { background: var(--ink); color: #FFFFFF; opacity: .92; }
+  [data-testid="stBaseButton-primary"]:hover { background: var(--brand); color: var(--ink); filter: brightness(.97); }
 }
 [data-testid="stBaseButton-primary"]:disabled { background: var(--line); color: var(--sub); opacity: 1; }
 [data-testid="stBaseButton-tertiary"] {
@@ -123,7 +139,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 [class*="st-key-tap_"] .stButton,
 [class*="st-key-tap_"] .stButton button { width: 100%; height: 100%; min-height: 0; }
 [class*="st-key-tap_"] .stButton button { opacity: 0; cursor: pointer; }
-[class*="st-key-tap_"]:has(button:focus-visible) .mk-card { outline: 3px solid var(--cyan); outline-offset: 2px; }
+[class*="st-key-tap_"]:has(button:focus-visible) .mk-card { outline: 3px solid var(--ink); outline-offset: 2px; }
 
 /* ---------- 카드 공통 + 선택 표시 (유사성: 어디서나 같은 모양) ---------- */
 .mk-card { position: relative; border-radius: 16px; background: var(--soft); border: 2px solid transparent; }
@@ -184,7 +200,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
   position: fixed; left: 50%; bottom: 0; transform: translateX(-50%);
   width: min(100%, 430px); z-index: 100; gap: 6px !important;
   padding: 10px 16px calc(16px + var(--safe-bottom));
-  background: #FFFFFF; border-top: 1px solid var(--soft);
+  background: var(--cream);
 }
 .mk-hint { font-size: 13px; color: var(--sub); text-align: center; }
 
@@ -196,7 +212,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-row span:last-child { font-weight: 600; text-align: right; }
 .mk-favs { display: flex; flex-wrap: wrap; gap: 12px; border-radius: 16px; background: var(--soft); padding: 16px; }
 .mk-fav { width: 56px; text-align: center; font-size: 12px; color: var(--sub); }
-.mk-fav img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 6px; background: #FFFFFF; }
+.mk-fav img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 6px; background: var(--fill); }
 
 
 /* ---------- 보조 버튼 (멈추기, 냉장고 보기, 움직임 흉내 버튼) ---------- */
@@ -247,9 +263,11 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
    배달 보내기 · 주문하기 · 다른 유저 · 온보딩 · 회원가입)이 같은 규칙을 쓴다.
    nav_row는 높이가 같은 래퍼(stLayoutWrapper)에 싸여 있어, sticky는 그 래퍼에 건다 (안쪽에 걸면 움직일 공간이 없다) */
 [data-testid="stElementContainer"]:has(.mk-topbar), [data-testid="stLayoutWrapper"]:has(> .st-key-nav_row) {
-  position: sticky; top: var(--safe-top); z-index: 90; background: #FFFFFF;
+  position: sticky; top: var(--safe-top); z-index: 90; background: var(--cream);
+  /* 좌우 16px 여백까지 덮어, 아래 카드 그림자가 양옆으로 비치지 않게 화면 폭 전체로 넓힌다 */
+  margin-left: -16px; margin-right: -16px; padding-left: 16px; padding-right: 16px; width: calc(100% + 32px) !important; min-width: calc(100% + 32px) !important; max-width: none !important; box-sizing: border-box;
   /* 상태 표시줄 뒤와 위쪽 틈도 흰색으로 덮는다 (상단 줄 높이 44px < 상태 표시줄 47px라 두 겹) */
-  box-shadow: 0 calc(-1 * var(--safe-top)) 0 #FFFFFF, 0 -12px 0 #FFFFFF;
+  box-shadow: 0 calc(-1 * var(--safe-top)) 0 var(--cream), 0 -12px 0 var(--cream);
 }
 /* 스크롤하면 GNB 아래에 1px 구분선이 생긴다 (iOS처럼, 맨 위에서는 없음). 스크롤 위치에 따라 움직이므로 곡선·시간 없이 linear.
    scroll-timeline을 못 쓰는 브라우저에서는 선 없이 그대로 */
@@ -258,7 +276,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
     animation: mk-gnb-line linear both; animation-timeline: scroll(nearest); animation-range: 0 16px;
   }
   @keyframes mk-gnb-line {
-    to { box-shadow: 0 calc(-1 * var(--safe-top)) 0 #FFFFFF, 0 -12px 0 #FFFFFF, 0 1px 0 var(--line); }
+    to { box-shadow: 0 calc(-1 * var(--safe-top)) 0 var(--cream), 0 -12px 0 var(--cream), 0 1px 0 var(--line); }
   }
 }
 .mk-today { font-size: 13px; font-weight: 600; color: var(--sub); background: var(--soft); border-radius: 999px; padding: 6px 12px; }
@@ -274,9 +292,9 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 /* ---------- 홈: 소화 중인 음식 카드 ---------- */
 .mk-meal { background: var(--soft); border-radius: 16px; padding: 16px; margin-top: calc(var(--gap-out) - var(--gap-in) - 8px); }
 .mk-meal-top { display: flex; justify-content: space-between; align-items: center; }
-.mk-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; background: #FFFFFF; border-radius: 999px; padding: 5px 10px; }
+.mk-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; background: var(--fill); border-radius: 999px; padding: 5px 10px; }
 .mk-chip i { width: 8px; height: 8px; border-radius: 50%; background: var(--line-2); }
-.mk-chip.on i { background: var(--cyan); animation: mk-pulse 1.6s ease-in-out infinite; }
+.mk-chip.on i { background: var(--green); animation: mk-pulse 1.6s ease-in-out infinite; }
 @keyframes mk-pulse { 50% { transform: scale(1.5); opacity: .5; } }
 .mk-bites-label { font-size: 13px; font-weight: 600; color: var(--sub); }
 /* 소화 중인 음식: 틀 없이 음식만 떠 있고 크기는 그대로. 먹은 입만큼 이빨 자국으로 베어져 있다.
@@ -322,7 +340,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-meal-prog { text-align: center; font-size: 14px; color: var(--sub); margin-top: 12px; }
 .mk-meal-prog b { color: var(--ink); }
 .mk-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 0; }
-.mk-stat { background: #FFFFFF; border-radius: 12px; padding: 10px 12px; }
+.mk-stat { background: var(--fill); border-radius: 12px; padding: 10px 12px; }
 .mk-stat dt { font-size: 12px; color: var(--sub); }
 .mk-stat dd { font-size: 22px; font-weight: 700; margin: 2px 0 0; font-variant-numeric: tabular-nums; }
 .mk-stat dd small { font-size: 13px; font-weight: 600; margin-left: 2px; }
@@ -349,7 +367,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-q img { width: 56px; height: 56px; object-fit: contain; filter: drop-shadow(0 3px 4px rgba(30, 37, 48, .14)); }
 .mk-q-name { font-size: 13px; font-weight: 600; margin-top: 8px; }
 .mk-q-kcal { font-size: 12px; color: var(--sub); }
-.mk-q-add { background: #FFFFFF; border: 1.5px dashed var(--line-2); font-size: 13px; font-weight: 600; gap: 4px; }
+.mk-q-add { background: transparent; border: 1.5px dashed var(--line-2); font-size: 13px; font-weight: 600; gap: 4px; }
 .mk-q-add span { font-size: 26px; font-weight: 400; line-height: 1; }
 
 .mk-row-scroll { display: flex; gap: var(--gap-in); overflow-x: auto; margin: 0 -16px; padding: 0 16px 4px; scrollbar-width: none; }
@@ -357,11 +375,11 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-fr { flex: 0 0 148px; background: var(--soft); border-radius: 14px; padding: 12px; }
 .mk-fr-head { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
 .mk-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex: none; }
-.mk-avatar-initial { display: grid; place-items: center; background: var(--ink); color: #FFFFFF; font-size: 13px; font-weight: 700; }
+.mk-avatar-initial { display: grid; place-items: center; background: var(--yellow); color: var(--ink); font-size: 13px; font-weight: 700; }
 .mk-fr-food { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-top: 12px; }
 .mk-fr-food img { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(30, 37, 48, .14)); }
 .mk-bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin-top: 10px; }
-.mk-bar i { display: block; height: 100%; background: var(--ink); border-radius: inherit; }
+.mk-bar i { display: block; height: 100%; background: var(--green); border-radius: inherit; }
 .mk-fr-pct { font-size: 12px; font-weight: 600; color: var(--sub); margin-top: 4px; }
 .mk-fr-rest { font-size: 13px; color: var(--sub); margin-top: 12px; }
 
@@ -373,7 +391,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-fz-total { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--sub); white-space: nowrap; }
 .mk-fz-sum { font-size: 13px; color: var(--sub); }
 .mk-fz-sum b { font-size: 17px; font-weight: 700; color: var(--ink); margin-right: 2px; }
-.mk-fz-goal { font-size: 12px; font-weight: 700; color: #FFFFFF; background: var(--ink); border-radius: 999px; padding: 3px 8px; }
+.mk-fz-goal { font-size: 12px; font-weight: 700; color: var(--ink); background: var(--yellow); border-radius: 999px; padding: 3px 8px; }
 .mk-fz-list { background: var(--soft); border-radius: 16px; padding: 4px 16px; }
 .mk-fz-row { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 8px 0; }
 .mk-fz-row + .mk-fz-row { border-top: 1px solid var(--line); }
@@ -394,10 +412,10 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-fr.mk-card { border-width: 2px; }
 .mk-fr-head { position: relative; }
 .mk-fr-gift {
-  margin-left: auto; font-size: 11px; font-weight: 700; color: #FFFFFF; background: var(--ink);
+  margin-left: auto; font-size: 11px; font-weight: 700; color: var(--ink); background: var(--brand);
   border-radius: 999px; padding: 2px 7px; white-space: nowrap;
 }
-.mk-q-from { font-size: 11px; font-weight: 700; color: var(--ink); background: #FFFFFF; border-radius: 999px; padding: 2px 7px; margin-top: 6px; }
+.mk-q-from { font-size: 11px; font-weight: 700; color: var(--ink); background: var(--fill); border-radius: 999px; padding: 2px 7px; margin-top: 6px; }
 
 /* ---------- 배달 보내기: 받는 친구 ---------- */
 .mk-gift-to { display: flex; align-items: center; gap: 12px; background: var(--soft); border-radius: 16px; padding: 12px 14px; }
@@ -408,7 +426,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 
 /* ---------- 세그먼트 컨트롤 (커뮤니티 탭 · 랭킹 범위) ---------- */
 [class*="st-key-seg_"] {
-  background: var(--soft); border-radius: 12px; padding: 3px; gap: 2px !important; flex-wrap: nowrap !important;
+  background: var(--track); border-radius: 12px; padding: 3px; gap: 2px !important; flex-wrap: nowrap !important;
 }
 [class*="st-key-seg_"] > [data-testid="stElementContainer"] { flex: 1 1 0 !important; width: auto !important; min-width: 0; }
 [class*="st-key-seg_"] .stButton, [class*="st-key-seg_"] .stButton button { width: 100%; }
@@ -420,7 +438,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 @media (hover: hover) and (pointer: fine) { [class*="st-key-seg_"] .stButton button:hover { color: var(--ink); } }
 [class*="st-key-seg_"] .stButton button::after {  /* 친구 요청 수 배지 (내용은 화면에서 넣는다) */
   position: absolute; top: 7px; right: calc(50% - 34px); min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px;
-  background: var(--ink); color: #FFFFFF; font-size: 10px; font-weight: 700; line-height: 16px; text-align: center;
+  background: var(--brand); color: var(--ink); font-size: 10px; font-weight: 700; line-height: 16px; text-align: center;
 }
 
 /* ---------- 목록 카드 + 유저 한 줄 [정보 | 버튼] ---------- */
@@ -445,7 +463,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-doing-food { flex: 1 1 auto; min-width: 0; font-size: 13px; color: var(--sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mk-doing-prog { flex: none; display: flex; align-items: center; gap: 6px; }
 .mk-doing-bar { flex: none; width: 48px; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
-.mk-doing-bar i { display: block; height: 100%; background: var(--ink); border-radius: inherit; }
+.mk-doing-bar i { display: block; height: 100%; background: var(--green); border-radius: inherit; }
 .mk-doing-pct { flex: none; width: 34px; text-align: right; font-size: 13px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
 @media (max-width: 359px) { .mk-doing-bar { display: none; } }  /* 좁은 화면(SE 등): 막대를 숨기고 음식 이름에 자리를 준다 (%는 같은 자리에 그대로) */
 /* 화면에는 안 보이고 스크린리더만 읽는 글자 */
@@ -485,7 +503,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-rk-name { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; color: var(--ink); }
 .mk-rk-kcal { margin-left: auto; font-size: 15px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
 .mk-rk-kcal small { font-size: 12px; font-weight: 500; color: var(--sub); margin-left: 2px; }
-.mk-me-pill { font-size: 11px; font-weight: 700; color: #FFFFFF; background: var(--ink); border-radius: 999px; padding: 2px 7px; }
+.mk-me-pill { font-size: 11px; font-weight: 700; color: var(--ink); background: var(--brand); border-radius: 999px; padding: 2px 7px; }
 .mk-rk.me .mk-rk-name { font-weight: 700; }
 .mk-myrank {
   display: flex; align-items: baseline; gap: 8px; background: var(--ink); color: #FFFFFF;
@@ -519,7 +537,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .mk-my-stats .mk-stat dd { font-size: 20px; }
 .mk-my-note { font-size: 13px; color: var(--sub); line-height: 1.5; }
 .mk-my-note b { color: var(--ink); }
-.mk-plus-pill { font-size: 11px; font-weight: 700; color: var(--ink); background: var(--cyan); border-radius: 999px; padding: 3px 9px; }
+.mk-plus-pill { font-size: 11px; font-weight: 700; color: var(--ink); background: var(--yellow); border-radius: 999px; padding: 3px 9px; }
 /* 몸무게 입력칸은 온보딩 몸무게칸과 같은 모양 */
 .st-key-my_weight [data-testid="stNumberInputContainer"] {
   position: relative; border-radius: 14px; background: var(--soft); border: 2px solid transparent; min-height: 56px;
@@ -538,13 +556,13 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
    위계: 섹션 제목 18px > 카드 제목 17px > 혜택 15px > 안내 12px */
 .st-key-plus_box { background: var(--soft); border-radius: 16px; padding: 20px 16px 16px; gap: 16px !important; }
 .mk-plus-head { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
-.mk-plus-badge { font-size: 12px; font-weight: 700; color: var(--sub); background: #FFFFFF; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; }
-.mk-plus-badge.on { color: var(--ink); background: var(--cyan); border-color: var(--cyan); }
+.mk-plus-badge { font-size: 12px; font-weight: 700; color: var(--sub); background: var(--fill); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; }
+.mk-plus-badge.on { color: var(--ink); background: var(--yellow); border-color: var(--yellow); }
 .mk-plus-title { font-size: 17px; font-weight: 700; color: var(--ink); line-height: 1.35; }
 /* 혜택 목록: 흰 카드 안 [아이콘 원 | 이름 | (준비 중)] 줄 */
-.mk-plus-perks { list-style: none; margin: 16px 0 0 !important; padding: 0 14px !important; background: #FFFFFF; border-radius: 14px; }
+.mk-plus-perks { list-style: none; margin: 16px 0 0 !important; padding: 0 14px !important; background: var(--fill); border-radius: 14px; }
 .mk-plus-perks li { margin: 0 !important; padding: 0 !important; display: flex; align-items: center; gap: 12px; min-height: 56px; font-size: 15px; font-weight: 600; color: var(--ink); }
-.mk-plus-perks li + li { border-top: 1px solid var(--soft); }
+.mk-plus-perks li + li { border-top: 1px solid var(--line); }
 .mk-perk-ico { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--soft); position: relative; }
 .mk-perk-ico::before {
   content: ""; position: absolute; inset: 8px; background: var(--ink);
@@ -562,7 +580,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 
 /* ---------- 광고 자리 ---------- */
 .mk-ad {
-  height: 56px; border-radius: 12px; border: 1px solid var(--line); background: #FFFFFF;
+  height: 56px; border-radius: 12px; border: 1.5px dashed var(--line-2); background: transparent;
   display: grid; place-items: center; font-size: 12px; color: var(--sub);
   margin-top: calc(var(--gap-out) - var(--gap-in));
 }
@@ -570,7 +588,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 /* ---------- 소화 완료 연출 (전체 화면) ---------- */
 .st-key-sheet_done {
   position: fixed; top: 0; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: min(100%, 430px); z-index: 300; background: #FFFFFF;
+  width: min(100%, 430px); z-index: 300; background: var(--cream);
   justify-content: center; gap: 10px !important;
   padding: 24px 16px calc(24px + var(--safe-bottom));
 }
@@ -588,7 +606,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 /* ---------- 스플래시 (앱 실행 직후 1.8초): 남색 바탕 가운데 흰 텍스트 로고만 ---------- */
 .st-key-sheet_splash {
   position: fixed; top: 0; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: min(100%, 430px); z-index: 400; background: #1E2530;
+  width: min(100%, 430px); z-index: 400; background: var(--brand);
   justify-content: center; align-items: center; gap: 0 !important; padding: 0 16px;
 }
 .st-key-sheet_splash > [data-testid="stElementContainer"]:has(.stButton) {
@@ -596,7 +614,8 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 }
 .st-key-sheet_splash .stButton, .st-key-sheet_splash .stButton button { width: 100%; height: 100%; min-height: 0; }
 .st-key-sheet_splash .stButton button { opacity: 0; cursor: pointer; }
-.stApp .mk-splash-logo { font-size: 44px; line-height: 1.1; letter-spacing: 0.02em; color: #FFFFFF; text-align: center; }
+/* 스플래시: 브랜드 가이드 앱 화면처럼 주황 바탕 + 흰 마스코트 */
+.stApp .mk-splash-logo { display: block; margin: 0 auto; width: 128px; height: 125px; background-image: url("MASCOT_WHITE"); background-position: center; }
 
 /* ---------- 로그인 · 회원가입 (PRD Q10: 큰 버튼 카카오 · 네이버 · 휴대폰 번호 / 원형 Google · Apple) ----------
    레퍼런스: 앳플리(브랜드 버튼 세로 쌓기 + "또는" 아래 원형 아이콘) · 메가MCG커피(위 그래픽 + 아래 버튼 묶음) · 써브웨이 */
@@ -612,7 +631,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
   .stApp:has(.mk-login-hero) [data-testid="stMainBlockContainer"] { padding-bottom: calc(8px + var(--safe-bottom)) !important; }
   .stApp:has(.mk-login-hero) [data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] { min-height: calc(100dvh - 12px - var(--safe-top) - var(--safe-bottom)); }
 }
-.stApp .mk-login-logo { font-size: 44px; line-height: 1.1; letter-spacing: 0.02em; }  /* 스플래시 로고와 같은 크기 */
+.stApp .mk-login-logo { width: 196px; height: 54px; background-position: center; }
 .mk-login-copy { font-size: 16px; line-height: 1.5; color: var(--sub); margin-top: 12px; }
 .mk-login-note { font-size: 12px; color: var(--sub); text-align: center; margin-top: 6px; }
 /* 큰 브랜드 버튼: 높이 52px · 모서리 14px · 16px/700. 아이콘은 왼쪽 18px에 고정, 글자는 가운데 */
@@ -701,6 +720,19 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
   .mk-term.mk-cascade.sel .mk-pick { animation-delay: 0s; }
 }
 
+/* ---------- 브랜드 표면: 크림 바탕 위 흰 카드 + 은은한 그림자 ---------- */
+.mk-card, .mk-summary, .mk-favs, .st-key-empty_box, .mk-meal, .mk-q:not(.mk-q-add), .mk-fr, .mk-fz-list, .mk-gift-to,
+[class*="st-key-list_"], .mk-empty-line, .mk-note-box, .mk-idcard, .st-key-confirm_box, .mk-lock, .mk-my-stats .mk-stat,
+.mk-gift-stats .mk-stat, .st-key-plus_box, .mk-today, .mk-rel,
+.st-key-ob_weight [data-testid="stNumberInputContainer"], .st-key-my_weight [data-testid="stNumberInputContainer"],
+.st-key-cm_query [data-testid="stTextInputRootElement"], [class*="st-key-auth_in_"] [data-testid="stTextInputRootElement"] { box-shadow: var(--shadow); }
+.mk-card.mk-term, .mk-q.mk-q-add { box-shadow: none; }
+/* 빈 상태(홈 "주문하러 가요" · 냉장고 · 배달): 카드 위에 빼꼼 내다보는 마스코트 */
+.st-key-empty_box::before {
+  content: ""; display: block; align-self: center; width: 112px; height: 86px; margin-bottom: -6px;
+  background: url("MASCOT_PEEK") center bottom / contain no-repeat;
+}
+
 /* ---------- 토스트 (iOS식: 화면 맨 위 로고 줄에 작은 알약, 2.5초 뒤 저절로 사라짐, 터치를 막지 않음)
    누를 버튼이 없는 상단에 띄워, 연달아 누르는 버튼(움직임·주문)을 가리지 않는다. ---------- */
 .mk-toast {
@@ -723,7 +755,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
   @keyframes mk-toast-still { to { opacity: 0; visibility: hidden; } }
 }
 
-:focus-visible { outline: 3px solid var(--cyan) !important; outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--ink) !important; outline-offset: 2px; }
 /* ---------- 인터랙션 (ui-animation 스킬 기준) ----------
    누름: 0ms로 바로 97%, 손을 떼면 160ms로 돌아온다. 상태 색은 150ms. 터치 기본 회색 깜빡임·두 번 탭 확대는 끈다 */
 .stApp .stButton button, [class*="st-key-tap_"] { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -741,7 +773,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 @keyframes mk-in-back { from { opacity: 0; transform: translateX(-16px); } }
 .mk-progress span.now { position: relative; background: var(--line); }
 .mk-progress span.now::after {
-  content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--ink);
+  content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--brand);
   transform-origin: left; animation: mk-fill .3s var(--ease-move) both;
 }
 @keyframes mk-fill { from { transform: scaleX(0); } }
@@ -764,7 +796,14 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 }
 @keyframes mk-fade { from { opacity: 0; } }
 </style>
-""".replace("CHECK_WHITE", _CHECK_WHITE)
+"""
+for _token, _value in (
+    ("CHECK_WHITE", _CHECK_WHITE),
+    ("BRAND_LOGO", _brand_uri("logo")),
+    ("MASCOT_WHITE", _brand_uri("mascot_white")),
+    ("MASCOT_PEEK", _brand_uri("mascot_peek")),
+):
+    _CSS = _CSS.replace(_token, _value)
 
 
 def inject() -> None:

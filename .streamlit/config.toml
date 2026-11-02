@@ -1,7 +1,7 @@
-# 색은 DESIGN.md (A) 정확값과 중립 램프를 따른다.
+# 색은 브랜드 가이드(assets/img/Brand_Guide/mukbogibrand.png)를 따른다.
 [theme]
 base = "light"
-primaryColor = "#1E2530"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F4F5FB"
-textColor = "#1E2530"
+primaryColor = "#FF8A3D"
+backgroundColor = "#FFF7EE"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#222222"

@@ -117,11 +117,11 @@ def _tab(key: str) -> None:
 
 
 def _tab_bar(active: str) -> None:
-    # 현재 탭: 남색 + 채움 아이콘 + 굵은 라벨 / 다른 탭: 회색 + 선 아이콘 + 보통 라벨
+    # 현재 탭: 초록 채움 아이콘(브랜드 가이드) + 검정 굵은 라벨 / 다른 탭: 회색 선 아이콘 + 보통 라벨
     html(
         "<style>"
         f".st-key-tab_{active} button {{ color: var(--ink) !important; }}"
-        f".st-key-tab_{active} button::before {{ -webkit-mask-image: var(--icon-on) !important; mask-image: var(--icon-on) !important; }}"
+        f".st-key-tab_{active} button::before {{ background: var(--green) !important; -webkit-mask-image: var(--icon-on) !important; mask-image: var(--icon-on) !important; }}"
         f".st-key-tab_{active} button p {{ font-weight: 700 !important; }}"
         "</style>"
     )

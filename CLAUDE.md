@@ -17,6 +17,8 @@ MUKBOGI는 먹고 싶은 음식을 앱에서 "주문"하고, 걷거나 뛰어서
 |---|---|
 | `PRD.md` | 제품 요구사항의 단일 기준. 기능·우선순위·완료 조건·범위는 항상 여기를 따른다 |
 | `DESIGN.md` | 브랜딩·시각 디자인의 단일 기준. 모든 디자인 작업은 이 파일을 따른다 |
+| `assets/img/Brand_Guide/mukbogibrand.png` | 브랜드 가이드(로고·색·글꼴·마스코트). `DESIGN.md` "브랜드 가이드 적용" 절이 이 이미지를 옮긴 값이다 |
+| `assets/img/brand/` | 브랜드 가이드에서 잘라 낸 로고·마스코트 PNG. `tools/extract_brand_assets.py`로 다시 만든다 |
 | `assets/img/food/` | 음식 이미지. 음식 이미지는 항상 여기서 먼저 찾는다 (MVP 10종 모두 있음) |
 | `assets/img/profile/` | 프로필 인물 사진. 사용자·친구·랭킹 유저 사진은 항상 여기서 가져온다 (현재 2장) |
 
@@ -149,7 +151,8 @@ UI·UX를 만들거나 고친 뒤에는 **반드시 아이폰 14 크기에서 �
 | `app.py` | 진입 파일. 화면 전환만 담당 |
 | `core/data.py` | 음식 데이터 (PRD 음식 표와 같은 값) |
 | `core/rules.py` | 계산 규칙 (유형별 하루 목표 등). 화면 코드에 계산식을 직접 쓰지 않고 여기에 둔다 |
-| `core/style.py` | 공통 CSS (`DESIGN.md` "MUKBOGI 적용값"). Streamlit 기본 헤더를 숨기고 iOS 앱처럼 보이게 한다 |
+| `core/style.py` | 공통 CSS (`DESIGN.md` "브랜드 가이드 적용"·"MUKBOGI 적용값"). Streamlit 기본 헤더를 숨기고 iOS 앱처럼 보이게 한다. 로고·마스코트는 `assets/img/brand/`를 data URI로 넣는다 |
+| `tools/extract_brand_assets.py` | 브랜드 가이드 이미지에서 로고·마스코트를 잘라 배경을 빼고 `assets/img/brand/`에 저장 |
 | `core/images.py` | 음식 이미지 생성 (체크무늬 배경을 투명하게 빼고 음식 크기를 고르게 맞춤) + 한 입씩 베어 먹은 단계별 이미지(`food_bitten`) + 프로필 원형 사진. 화면에는 원본 대신 항상 이걸 쓴다 |
 | `core/splash.py` | 스플래시 화면. 프로필 없는 새 세션에서 한 번(1.8초, 누르면 바로 넘어감). `session_state.splash_seen` (`tests/test_splash.py`) |
 | `core/auth.py` | 로그인(카카오·Apple·휴대폰 번호·네이버·Google)·회원가입(약관 동의 → 아이디 정하기) 화면과 규칙(`check_user_id`, `normalize_phone`, `TERMS`). 가입하면 `session_state.account`, 내 아이디는 `auth.my_id()` (`tests/test_auth.py`) |
