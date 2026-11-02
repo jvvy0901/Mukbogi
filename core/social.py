@@ -22,12 +22,13 @@ class SocialState:
 # 친구 -------------------------------------------------------------------------
 
 
-def find_user(query: str) -> User | None | str:
-    """아이디를 정확히 입력해야 찾는다 (앞의 @·공백·대소문자는 무시). 내 아이디면 ME_ID를 돌려준다."""
+def find_user(query: str, my_id: str = ME_ID) -> User | None | str:
+    """아이디를 정확히 입력해야 찾는다 (앞의 @·공백·대소문자는 무시).
+    내 아이디(가입 때 정한 아이디 my_id 또는 데모 아이디)면 ME_ID를 돌려준다."""
     q = query.strip().lstrip("@").strip().lower()
     if not q:
         return None
-    if q == ME_ID:
+    if q in (ME_ID, my_id.lower()):
         return ME_ID
     return USERS_BY_ID.get(q)
 

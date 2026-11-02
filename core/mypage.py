@@ -13,9 +13,9 @@ from html import escape
 
 import streamlit as st
 
-from core import meal, social
+from core import auth, meal, social
 from core.data import FOODS
-from core.demo import ME_ID, ME_NAME
+from core.demo import ME_NAME
 from core.rules import DEFAULT_WEIGHT_KG, EATER_TYPES, daily_targets
 from core.style import html, toast
 
@@ -68,9 +68,12 @@ def _ask_reset(on: bool) -> None:
 
 def _reset_all() -> None:
     """프로토타입 전용: 모든 기록을 지우고 온보딩부터 다시 한다."""
+    account = st.session_state.get("account")
     for key in list(st.session_state.keys()):
         del st.session_state[key]
     st.session_state.splash_seen = True  # 스플래시는 앱을 처음 열 때만 보인다
+    if account is not None:
+        st.session_state.account = account  # 계정은 그대로 두고 온보딩부터 다시 한다
 
 
 # 화면 조각 -------------------------------------------------------------------
@@ -100,7 +103,7 @@ def _header(state: meal.MealState) -> None:
         f'<span class="mk-avatar mk-avatar-xl mk-avatar-initial" aria-hidden="true">{ME_NAME}</span>'
         '<div class="mk-u-text">'
         f'<div class="mk-prof-name">{ME_NAME}{plus}</div>'
-        f'<div class="mk-u-id">@{ME_ID}</div>'
+        f'<div class="mk-u-id">@{escape(auth.my_id())}</div>'
         "</div></div>"
         '<dl class="mk-stats mk-my-stats">'
         f'<div class="mk-stat"><dt>이번 주</dt><dd>{week_kcal:,}<small>kcal</small></dd></div>'

@@ -11,6 +11,7 @@ APP = str(Path(__file__).resolve().parent.parent / "app.py")
 def _start():
     at = AppTest.from_file(APP, default_timeout=60)
     at.session_state["splash_seen"] = True  # 스플래시는 tests/test_splash.py에서 따로 확인한다
+    at.session_state["account"] = {"user_id": "tester", "method": "kakao", "marketing": False}  # 가입은 tests/test_auth.py
     at.run()
     assert not at.exception
     return at

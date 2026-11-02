@@ -6,7 +6,7 @@ MUKBOGI 프로젝트에서 작업할 때 따르는 안내서입니다.
 
 MUKBOGI는 먹고 싶은 음식을 앱에서 "주문"하고, 걷거나 뛰어서 그 음식을 한 입씩 "소화"시키는 **iOS 운동 동기부여 앱**입니다. 다 소화한 음식은 "냉장고"에 날짜별로 쌓이고, 친구 소화 현황·먹보 랭킹으로 가볍게 경쟁합니다.
 
-- 현재 단계: **Streamlit 프로토타입 개발 중**. MVP PRD v0.11 작성 완료. 온보딩(Story 1.1~1.3)·홈(Story 3.1~3.7, 6.1 광고 자리)·냉장고(Story 4.1~4.2)·커뮤니티(Story 5.1~5.5: 친구·랭킹·다른 유저 냉장고·배달 보내기·배달 관리)·내정보(Story 7.1) 구현됨. 주문하기는 임시 화면.
+- 현재 단계: **Streamlit 프로토타입 개발 중**. MVP PRD v0.11 작성 완료. 스플래시·로그인/회원가입(Q10)·온보딩(Story 1.1~1.3)·홈(Story 3.1~3.7, 6.1 광고 자리)·냉장고(Story 4.1~4.2)·커뮤니티(Story 5.1~5.5: 친구·랭킹·다른 유저 냉장고·배달 보내기·배달 관리)·내정보(Story 7.1) 구현됨. 주문하기는 임시 화면.
 - 플랫폼: iOS (iPhone) 전용. Android는 MVP 범위 밖.
 - 배포: 프로토타입을 **Streamlit**으로 만들어 배포한다. 자세한 내용은 아래 "기술 스택" 참조.
 - 그 밖의 기술 스택은 아직 정하지 않음. 스택을 고르는 작업이 필요하면 임의로 정하지 말고 사용자에게 먼저 묻는다. 정해지면 이 파일의 "기술 스택" 항목에 기록한다.
@@ -148,6 +148,7 @@ UI·UX를 만들거나 고친 뒤에는 **반드시 아이폰 14 크기에서 �
 | `core/style.py` | 공통 CSS (`DESIGN.md` "MUKBOGI 적용값"). Streamlit 기본 헤더를 숨기고 iOS 앱처럼 보이게 한다 |
 | `core/images.py` | 음식 이미지 생성 (체크무늬 배경을 투명하게 빼고 음식 크기를 고르게 맞춤) + 한 입씩 베어 먹은 단계별 이미지(`food_bitten`) + 프로필 원형 사진. 화면에는 원본 대신 항상 이걸 쓴다 |
 | `core/splash.py` | 스플래시 화면. 프로필 없는 새 세션에서 한 번(1.8초, 누르면 바로 넘어감). `session_state.splash_seen` (`tests/test_splash.py`) |
+| `core/auth.py` | 로그인(카카오·Apple·휴대폰 번호·네이버·Google)·회원가입(약관 동의 → 아이디 정하기) 화면과 규칙(`check_user_id`, `normalize_phone`, `TERMS`). 가입하면 `session_state.account`, 내 아이디는 `auth.my_id()` (`tests/test_auth.py`) |
 | `core/onboarding.py` | 온보딩 화면 (PRD Epic 1) |
 | `core/meal.py` | 주문·대기열·소화·냉장고 상태와 규칙 (Streamlit과 분리, `tests/test_meal.py`) |
 | `core/home.py` | 홈 화면(PRD Epic 3) + 하단 탭 + 소화 완료 연출 + 임시 주문 화면 + 커뮤니티 자리. 화면 전환(`render`)도 여기서 한다 |

@@ -39,6 +39,7 @@ _CSS = """
   --line-2: #C0C4CD;     /* colors.neutral-300 */
   --sub: #515160;        /* colors.neutral-600 */
   --gap-in: 10px;        /* 같은 묶음 안 */
+  --danger: #B42318;     /* 오류 글자·테두리 (흰 바탕 대비 6.3:1) */
   /* 움직임 곡선 (ui-animation 스킬 기준값) */
   --ease-press: cubic-bezier(.25, .46, .45, .94);  /* 누름에서 돌아올 때 */
   --ease-enter: cubic-bezier(.22, 1, .36, 1);      /* 나타남 */
@@ -174,7 +175,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .st-key-ob_weight [data-testid="stNumberInputStepUp"],
 .st-key-ob_weight [data-testid="InputInstructions"] { display: none; }
 .mk-note { font-size: 13px; color: var(--sub); line-height: 1.5; margin-top: -4px; }
-.mk-error { font-size: 13px; font-weight: 600; color: #B42318; margin-top: -4px; }
+.mk-error { font-size: 13px; font-weight: 600; color: var(--danger); margin-top: -4px; }
 
 /* ---------- 하단 고정 버튼 영역 ---------- */
 .st-key-bar_footer {
@@ -581,6 +582,109 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .st-key-sheet_splash .stButton, .st-key-sheet_splash .stButton button { width: 100%; height: 100%; min-height: 0; }
 .st-key-sheet_splash .stButton button { opacity: 0; cursor: pointer; }
 .stApp .mk-splash-logo { font-size: 44px; line-height: 1.1; letter-spacing: 0.02em; color: #FFFFFF; text-align: center; }
+
+/* ---------- 로그인 · 회원가입 (PRD Q10: 큰 버튼 카카오 · 네이버 · 휴대폰 번호 / 원형 Google · Apple) ----------
+   레퍼런스: 앳플리(브랜드 버튼 세로 쌓기 + "또는" 아래 원형 아이콘) · 메가MCG커피(위 그래픽 + 아래 버튼 묶음) · 써브웨이 */
+/* 로그인 화면 배치: 화면 전체 높이를 쓰고, 로고 묶음은 남는 위쪽 공간의 정가운데, 버튼 묶음은 아래(엄지가 닿는 곳)에 붙인다 */
+.stApp:has(.mk-login-hero) [data-testid="stMainBlockContainer"] { padding-bottom: calc(20px + var(--safe-bottom)) !important; }
+.stApp:has(.mk-login-hero) [data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] {
+  min-height: calc(100dvh - 24px - var(--safe-top) - var(--safe-bottom));
+}
+[data-testid="stElementContainer"]:has(.mk-login-hero) { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; }
+.mk-login-hero { text-align: center; padding: 24px 0; }
+@media (max-height: 700px) {  /* SE 등 낮은 화면: 스크롤 없이 한 화면에 */
+  .mk-login-hero { padding: 0; }
+  .stApp:has(.mk-login-hero) [data-testid="stMainBlockContainer"] { padding-bottom: calc(8px + var(--safe-bottom)) !important; }
+  .stApp:has(.mk-login-hero) [data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] { min-height: calc(100dvh - 12px - var(--safe-top) - var(--safe-bottom)); }
+}
+.stApp .mk-login-logo { font-size: 44px; line-height: 1.1; letter-spacing: 0.02em; }  /* 스플래시 로고와 같은 크기 */
+.mk-login-copy { font-size: 16px; line-height: 1.5; color: var(--sub); margin-top: 12px; }
+.mk-login-note { font-size: 12px; color: var(--sub); text-align: center; margin-top: 6px; }
+/* 큰 브랜드 버튼: 높이 52px · 모서리 14px · 16px/700. 아이콘은 왼쪽 18px에 고정, 글자는 가운데 */
+.st-key-auth_btns { gap: 10px !important; }
+.st-key-auth_kakao button, .st-key-auth_naver button, .st-key-auth_phone button {
+  position: relative; height: 52px; min-height: 52px; border-radius: 14px; font-size: 16px; font-weight: 700; box-sizing: border-box;
+}
+.st-key-auth_kakao button::before, .st-key-auth_apple button::before, .st-key-auth_phone button::before,
+.st-key-auth_naver button::before, .st-key-auth_google button::before {
+  content: ""; width: 22px; height: 22px; background: var(--icon) center / contain no-repeat;
+}
+.st-key-auth_kakao button::before, .st-key-auth_naver button::before, .st-key-auth_phone button::before {
+  position: absolute; left: 18px; top: 50%; transform: translateY(-50%);
+}
+.st-key-auth_kakao button { background: #FEE500; color: rgba(0, 0, 0, .85); border: 0; }
+.st-key-auth_kakao { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23191919' d='M12 3C6.48 3 2 6.48 2 10.8c0 2.78 1.86 5.22 4.66 6.6l-.95 3.48c-.08.3.26.55.52.38l4.15-2.74c.53.06 1.07.09 1.62.09 5.52 0 10-3.49 10-7.8S17.52 3 12 3z'/></svg>"); }
+.st-key-auth_apple { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M16.37 1.43c0 1.14-.49 2.27-1.18 3.08-.74.9-1.99 1.57-2.99 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.57-2.27 1.21-2.98.8-.94 2.14-1.64 3.25-1.68.03.13.05.28.05.43zm4.56 15.71c-.03.07-.46 1.58-1.52 3.12-.94 1.34-1.94 2.71-3.43 2.71-1.52 0-1.9-.88-3.63-.88-1.7 0-2.3.91-3.67.91-1.38 0-2.33-1.26-3.43-2.8C4 18.38 2.96 15.57 2.96 12.92c0-4.28 2.8-6.55 5.55-6.55 1.45 0 2.68.95 3.6.95.87 0 2.22-1.01 3.9-1.01.61 0 2.89.06 4.37 2.19-.13.09-2.38 1.37-2.38 4.19 0 3.26 2.85 4.42 2.95 4.45z'/></svg>"); }
+.st-key-auth_phone button { background: #FFFFFF; color: var(--ink); border: 1.5px solid var(--line); }
+.st-key-auth_phone { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231E2530' stroke-width='1.8' stroke-linecap='round'><rect x='6.5' y='2.5' width='11' height='19' rx='2.6'/><path d='M10.5 18.3h3'/></svg>"); }
+.st-key-auth_naver button { background: #03C75A; color: #FFFFFF; border: 0; }
+/* "또는" 구분선 + 원형 아이콘 버튼 52px (Google 흰색 · Apple 검정). 글자는 숨기고 스크린리더만 읽는다 */
+.mk-or { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--sub); margin: 10px 0 2px; }
+.mk-or::before, .mk-or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.st-key-auth_more { justify-content: center; gap: 16px !important; flex-wrap: nowrap !important; }
+.st-key-auth_more > [data-testid="stElementContainer"] { width: auto !important; flex: none !important; }
+.st-key-auth_google button, .st-key-auth_apple button {
+  width: 52px; height: 52px; min-height: 52px; padding: 0; border-radius: 50%; box-sizing: border-box;
+}
+.st-key-auth_google button, .st-key-auth_apple button { justify-content: center; }
+/* 글자 칸은 화면에서 빼서(스크린리더만 읽음) 아이콘이 원 정가운데에 오게 한다 */
+.st-key-auth_google button > div, .st-key-auth_apple button > div {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+.st-key-auth_apple button { background: #000000; border: 0; }
+.st-key-auth_naver { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M15.6 12.8 8.2 2.5H3v19h5.4V11.2l7.4 10.3H21v-19h-5.4z'/></svg>"); }
+.st-key-auth_naver button::before { width: 18px; height: 18px; left: 20px; }
+.st-key-auth_google button { background: #FFFFFF; border: 1.5px solid var(--line); }
+.st-key-auth_google { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><path fill='%23EA4335' d='M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z'/><path fill='%234285F4' d='M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z'/><path fill='%23FBBC05' d='M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z'/><path fill='%2334A853' d='M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z'/></svg>"); }
+/* 회원가입 입력칸: 온보딩 몸무게 칸과 같은 모양 (56px · 14px · 연회색 → 포커스 시 흰색 + 남색 테두리) */
+[class*="st-key-auth_in_"] [data-testid="stTextInputRootElement"] {
+  height: 56px; min-height: 56px; border-radius: 14px; background: var(--soft); border: 2px solid transparent; box-sizing: border-box;
+}
+[class*="st-key-auth_in_"] [data-testid="stTextInputRootElement"]:focus-within { border-color: var(--ink); background: #FFFFFF; }
+[class*="st-key-auth_in_"] input { height: 100%; min-height: 0; padding: 0 16px; font-size: 18px; font-weight: 600; color: var(--ink); background: transparent; }
+[class*="st-key-auth_in_"] input::placeholder { font-size: 16px; font-weight: 400; color: var(--sub); }
+[class*="st-key-auth_in_"] input:focus-visible { outline: none !important; }
+[class*="st-key-auth_in_"] [data-testid="InputInstructions"] { display: none; }
+/* 약관: "전체 동의" 카드(선택 시 흰색 + 남색 테두리) 아래, 연회색 목록 카드 안에 [선택 원 · 필수/선택 · 약관 이름] 줄 */
+.mk-term-all { display: flex; align-items: center; gap: 12px; padding: 16px; }
+.mk-term-all-title { font-size: 17px; font-weight: 700; color: var(--ink); }
+.mk-term-all-sub { font-size: 13px; color: var(--sub); margin-top: 2px; }
+.mk-card.mk-term, .mk-card.mk-term.sel { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 4px 0; background: transparent; border-color: transparent; }
+.mk-term-tag { flex: none; font-size: 12px; font-weight: 700; color: var(--sub); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; background: #FFFFFF; }
+.mk-term-tag.req { color: var(--ink); border-color: var(--ink); }
+.mk-term-label { font-size: 15px; color: var(--ink); min-width: 0; }
+.st-key-list_terms { padding: 2px 14px !important; }
+
+/* ---------- 로그인 · 회원가입 인터랙션 ---------- */
+/* 브랜드 버튼은 hover·누름에서도 제 색을 지킨다 (기본 보조 버튼 hover가 흰 바탕으로 바꾸던 문제) */
+@media (hover: hover) and (pointer: fine) {
+  .st-key-auth_kakao button:hover { background: #FEE500; color: rgba(0, 0, 0, .85); border-color: transparent; filter: brightness(.97); }
+  .st-key-auth_naver button:hover { background: #03C75A; color: #FFFFFF; border-color: transparent; filter: brightness(.97); }
+  .st-key-auth_apple button:hover { background: #000000; border-color: transparent; }
+  .st-key-auth_google button:hover, .st-key-auth_phone button:hover { background: #FFFFFF; border-color: var(--ink); }
+}
+/* 스플래시 다음 첫 화면: 위치 이동 없이 그림·로고 → 버튼 순으로 서서히 (스플래시와의 뚝 끊김을 잇는다) */
+.mk-login-hero.mk-login-first { animation: mk-fade .24s ease-out both; }
+.stApp:has(.mk-login-first) .st-key-auth_btns > * { animation: mk-fade .24s ease-out both; }
+.stApp:has(.mk-login-first) .st-key-auth_btns > :nth-child(1) { animation-delay: .06s; }
+.stApp:has(.mk-login-first) .st-key-auth_btns > :nth-child(2) { animation-delay: .1s; }
+.stApp:has(.mk-login-first) .st-key-auth_btns > :nth-child(3) { animation-delay: .14s; }
+.stApp:has(.mk-login-first) .st-key-auth_btns > :nth-child(n+4) { animation-delay: .18s; }
+.mk-login-hero.mk-back { animation: mk-in-back .24s var(--ease-move); }
+/* 인증번호 칸: "인증번호 받기"를 누르면 휴대폰 칸 아래에서 살짝 올라오며 나타난다 */
+.st-key-auth_in_code { animation: mk-rise .24s var(--ease-enter); }
+/* 오류: 칸 테두리 빨강 + 좌우 흔들림(실패할 때마다 다시: 같은 모양 키프레임 두 개를 번갈아 씀) + 문구는 서서히 */
+@keyframes mk-shake-0 { 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
+@keyframes mk-shake-1 { 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
+.mk-error-in { animation: mk-fade .15s ease-out; }
+/* 전체 동의를 켜면 목록 체크가 위에서 아래로 35ms 간격으로 차례로 (전체 175ms) */
+.mk-term.mk-cascade.sel .mk-pick { animation-delay: calc(var(--i) * 35ms); animation-fill-mode: both; }
+@media (prefers-reduced-motion: reduce) {
+  .mk-login-hero.mk-back, .st-key-auth_in_code { animation: mk-fade .15s linear both; }
+  .stApp:has(.mk-login-first) .st-key-auth_btns > :nth-child(n) { animation-delay: 0s; }
+  [class*="st-key-auth_in_"] [data-testid="stTextInputRootElement"] { animation: none !important; }  /* 흔들림 대신 빨간 테두리만 */
+  .mk-term.mk-cascade.sel .mk-pick { animation-delay: 0s; }
+}
 
 /* ---------- 토스트 (iOS식: 화면 맨 위 로고 줄에 작은 알약, 2.5초 뒤 저절로 사라짐, 터치를 막지 않음)
    누를 버튼이 없는 상단에 띄워, 연달아 누르는 버튼(움직임·주문)을 가리지 않는다. ---------- */

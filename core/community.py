@@ -12,7 +12,7 @@ from html import escape
 
 import streamlit as st
 
-from core import fridge, gift, meal, social
+from core import auth, fridge, gift, meal, social
 from core.data import FOODS_BY_ID
 from core.demo import ME_ID, ME_NAME, USERS_BY_ID, User
 from core.images import food_thumb
@@ -185,7 +185,7 @@ def _friends_tab() -> None:
     html(
         '<div class="mk-idcard">'
         '<div><div class="mk-idcard-label">내 아이디</div>'
-        f'<div class="mk-idcard-id">@{ME_ID}</div></div>'
+        f'<div class="mk-idcard-id">@{escape(auth.my_id())}</div></div>'
         '<div class="mk-idcard-hint">친구에게 알려 주면<br>나를 찾을 수 있어요</div>'
         "</div>"
     )
@@ -237,7 +237,7 @@ def _search_result() -> None:
     q = _ss().cm_result
     if not q:
         return
-    found = social.find_user(q)
+    found = social.find_user(q, auth.my_id())
     if found is None:
         html(f'<div class="mk-note-box">‘{escape(q)}’ 아이디를 찾지 못했어요. 정확히 입력했는지 확인해 주세요.</div>')
         return

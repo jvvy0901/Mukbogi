@@ -12,6 +12,7 @@ PROFILE = {"eater_type": "중식가", "daily_target_kcal": 365, "favorite_food_i
 def _start():
     at = AppTest.from_file(APP, default_timeout=60)
     at.session_state["profile"] = dict(PROFILE)
+    at.session_state["account"] = {"user_id": "tester", "method": "kakao", "marketing": False}
     at.run()
     assert not at.exception
     at.button(key="tab_my").click().run()
@@ -36,7 +37,7 @@ def test_my_tab_opens_page_with_profile_summary():
     at = _start()
     assert at.session_state["screen"] == "my"
     text = _text(at)
-    assert "내정보" in text and "@mukbo_me" in text
+    assert "내정보" in text and "@tester" in text
     assert "친구4명" in text.replace(" ", "")
     assert "하루 목표 365kcal" in text
     assert "소화하고 싶은 음식" not in text  # 내정보에서는 선호 음식을 바꾸지 않는다
@@ -87,4 +88,5 @@ def test_reset_asks_first_then_returns_to_onboarding():
     _click(at, "reset_ask")
     _click(at, "reset_ok")
     assert "profile" not in at.session_state
+    assert at.session_state["account"]["user_id"] == "tester"  # 계정은 그대로, 온보딩부터 다시
     assert "하루에 얼마나" in _text(at)
