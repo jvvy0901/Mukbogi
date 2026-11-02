@@ -16,10 +16,12 @@ DESIGN.md에 없던 값은 DESIGN.md "MUKBOGI 적용값" 절에 기록해 두었
 """
 
 import base64
+import json
 from html import escape
 from pathlib import Path
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 _BRAND_DIR = Path(__file__).resolve().parent.parent / "assets" / "img" / "brand"
 
@@ -408,6 +410,18 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
   display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important;
   overflow-x: auto; gap: var(--gap-in) !important; margin: 0 -16px; padding: 0 16px 4px; scrollbar-width: none;
 }
+/* 가로 캐러셀 공통(친구·조리 중): 화면 양끝까지 넓혀 다음 카드가 끝에서 살짝 보이게 하고(더 있다는 신호),
+   손을 떼면 카드 시작점에 딱 맞춰 멈춘다. 마우스 휠·끌기 스크롤은 style.enable_drag_scroll()이 붙인다 */
+.st-key-row_friends, .st-key-row_queue {
+  width: calc(100% + 32px) !important; max-width: none !important; box-sizing: border-box;
+  scroll-snap-type: x mandatory; scroll-padding-inline: 16px; overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y;
+}
+.st-key-row_friends > *, .st-key-row_queue > * { scroll-snap-align: start; }
+.st-key-row_friends.mk-dragging, .st-key-row_queue.mk-dragging { scroll-snap-type: none; cursor: grabbing; user-select: none; }
+@media (hover: hover) and (pointer: fine) { .st-key-row_friends, .st-key-row_queue { cursor: grab; } }
+/* 마지막 카드 뒤에도 16px 여백이 남게 (flex 끝 padding은 스크롤 영역에 안 잡히므로 빈 칸으로) */
+.st-key-row_friends::after, .st-key-row_queue::after { content: ""; flex: 0 0 6px; }
 .st-key-row_friends::-webkit-scrollbar { display: none; }
 .st-key-row_friends > * { flex: 0 0 148px !important; width: 148px !important; }
 .st-key-row_friends .mk-fr { height: 100%; }
@@ -735,6 +749,9 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
   background: url("MASCOT_PEEK") center bottom / contain no-repeat;
 }
 
+/* 가로 캐러셀 마우스 스크롤 스크립트 칸: 배치에 자리를 차지하지 않게 */
+.st-key-js_dragscroll { position: absolute !important; width: 0; height: 0; overflow: hidden; }
+
 /* ---------- 토스트 (iOS식: 화면 맨 위 로고 줄에 작은 알약, 2.5초 뒤 저절로 사라짐, 터치를 막지 않음)
    누를 버튼이 없는 상단에 띄워, 연달아 누르는 버튼(움직임·주문)을 가리지 않는다. ---------- */
 .mk-toast {
@@ -806,6 +823,71 @@ for _token, _value in (
     ("MASCOT_PEEK", _brand_uri("mascot_peek")),
 ):
     _CSS = _CSS.replace(_token, _value)
+
+
+# 가로 캐러셀(친구·조리 중)을 마우스로도 넘길 수 있게 하는 스크립트. 터치(아이폰)는 원래 손가락으로 넘어가므로 손대지 않는다.
+# - 세로 휠·트랙패드 → 가로로 넘김 (캐러셀 끝에 닿으면 페이지 스크롤로 넘김)
+# - 마우스로 끌기 → 넘김, 5px 넘게 끌었으면 손을 뗄 때 카드가 눌리지 않게 클릭을 막는다
+# Streamlit이 다시 그려도 새로 생긴 줄에 붙도록 MutationObserver로 지켜본다. 부모 문서에 한 번만 설치한다.
+_DRAG_SCROLL_CODE = """
+(() => {
+  if (window.__mkDragScroll) return;
+  window.__mkDragScroll = true;
+  const SEL = '.st-key-row_friends, .st-key-row_queue';
+  const bind = (row) => {
+    if (row.dataset.mkDrag) return;
+    row.dataset.mkDrag = '1';
+    row.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;  // 이미 가로 스크롤(트랙패드)
+      const max = row.scrollWidth - row.clientWidth;
+      if (max <= 0) return;
+      const atStart = row.scrollLeft <= 0 && e.deltaY < 0, atEnd = row.scrollLeft >= max - 1 && e.deltaY > 0;
+      if (atStart || atEnd) return;  // 캐러셀 끝이면 페이지 스크롤로 넘긴다
+      row.scrollBy({ left: e.deltaY, behavior: 'smooth' });
+      e.preventDefault();
+    }, { passive: false });
+    let startX = 0, startLeft = 0, moved = false, down = false;
+    row.addEventListener('pointerdown', (e) => {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      down = true; moved = false; startX = e.clientX; startLeft = row.scrollLeft;
+    });
+    window.addEventListener('pointermove', (e) => {
+      if (!down) return;
+      const dx = e.clientX - startX;
+      if (!moved && Math.abs(dx) > 5) { moved = true; row.classList.add('mk-dragging'); }
+      if (moved) row.scrollLeft = startLeft - dx;
+    });
+    window.addEventListener('pointerup', () => {
+      if (!down) return;
+      down = false;
+      if (moved) {
+        row.classList.remove('mk-dragging');  // 끌기가 끝나면 다시 카드 시작점에 맞춰 멈춘다
+        setTimeout(() => { moved = false; }, 0);
+      }
+    });
+    row.addEventListener('click', (e) => {
+      if (moved) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+  };
+  const scan = () => document.querySelectorAll(SEL).forEach(bind);
+  scan();
+  new MutationObserver(scan).observe(document.body, { childList: true, subtree: true });
+})();
+"""
+# 컴포넌트 iframe은 화면이 바뀌면 사라지므로, 코드를 부모 문서에 <script>로 넣어 부모 쪽에서 계속 돌게 한다
+_DRAG_SCROLL_JS = (
+    "<script>(() => { const d = window.parent.document;"
+    " if (d.getElementById('mk-drag-scroll')) return;"
+    " const s = d.createElement('script'); s.id = 'mk-drag-scroll'; s.textContent = "
+    + json.dumps(_DRAG_SCROLL_CODE)
+    + "; d.head.appendChild(s); })();</script>"
+)
+
+
+def enable_drag_scroll() -> None:
+    """가로 캐러셀에 마우스 휠·끌기 스크롤을 붙인다 (app.py에서 매번 부른다. 설치는 한 번만 된다)."""
+    with st.container(key="js_dragscroll"):
+        components.html(_DRAG_SCROLL_JS, height=0)
 
 
 def inject() -> None:

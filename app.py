@@ -19,6 +19,7 @@ elif "profile" not in st.session_state:
 else:
     home.render()
 
+style.enable_drag_scroll()
 style.render_toast()
 
 # 한 번만 보여 주는 연출 표시(방금 주문한 음식, 방금 보낸 배달)는 그린 뒤 지운다
