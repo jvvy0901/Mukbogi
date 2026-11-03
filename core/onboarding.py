@@ -126,7 +126,7 @@ def _top(step: int, title: str, sub: str) -> None:
 
 
 def _step_type() -> None:
-    _top(0, "하루에 얼마나<br>먹고 싶어요?", "고른 유형에 맞춰 하루 목표 칼로리가 정해져요.")
+    _top(0, "하루에 얼마나<br>소화하고 싶어요?", "고른 유형에 맞춰 하루 목표 칼로리가 정해져요.")
 
     groups = food_groups(FOODS)
     targets = daily_targets(FOODS)
