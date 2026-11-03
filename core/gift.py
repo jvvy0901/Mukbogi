@@ -21,7 +21,7 @@ from core.demo import USERS_BY_ID, User
 from core.avatar import user_avatar
 from core.images import food_thumb
 from core.korean import eul_reul, i_ga
-from core.style import html, toast
+from core.style import html, scroll_mark, scroll_to_top, toast
 
 REPLY_DELAY_S = 3.0  # 답례 배달이 도착하기까지 (프로토타입 흉내)
 
@@ -53,6 +53,8 @@ def open_for(user_id: str, back_to: str = "home") -> None:
     ss.gift_from = back_to
     ss.gift_pick = None
     ss.screen = "gift"
+    ss.gift_enter = True  # 처음 들어올 때만 머리말이 오른쪽에서 밀려 들어온다 (앞으로 가는 방향)
+    scroll_to_top()  # 홈 아래쪽 친구 카드에서 들어와도 배달 화면은 맨 위부터 보인다
 
 
 def _log(direction: str, user_id: str, food_id: str, missed: bool = False) -> int:
@@ -164,13 +166,15 @@ def render_send() -> None:
     user = USERS_BY_ID[ss.gift_to]
     pick = ss.gift_pick
 
+    scroll_mark()
     with st.container(key="nav_row", horizontal=True, vertical_alignment="center"):
         st.button("이전", key="gift_back", type="tertiary", on_click=_back)
         html('<div class="mk-nav-title">배달 보내기</div>')
         html('<div class="mk-nav-slot"></div>')
 
+    enter = " mk-fwd" if ss.pop("gift_enter", False) else ""
     html(
-        '<div class="mk-header">'
+        f'<div class="mk-header{enter}">'
         f'<div class="mk-title" role="heading" aria-level="1">{escape(user.name)}에게<br>무엇을 보낼까요?</div>'
         f'<div class="mk-sub">보낸 음식은 {escape(user.name)}의 조리 중인 음식에 들어가요.</div>'
         "</div>"

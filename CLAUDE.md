@@ -181,6 +181,8 @@ UI·UX를 만들거나 고친 뒤에는 **반드시 아이폰 14 크기에서 �
 - 움직임은 `ui-animation` 스킬 기준(곡선 토큰 `--ease-*`, `DESIGN.md` "움직임 곡선"·"누름 피드백"·"나타남 연출")을 따른다. `st.markdown` HTML은 내용이 바뀌면 DOM이 새로 만들어져 CSS transition이 안 걸리므로, 상태가 바뀌는 순간의 연출은 짧은 keyframe(마운트 애니메이션)으로 한다. 한 번만 보여 줄 연출은 `session_state` 표시(`just_added_id`, `just_gifted`, `just_answered`)로 걸고 `app.py` 끝에서 지운다. "동작 줄이기"에서 전체를 `* { animation: none }`으로 끄지 말고 이동만 끈다.
 - 짧은 알림은 `st.toast`(닫기 버튼 달린 큰 팝업)를 쓰지 않고 `core.style.toast("문구")`를 콜백에서 호출한다. `app.py` 끝의 `style.render_toast()`가 화면 맨 위에 한 번 띄우고 2.5초 뒤 사라진다.
 - `st.markdown` HTML 안에서 글자 크기를 정하는 문단은 `<p>` 대신 `<div>`를 쓴다. Streamlit이 `<p>`의 글자 크기를 덮어쓴다.
+- Streamlit은 화면을 바꿔도 스크롤 위치가 남는다. 새 화면을 맨 위부터 보여야 하면 화면을 바꾸는 콜백에서 `core.style.scroll_to_top()`을 부르고, 새 화면 첫 줄에서 `style.scroll_mark()`를 그린다. 부모 문서 스크립트가 표시를 보자마자(그리기 전에) 스크롤을 되돌려 튀는 프레임이 없다. iframe(`components.html`)으로 되돌리면 늦게 실행돼 화면이 끊겨 보이니 쓰지 않는다. 지금은 배달 보내기(`gift.open_for`)에 쓴다.
+- 음식 썸네일은 처음 만들 때 1초쯤 걸린다. `app.py` 끝의 `images.warm_thumbs()`가 화면을 보낸 뒤 미리 만들어 둔다.
 - 화면 상태는 `session_state.screen`(home / order / fridge / community / my / gift / user)으로 바꾸고, 주문·소화 상태는 `session_state.meal`(`core.meal.MealState`)에 둔다.
 - Streamlit 숫자 입력칸은 한 번 값이 들어가면 화면에서 비울 수 없다. 비워야 하면 별도 "지우기" 버튼을 두고, 입력칸 key에 번호를 붙여 새 칸으로 바꿔 끼운다. (내정보 몸무게 칸은 지우기 없이 수정만 된다)
 - `core/` 파일을 고친 뒤에는 실행 중인 Streamlit 서버를 재시작해야 바뀐 내용이 반영된다.

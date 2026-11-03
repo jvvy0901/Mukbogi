@@ -945,6 +945,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 /* 온보딩 단계: 앞으로 가면 오른쪽에서, 이전으로 가면 왼쪽에서 들어온다 (공간 방향과 같게). 진행 막대는 새 칸만 왼쪽부터 찬다 */
 .mk-header.mk-fwd { animation: mk-in-fwd .24s var(--ease-move); }
 .mk-header.mk-back { animation: mk-in-back .24s var(--ease-move); }
+.stElementContainer:has(> .stMarkdown .mk-scrolltop) { display: none; }
 @keyframes mk-in-fwd { from { opacity: 0; transform: translateX(16px); } }
 @keyframes mk-in-back { from { opacity: 0; transform: translateX(-16px); } }
 .mk-progress span.now { position: relative; background: var(--line); }
@@ -1026,7 +1027,17 @@ _DRAG_SCROLL_CODE = """
       if (moved) { e.preventDefault(); e.stopPropagation(); }
     }, true);
   };
-  const scan = () => document.querySelectorAll(SEL).forEach(bind);
+  // 새 화면에 .mk-scrolltop 표시가 생기면 그리기 전에(MutationObserver는 다음 프레임 전에 돈다) 스크롤을 맨 위로 되돌린다.
+  // data-n이 같으면 같은 화면을 다시 그린 것이라 그대로 둔다 (음식을 고를 때마다 위로 튀지 않게).
+  let lastTop = null;
+  const toTop = () => {
+    const mark = document.querySelector('.mk-scrolltop');
+    if (!mark || mark.dataset.n === lastTop) return;
+    lastTop = mark.dataset.n;
+    window.scrollTo(0, 0);
+    document.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"]').forEach((el) => { el.scrollTop = 0; });
+  };
+  const scan = () => { document.querySelectorAll(SEL).forEach(bind); toTop(); };
   scan();
   new MutationObserver(scan).observe(document.body, { childList: true, subtree: true });
 })();
@@ -1066,6 +1077,21 @@ def html(markup: str) -> None:
 def toast(message: str) -> None:
     """다음 화면 그리기에서 한 번 보여 줄 토스트를 예약한다 (콜백 안에서 호출)."""
     st.session_state["_toast"] = message
+
+
+# 화면을 바꿀 때 스크롤 위치가 그대로 남아(Streamlit은 같은 페이지를 다시 그린다) 새 화면이 중간·아래부터 보인다.
+# 콜백에서 scroll_to_top()을 부르고, 새 화면 맨 위에서 scroll_mark()를 그리면
+# 부모 문서의 스크립트(_DRAG_SCROLL_CODE)가 표시를 보자마자 스크롤을 맨 위로 되돌린다 (튀는 프레임 없이).
+
+
+def scroll_to_top() -> None:
+    """다음 화면을 맨 위부터 보여 주도록 예약한다 (화면을 바꾸는 버튼 콜백에서 호출)."""
+    st.session_state.scroll_n = st.session_state.get("scroll_n", 0) + 1
+
+
+def scroll_mark() -> None:
+    """맨 위부터 보여 줄 화면의 첫 줄에서 호출한다. 같은 화면을 다시 그릴 때는 번호가 같아 스크롤을 건드리지 않는다."""
+    html(f'<div class="mk-scrolltop" data-n="{st.session_state.get("scroll_n", 0)}" aria-hidden="true"></div>')
 
 
 def render_toast() -> None:

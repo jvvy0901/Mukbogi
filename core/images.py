@@ -20,7 +20,7 @@ import numpy as np
 import streamlit as st
 from PIL import Image, ImageFilter
 
-from core.data import Food
+from core.data import FOODS, Food
 
 WORK_PX = 640  # 배경 처리용 축소 크기 (긴 변)
 FOOD_PAD = 0.06  # 상자 안 여백 비율 (한쪽)
@@ -214,6 +214,12 @@ def _profile_uri(path: str, px: int) -> str:
 def food_thumb(food: Food, px: int = 192) -> str:
     """배경 없는 음식 이미지(투명 PNG, 정사각형). px: 화면 크기(pt) × 2~3배."""
     return _food_uri(str(food.image_path), px)
+
+
+def warm_thumbs() -> None:
+    """기본 크기 음식 썸네일을 모두 만들어 캐시에 넣는다. 이미 있으면 바로 끝난다."""
+    for food in FOODS:
+        food_thumb(food)
 
 
 def food_bitten(food: Food, bites_eaten: int, px: int = 480) -> tuple[str, tuple[float, float] | None]:
